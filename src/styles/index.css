@@ -26,6 +26,10 @@ body {
     min-height: 100vh;
     display: flex;
     justify-content: center;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
 }
 
 #root {
@@ -66,8 +70,10 @@ body {
     font-family: 'Cormorant Garamond', serif;
     font-size: 26px;
     font-weight: 300;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.085em;
     color: var(--charcoal);
+    font-optical-sizing: auto;
+    font-feature-settings: 'liga' 1, 'calt' 1;
 }
 
 .logo span {
@@ -103,6 +109,10 @@ body {
 .office-main {
     padding: 0 20px 100px;
     min-width: 0;
+}
+
+.sidebar {
+    display: none;
 }
 
 .segment {
@@ -154,11 +164,9 @@ body {
     font-family: 'Cormorant Garamond', serif;
     font-size: 21px;
     font-weight: 400;
-}
-
-.segment-time {
-    font-size: 12px;
-    color: var(--charcoal-soft);
+    line-height: 1.05;
+    font-optical-sizing: auto;
+    font-feature-settings: 'liga' 1, 'calt' 1;
 }
 
 .segment-body {
@@ -275,33 +283,121 @@ body {
     margin-bottom: 12px;
 }
 
-.prayer-block {
-    margin-bottom: 14px;
+.liturgy-card {
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 14px 12px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(250, 250, 248, 0.96));
+    box-shadow: 0 1px 0 rgba(28, 28, 30, 0.03);
 }
 
-.prayer-block:last-child {
-    margin-bottom: 0;
+.liturgy-card+.liturgy-card {
+    margin-top: 10px;
 }
 
-.prayer-label {
+.liturgy-card.alt {
+    background: linear-gradient(180deg, rgba(242, 242, 240, 0.96), rgba(245, 237, 214, 0.38));
+}
+
+.liturgy-card-kicker {
     font-size: 10px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: var(--charcoal-soft);
-    font-weight: 600;
+    color: var(--gold);
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.liturgy-card-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px;
+    line-height: 1.05;
+    font-weight: 500;
+    color: var(--charcoal);
     margin-bottom: 6px;
-    display: block;
 }
 
-.prayer-content {
-    font-size: 13px;
-    line-height: 1.7;
-}
-
-.prayer-content.latin {
-    font-style: italic;
+.liturgy-card-citation {
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
     color: var(--charcoal-soft);
-    margin-bottom: 8px;
+    margin-bottom: 12px;
+}
+
+.liturgy-lines {
+    display: grid;
+    gap: 12px;
+}
+
+.liturgy-block {
+    display: grid;
+    gap: 6px;
+}
+
+.liturgy-block-rubric {
+    padding-left: 12px;
+    border-left: 2px solid rgba(184, 151, 58, 0.45);
+}
+
+.liturgy-block-speaker {
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.72);
+}
+
+.liturgy-block-verse {
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.52);
+}
+
+.liturgy-block-prayer {
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: rgba(245, 237, 214, 0.42);
+}
+
+.liturgy-block-reading {
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: rgba(242, 242, 240, 0.92);
+}
+
+.liturgy-speaker {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 700;
+}
+
+.liturgy-line {
+    font-size: 13px;
+    line-height: 1.65;
+    color: var(--charcoal-mid);
+}
+
+.liturgy-block-rubric .liturgy-line {
+    font-size: 12px;
+    color: var(--charcoal-soft);
+    font-style: italic;
+}
+
+.liturgy-inline-citation {
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--charcoal-soft);
+}
+
+.liturgy-card.alt .liturgy-line {
+    color: #4b4b4f;
+}
+
+.liturgy-card.alt .liturgy-block-speaker,
+.liturgy-card.alt .liturgy-block-verse {
+    background: rgba(255, 255, 255, 0.6);
 }
 
 .format-output {
@@ -531,6 +627,7 @@ body {
 
     .segment-title {
         font-size: 34px;
+        line-height: 1.02;
     }
 
     .segment-body {
@@ -548,6 +645,19 @@ body {
     .prayer-panel {
         border-radius: 16px;
         padding: 18px;
+    }
+
+    .liturgy-card {
+        padding: 18px 18px 16px;
+        border-radius: 16px;
+    }
+
+    .liturgy-card-title {
+        font-size: 24px;
+    }
+
+    .liturgy-line {
+        font-size: 14px;
     }
 
     .bottom-nav {

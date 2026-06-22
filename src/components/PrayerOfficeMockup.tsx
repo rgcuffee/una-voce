@@ -2,10 +2,18 @@ import { useEffect, useState } from 'react';
 
 type FormatKey = 'text' | 'audio' | 'video' | 'live';
 
-type PrayerBlock = {
+type LiturgyBlock = {
+  variant: 'rubric' | 'speaker' | 'verse' | 'prayer' | 'reading';
+  speaker?: string;
+  citation?: string;
+  lines: string[];
+};
+
+type LiturgySection = {
   label: string;
-  latin?: string;
-  english: string;
+  title: string;
+  citation?: string;
+  blocks: LiturgyBlock[];
 };
 
 type OptionItem = {
@@ -18,8 +26,7 @@ type OptionItem = {
 type Segment = {
   id: string;
   title: string;
-  time: string;
-  text: PrayerBlock[];
+  text: LiturgySection[];
   audio: OptionItem[];
   video: OptionItem[];
   live: {
@@ -32,18 +39,130 @@ const SEGMENTS: Segment[] = [
   {
     id: 'segment-morning',
     title: 'Morning Prayer',
-    time: '6:00 AM',
     text: [
       {
-        label: 'Invitatory Antiphon',
-        latin: 'Domine, labia mea aperies.',
-        english: 'Open my lips, O Lord, and my mouth will declare your praise.',
+        label: 'Opening',
+        title: 'Opening Sentence',
+        citation: 'Psalm 122:1',
+        blocks: [
+          {
+            variant: 'verse',
+            lines: [
+              'I rose with gladness when the faithful called me toward the house of God.',
+              'Let this day begin with a willing heart and a steady song of praise.',
+            ],
+          },
+        ],
       },
       {
-        label: 'Psalm 95',
-        latin: 'Venite, exsultemus Domino; iubilemus Deo, salutari nostro...',
-        english:
-          'Come, let us sing joyfully to the Lord; cry out to the God of our salvation...',
+        label: 'Confession',
+        title: 'Confession and Absolution',
+        blocks: [
+          {
+            variant: 'rubric',
+            lines: [
+              'The people are invited to quiet their hearts and confess before beginning the office.',
+            ],
+          },
+          {
+            variant: 'prayer',
+            lines: [
+              'Merciful Father, we have wandered in thought, word, and deed; gather us again into your mercy.',
+              'Cleanse what is disordered in us, strengthen what is weak, and set our feet again in the path of peace.',
+            ],
+          },
+        ],
+      },
+      {
+        label: 'Preces',
+        title: 'Opening Versicles',
+        blocks: [
+          {
+            variant: 'speaker',
+            speaker: 'Officiant',
+            lines: ['O Lord, open our lips.'],
+          },
+          {
+            variant: 'speaker',
+            speaker: 'People',
+            lines: ['And our mouth shall proclaim your praise.'],
+          },
+          {
+            variant: 'speaker',
+            speaker: 'Officiant',
+            lines: ['O God, make speed to save us.'],
+          },
+          {
+            variant: 'speaker',
+            speaker: 'People',
+            lines: ['O Lord, make haste to help us.'],
+          },
+        ],
+      },
+      {
+        label: 'Psalm',
+        title: 'Psalm 118',
+        citation: 'Appointed for today',
+        blocks: [
+          {
+            variant: 'verse',
+            lines: [
+              'Give thanks to the Lord, for his mercy does not fail and his steadfastness does not grow old.',
+              'The stone once set aside is raised up in honor, and what God establishes becomes joy for his people.',
+            ],
+          },
+          {
+            variant: 'verse',
+            lines: [
+              'This is the day entrusted to us; we receive it with gratitude and ask for grace to walk it well.',
+              'Open to us the gates of righteousness, that praise may shape both our prayers and our labor.',
+            ],
+          },
+        ],
+      },
+      {
+        label: 'Lessons',
+        title: 'Readings and Canticles',
+        citation: 'Judges 5 · I Thessalonians 1',
+        blocks: [
+          {
+            variant: 'reading',
+            lines: [
+              'Deborah’s song recalls the God who rides into history, overturns fear, and gives courage to the fainthearted.',
+              'Paul gives thanks for a church marked by work born of faith, labor shaped by love, and endurance carried by hope.',
+            ],
+          },
+          {
+            variant: 'verse',
+            lines: [
+              'We praise you, O God; the morning itself becomes a witness to your faithfulness.',
+              'Blessed be the Lord, the God of Israel, who visits his people and sets them free.',
+            ],
+          },
+        ],
+      },
+      {
+        label: 'Prayers',
+        title: 'Collects and Dismissal',
+        blocks: [
+          {
+            variant: 'prayer',
+            lines: [
+              'Lord of all power and might, graft in us the love of your Name and let the fruit of this day be charity, patience, and truth.',
+              'Send us into the world with clear consciences, disciplined hearts, and compassion ready at hand.',
+            ],
+          },
+          {
+            variant: 'speaker',
+            speaker: 'Officiant',
+            lines: ['Let us bless the Lord.'],
+          },
+          {
+            variant: 'speaker',
+            speaker: 'People',
+            lines: ['Thanks be to God.'],
+          },
+        ],
       },
     ],
     audio: [
@@ -123,13 +242,76 @@ const SEGMENTS: Segment[] = [
   {
     id: 'segment-midday',
     title: 'Midday Prayer',
-    time: '12:00 PM',
     text: [
       {
-        label: 'Opening',
-        latin:
-          'Deus, in adiutorium meum intende; Domine, ad adiuvandum me festina.',
-        english: 'O God, come to my assistance; O Lord, make haste to help me.',
+        label: 'Invitatory',
+        title: 'Opening Versicles',
+        blocks: [
+          {
+            variant: 'speaker',
+            speaker: 'Officiant',
+            lines: ['O God, make speed to save us.'],
+          },
+          {
+            variant: 'speaker',
+            speaker: 'People',
+            lines: ['O Lord, make haste to help us.'],
+          },
+          {
+            variant: 'rubric',
+            lines: [
+              'The midday office pauses the day without breaking its momentum.',
+            ],
+          },
+        ],
+      },
+      {
+        label: 'Psalm',
+        title: 'Psalms Appointed',
+        citation: 'Psalm 119:105-112 · 121 · 124 · 126',
+        blocks: [
+          {
+            variant: 'verse',
+            lines: [
+              'Your word remains a lantern at noon as surely as it was at dawn; teach us to walk by its brightness.',
+              'Our help comes from the Maker of heaven and earth, not from the noise and weight of the passing hour.',
+            ],
+          },
+          {
+            variant: 'verse',
+            lines: [
+              'Had the Lord not stood beside us, we would have been carried away; yet he breaks the snare and steadies our feet.',
+              'Those who sow in tears shall return with songs, bearing a harvest they could not have imagined at the start.',
+            ],
+          },
+        ],
+      },
+      {
+        label: 'Reading',
+        title: 'John 12:31-32',
+        blocks: [
+          {
+            variant: 'reading',
+            lines: [
+              'The Cross stands at the center of the day: judgment is exposed there, and mercy draws the world toward Christ.',
+              'At the hour of labor and fatigue, the lifted Lord gathers what is scattered and recalls us to his love.',
+            ],
+          },
+        ],
+      },
+      {
+        label: 'Prayer',
+        title: 'The Prayers',
+        blocks: [
+          {
+            variant: 'prayer',
+            lines: [
+              'Lord, have mercy upon us. Christ, have mercy upon us. Lord, have mercy upon us.',
+              'Blessed Savior, at this hour stretch your mercy over the nations, the weary, the distracted, and the wounded.',
+              'Pour your grace into our hearts so that the remainder of this day may be obedient, clear, and fruitful.',
+            ],
+          },
+        ],
       },
     ],
     audio: [
@@ -207,14 +389,104 @@ const SEGMENTS: Segment[] = [
   {
     id: 'segment-evening',
     title: 'Evening Prayer',
-    time: '6:00 PM',
     text: [
       {
-        label: 'Magnificat',
-        latin:
-          'Magnificat anima mea Dominum; et exsultavit spiritus meus in Deo salutari meo...',
-        english:
-          'My soul proclaims the greatness of the Lord; my spirit rejoices in God my Savior...',
+        label: 'Opening',
+        title: 'Opening Sentence',
+        citation: 'John 8:12',
+        blocks: [
+          {
+            variant: 'verse',
+            lines: [
+              'As the light declines, Christ remains the lamp that does not fail.',
+              'Whoever follows him will not be abandoned to the darkening day but will be led into life.',
+            ],
+          },
+        ],
+      },
+      {
+        label: 'Psalmody',
+        title: 'The Psalms Appointed',
+        citation: 'Psalms 120 and 121',
+        blocks: [
+          {
+            variant: 'verse',
+            lines: [
+              'In trouble we called, and the Lord answered; he teaches our restless tongues to seek peace instead of strife.',
+              'We lift our eyes beyond the hills because our help comes from the Lord, who neither slumbers nor withdraws.',
+            ],
+          },
+          {
+            variant: 'verse',
+            lines: [
+              'He preserves our going out and our coming in, the work already finished and the burdens we still carry home.',
+            ],
+          },
+        ],
+      },
+      {
+        label: 'Lesson',
+        title: 'The First Lesson',
+        citation: 'Daniel 1',
+        blocks: [
+          {
+            variant: 'reading',
+            lines: [
+              'Daniel and his companions keep faith in a foreign court, refusing to let pressure define their worship.',
+              'The evening lesson leaves the Church with a pattern of quiet resolve, discipline, and trust in the Lord’s favor.',
+            ],
+          },
+        ],
+      },
+      {
+        label: 'Canticle',
+        title: 'Magnificat',
+        citation: 'Luke 1:46-55',
+        blocks: [
+          {
+            variant: 'verse',
+            lines: [
+              'My soul magnifies the Lord, and my spirit rejoices in God my Savior.',
+              'He fills the hungry with good things, remembers mercy, and lifts the lowly into song.',
+            ],
+          },
+        ],
+      },
+      {
+        label: 'Second Lesson',
+        title: 'Acts 19:8-20',
+        blocks: [
+          {
+            variant: 'reading',
+            lines: [
+              'Paul’s witness in Ephesus shows the gospel pressing against fear, superstition, and hardened unbelief.',
+              'The word of the Lord increases not by spectacle alone, but by steady proclamation and lives made new.',
+            ],
+          },
+        ],
+      },
+      {
+        label: 'Close',
+        title: 'Nunc Dimittis and Dismissal',
+        blocks: [
+          {
+            variant: 'verse',
+            lines: [
+              'Lord, now let your servant depart in peace, for your salvation has been made known before all peoples.',
+            ],
+          },
+          {
+            variant: 'prayer',
+            lines: [
+              'Grant us a peaceful evening, a guarded night, and hearts prepared for whatever obedience tomorrow requires.',
+            ],
+          },
+          {
+            variant: 'speaker',
+            speaker: 'People',
+            lines: ['Thanks be to God.'],
+          },
+        ],
       },
     ],
     audio: [
@@ -292,14 +564,120 @@ const SEGMENTS: Segment[] = [
   {
     id: 'segment-night',
     title: 'Night Prayer',
-    time: '9:00 PM',
     text: [
       {
-        label: 'Nunc Dimittis',
-        latin:
-          'Nunc dimittis servum tuum, Domine, secundum verbum tuum in pace...',
-        english:
-          'Now, Master, you may let your servant go in peace, according to your word...',
+        label: 'Opening',
+        title: 'Opening Sentence',
+        blocks: [
+          {
+            variant: 'speaker',
+            speaker: 'Officiant',
+            lines: [
+              'The Lord Almighty grant us a peaceful night and a perfect end.',
+            ],
+          },
+          {
+            variant: 'speaker',
+            speaker: 'People',
+            lines: ['Amen.'],
+          },
+          {
+            variant: 'speaker',
+            speaker: 'Officiant',
+            lines: ['Our help is in the Name of the Lord.'],
+          },
+          {
+            variant: 'speaker',
+            speaker: 'People',
+            lines: ['The maker of heaven and earth.'],
+          },
+        ],
+      },
+      {
+        label: 'Psalms',
+        title: 'The Psalms',
+        citation: 'Psalms 4 · 31:1-6 · 91 · 134',
+        blocks: [
+          {
+            variant: 'verse',
+            lines: [
+              'You have set a quieter gladness in the heart than any feast or increase could offer.',
+              'Into your hands we commend our spirits, trusting the faithfulness that does not sleep.',
+            ],
+          },
+          {
+            variant: 'verse',
+            lines: [
+              'Under the shadow of the Most High, fear loosens its grip and the soul learns again to rest.',
+              'All who stand by night in the house of the Lord answer the dark with blessing.',
+            ],
+          },
+        ],
+      },
+      {
+        label: 'Reading',
+        title: 'The Reading',
+        citation: 'Jeremiah 14:9',
+        blocks: [
+          {
+            variant: 'reading',
+            lines: [
+              'You are in the midst of your people, O Lord; do not leave us to our own devices in the night watches.',
+            ],
+          },
+        ],
+      },
+      {
+        label: 'Prayer',
+        title: 'The Prayers',
+        blocks: [
+          {
+            variant: 'prayer',
+            lines: [
+              'Be present, merciful God, with those who labor, those who keep vigil, and those whose grief keeps sleep away.',
+              'Guard the sick, strengthen the tired, comfort the afraid, and let your peace settle gently over every room.',
+            ],
+          },
+        ],
+      },
+      {
+        label: 'Canticle',
+        title: 'Nunc Dimittis',
+        blocks: [
+          {
+            variant: 'rubric',
+            lines: ['The Song of Simeon is said with the night antiphon.'],
+          },
+          {
+            variant: 'verse',
+            lines: [
+              'Guide us waking, O Lord, and guard us sleeping, that awake we may watch with Christ and asleep we may rest in peace.',
+              'Lord, now let your servant depart in peace according to your word.',
+            ],
+          },
+        ],
+      },
+      {
+        label: 'Dismissal',
+        title: 'The Dismissal',
+        blocks: [
+          {
+            variant: 'speaker',
+            speaker: 'Officiant',
+            lines: ['Let us bless the Lord.'],
+          },
+          {
+            variant: 'speaker',
+            speaker: 'People',
+            lines: ['Thanks be to God.'],
+          },
+          {
+            variant: 'prayer',
+            lines: [
+              'The almighty and merciful Lord, Father, Son, and Holy Spirit, bless us and keep us, this night and evermore.',
+            ],
+          },
+        ],
       },
     ],
     audio: [
@@ -375,12 +753,71 @@ const SEGMENTS: Segment[] = [
   {
     id: 'segment-office',
     title: 'Office of Readings',
-    time: 'Any time',
     text: [
       {
-        label: 'First Reading',
-        english:
-          'From the Letter to the Romans: present your bodies as a living sacrifice, holy and acceptable to God...',
+        label: 'Psalm',
+        title: 'Psalm 118',
+        blocks: [
+          {
+            variant: 'verse',
+            lines: [
+              'This is the day that the Lord has made; the office of readings begins in thanksgiving before it begins in study.',
+              'The rejected stone becomes the cornerstone, teaching the reader to expect grace where the world expects loss.',
+            ],
+          },
+        ],
+      },
+      {
+        label: 'First Lesson',
+        title: 'Judges 5',
+        blocks: [
+          {
+            variant: 'reading',
+            lines: [
+              'The song of Deborah remembers a God who shakes mountains, summons courage, and brings deliverance through unlikely servants.',
+              'Its final note is not noise but rest: the land is given peace after long fear.',
+            ],
+          },
+        ],
+      },
+      {
+        label: 'Second Lesson',
+        title: 'I Thessalonians 1',
+        blocks: [
+          {
+            variant: 'reading',
+            lines: [
+              'Paul commends a church whose faith has become visible in work, endurance, and joyful witness amid affliction.',
+              'The lesson presses the reader toward conversion that is not private only, but audible and public.',
+            ],
+          },
+        ],
+      },
+      {
+        label: 'Canticle',
+        title: 'Te Deum and Benedictus',
+        blocks: [
+          {
+            variant: 'verse',
+            lines: [
+              'We praise you, O God; all creation is gathered into one long hymn around your throne.',
+              'In the tender compassion of our God, the dawn from on high breaks upon the patient soul.',
+            ],
+          },
+        ],
+      },
+      {
+        label: 'Prayer',
+        title: 'The Apostles’ Creed and Collects',
+        blocks: [
+          {
+            variant: 'prayer',
+            lines: [
+              'I believe in God, the Father almighty, creator of heaven and earth; let that confession steady both thought and memory.',
+              'Grant us, O Lord, to read with humility, to receive with faith, and to live what we have learned in peace.',
+            ],
+          },
+        ],
       },
     ],
     audio: [
@@ -475,6 +912,10 @@ const DATE_LABEL = 'Monday, June 22 · Twelfth Week in Ordinary Time';
 
 function titleCase(format: FormatKey) {
   return format.charAt(0).toUpperCase() + format.slice(1);
+}
+
+function blockClassName(variant: LiturgyBlock['variant']) {
+  return `liturgy-block liturgy-block-${variant}`;
 }
 
 export function PrayerOfficeMockup() {
@@ -585,7 +1026,6 @@ export function PrayerOfficeMockup() {
                   <div className='segment-toggle'>⬇</div>
                   <h2 className='segment-title'>{segment.title}</h2>
                 </div>
-                <div className='segment-time'>{segment.time}</div>
               </button>
 
               <div className='segment-body' id={`${segment.id}-body`}>
@@ -610,14 +1050,43 @@ export function PrayerOfficeMockup() {
                 <div
                   className={`prayer-panel format-output${selectedFormat === 'text' ? '' : ' hidden'}`}
                 >
-                  {segment.text.map((block) => (
-                    <div key={block.label} className='prayer-block'>
-                      <span className='prayer-label'>{block.label}</span>
-                      {block.latin ? (
-                        <p className='prayer-content latin'>{block.latin}</p>
+                  {segment.text.map((block, index) => (
+                    <section
+                      key={block.label}
+                      className={`liturgy-card${index % 2 === 1 ? ' alt' : ''}`}
+                    >
+                      <div className='liturgy-card-kicker'>{block.label}</div>
+                      <h3 className='liturgy-card-title'>{block.title}</h3>
+                      {block.citation ? (
+                        <div className='liturgy-card-citation'>
+                          {block.citation}
+                        </div>
                       ) : null}
-                      <p className='prayer-content'>{block.english}</p>
-                    </div>
+                      <div className='liturgy-lines'>
+                        {block.blocks.map((entry) => (
+                          <div
+                            key={`${block.label}-${entry.variant}-${entry.lines[0]}`}
+                            className={blockClassName(entry.variant)}
+                          >
+                            {entry.speaker ? (
+                              <div className='liturgy-speaker'>
+                                {entry.speaker}
+                              </div>
+                            ) : null}
+                            {entry.lines.map((line) => (
+                              <p key={line} className='liturgy-line'>
+                                {line}
+                              </p>
+                            ))}
+                            {entry.citation ? (
+                              <div className='liturgy-inline-citation'>
+                                {entry.citation}
+                              </div>
+                            ) : null}
+                          </div>
+                        ))}
+                      </div>
+                    </section>
                   ))}
                 </div>
 
@@ -663,9 +1132,6 @@ export function PrayerOfficeMockup() {
                           <article key={item.title} className='format-option'>
                             <div className='option-meta'>{item.meta}</div>
                             <div className='option-title'>{item.title}</div>
-                            {item.time ? (
-                              <div className='stream-time'>{item.time}</div>
-                            ) : null}
                             <p className='option-desc'>{item.description}</p>
                           </article>
                         ))}
