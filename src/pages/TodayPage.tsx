@@ -56,8 +56,11 @@ export function TodayPage() {
         nextHourName={todayInfo.nextHour.name}
         nextHourTime={todayInfo.nextHour.time}
       />
-      <section className="today-flow">
-        <DailyProgress prayed={todayInfo.prayedCount} total={todayInfo.totalCount} />
+      <section className='today-flow'>
+        <DailyProgress
+          prayed={todayInfo.prayedCount}
+          total={todayInfo.totalCount}
+        />
 
         {todayInfo.liveSession && (
           <LiveCard
@@ -67,45 +70,61 @@ export function TodayPage() {
           />
         )}
 
-        <section className="rail-section source-rail-section" aria-label="Prayer sources">
-          <div className="rail-header">
-            <h2 className="rail-title">Choose Your Prayer Style</h2>
-            <p className="rail-copy">Select how each hour is prayed before joining a community.</p>
+        <section
+          className='rail-section source-rail-section'
+          aria-label='Prayer sources'
+        >
+          <div className='rail-header'>
+            <h2 className='rail-title'>Choose Your Prayer Style</h2>
+            <p className='rail-copy'>
+              Select how each hour is prayed before joining a community.
+            </p>
           </div>
-          <div className="rail-track source-rail-track">
+          <div className='rail-track source-rail-track'>
             {SOURCE_STYLES.map((style) => (
-              <article key={style.id} className="source-option-card">
-                <div className="source-option-tag">{style.label}</div>
-                <div className="source-option-copy">{style.description}</div>
-                <div className="source-option-availability">{style.availability}</div>
+              <article key={style.id} className='source-option-card'>
+                <div className='source-option-tag'>{style.label}</div>
+                <div className='source-option-copy'>{style.description}</div>
+                <div className='source-option-availability'>
+                  {style.availability}
+                </div>
               </article>
             ))}
           </div>
         </section>
 
         <FeaturedCard
-          kicker="Featured Community"
-          title="A reverent path into prayer"
-          copy="Listen with a community already praying the Liturgy of the Hours."
+          kicker='Featured Community'
+          title='A reverent path into prayer'
+          copy='Listen with a community already praying the Liturgy of the Hours.'
           imageUrl={FEATURED_IMAGE}
         />
 
-        <section className="rail-section community-rail-section" aria-label="Community highlights">
-          <div className="rail-header">
-            <h2 className="rail-title">Community Highlights</h2>
-            <p className="rail-copy">Explore trusted houses and apostolates currently leading prayer.</p>
+        <section
+          className='rail-section community-rail-section'
+          aria-label='Community highlights'
+        >
+          <div className='rail-header'>
+            <h2 className='rail-title'>Community Highlights</h2>
+            <p className='rail-copy'>
+              Explore trusted houses and apostolates currently leading prayer.
+            </p>
           </div>
-          <div className="rail-track community-rail-track">
+          <div className='rail-track community-rail-track'>
             {COMMUNITY_SPOTLIGHTS.map((community) => (
-              <article key={community.id} className="community-spotlight-card">
-                <div className="community-spotlight-title">{community.title}</div>
-                <div className="community-spotlight-detail">{community.detail}</div>
+              <article key={community.id} className='community-spotlight-card'>
+                <div className='community-spotlight-title'>
+                  {community.title}
+                </div>
+                <div className='community-spotlight-detail'>
+                  {community.detail}
+                </div>
               </article>
             ))}
           </div>
         </section>
 
-        <main className="hours-list">
+        <main className='hours-list'>
           {todayHours.map((hour) => (
             <HourCard key={hour.id} hour={hour} />
           ))}

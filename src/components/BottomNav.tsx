@@ -9,7 +9,7 @@ const NAV_ITEMS = [
 
 export function BottomNav() {
   return (
-    <nav className="bottom-nav">
+    <nav className='bottom-nav'>
       {NAV_ITEMS.map((item) => (
         <NavLink
           key={item.path}
@@ -17,8 +17,8 @@ export function BottomNav() {
           end={item.path === '/'}
           className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
         >
-          <div className="nav-icon">{item.icon}</div>
-          <div className="nav-label">{item.label}</div>
+          <div className='nav-icon'>{item.icon}</div>
+          <div className='nav-label'>{item.label}</div>
         </NavLink>
       ))}
     </nav>

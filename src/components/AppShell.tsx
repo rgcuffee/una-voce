@@ -9,8 +9,8 @@ interface AppShellProps {
 
 export function AppShell({ dateLabel, children }: AppShellProps) {
   return (
-    <div className="phone">
-      <div className="shell-content">
+    <div className='phone'>
+      <div className='shell-content'>
         <AppHeader dateLabel={dateLabel} />
         {children}
       </div>
