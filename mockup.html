@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Una Voce – The Church at Prayer</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap"
+        rel="stylesheet" />
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --gold: #B8973A;
+            --gold-light: #D4AF5A;
+            --gold-dim: #F5EDD6;
+            --charcoal: #1C1C1E;
+            --charcoal-mid: #3A3A3C;
+            --charcoal-soft: #6C6C70;
+            --white: #FFFFFF;
+            --off-white: #FAFAF8;
+            --surface: #F2F2F0;
+            --live-red: #C0392B;
+            --border: #E0DDD5;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #e9e6df;
+            color: var(--charcoal);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+        }
+
+        .phone {
+            width: 100%;
+            max-width: 430px;
+            min-height: 100vh;
+            background: var(--off-white);
+            position: relative;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.12);
+            overflow-x: hidden;
+        }
+
+        header {
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+            padding: 18px 20px 14px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 26px;
+            font-weight: 300;
+            letter-spacing: 0.08em;
+            color: var(--charcoal);
+        }
+
+        .logo span {
+            color: var(--gold);
+        }
+
+        .header-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--gold-dim);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .date-line {
+            font-size: 11px;
+            color: var(--charcoal-soft);
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            margin-top: 6px;
+            font-weight: 400;
+        }
+
+        .today-banner {
+            background: var(--charcoal);
+            color: var(--white);
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .today-label {
+            font-size: 11px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--gold-light);
+            font-weight: 500;
+            margin-bottom: 3px;
+        }
+
+        .today-feast {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 18px;
+            font-weight: 400;
+            font-style: italic;
+        }
+
+        .today-season {
+            font-size: 11px;
+            color: #b8b8b8;
+            margin-top: 2px;
+            letter-spacing: 0.04em;
+        }
+
+        .next-hour-pill {
+            text-align: right;
+        }
+
+        .next-hour-label {
+            font-size: 10px;
+            color: #aaa;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .next-hour-name {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 20px;
+            color: var(--gold-light);
+            font-weight: 400;
+        }
+
+        .next-hour-time {
+            font-size: 11px;
+            color: #aaa;
+            margin-top: 1px;
+        }
+
+        .section-header {
+            padding: 20px 20px 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+        }
+
+        .section-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--charcoal);
+        }
+
+        .section-subtitle {
+            font-size: 12px;
+            color: var(--charcoal-soft);
+            font-weight: 400;
+        }
+
+        .progress-wrap {
+            margin: 0 20px 14px;
+        }
+
+        .progress-label {
+            font-size: 11px;
+            color: var(--charcoal-soft);
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .progress-bar {
+            height: 7px;
+            background: var(--surface);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 57%;
+            background: linear-gradient(90deg, var(--gold), var(--gold-light));
+            border-radius: 999px;
+        }
+
+        .live-card {
+            margin: 0 20px 12px;
+            background: var(--white);
+            border-radius: 16px;
+            border: 1.5px solid var(--gold);
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(184, 151, 58, 0.10);
+        }
+
+        .live-card-header {
+            background: var(--gold);
+            padding: 8px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .live-badge {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.10em;
+            color: var(--white);
+            text-transform: uppercase;
+        }
+
+        .live-dot {
+            width: 7px;
+            height: 7px;
+            background: var(--white);
+            border-radius: 50%;
+            animation: pulse 1.4s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.3;
+            }
+        }
+
+        .live-viewers {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .live-card-body {
+            padding: 14px 16px 16px;
+        }
+
+        .live-hour-name {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 22px;
+            font-weight: 400;
+            color: var(--charcoal);
+            margin-bottom: 2px;
+        }
+
+        .live-partner {
+            font-size: 13px;
+            color: var(--charcoal-soft);
+            margin-bottom: 12px;
+        }
+
+        .live-partner strong {
+            color: var(--charcoal-mid);
+            font-weight: 500;
+        }
+
+        .live-join-btn {
+            display: block;
+            width: 100%;
+            background: var(--charcoal);
+            color: var(--white);
+            border: none;
+            border-radius: 10px;
+            padding: 13px;
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 0.03em;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            text-align: center;
+        }
+
+        .featured-card {
+            margin: 0 20px 16px;
+            min-height: 120px;
+            border-radius: 18px;
+            overflow: hidden;
+            position: relative;
+            background:
+                linear-gradient(120deg, rgba(28, 28, 30, 0.92), rgba(28, 28, 30, 0.48)),
+                url("https://images.unsplash.com/photo-1528357136257-0c25517acfea?auto=format&fit=crop&w=900&q=80");
+            background-size: cover;
+            background-position: center;
+            color: white;
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+
+        .featured-kicker {
+            font-size: 10px;
+            letter-spacing: .12em;
+            color: var(--gold-light);
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .featured-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 24px;
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .featured-copy {
+            font-size: 12px;
+            color: rgba(255, 255, 255, .82);
+            max-width: 280px;
+        }
+
+        .hours-list {
+            padding: 0 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding-bottom: 100px;
+        }
+
+        .hour-card {
+            background: var(--white);
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            position: relative;
+        }
+
+        .hour-card.prayed {
+            opacity: 0.55;
+            border-color: transparent;
+            background: var(--surface);
+        }
+
+        .hour-card.now {
+            border-color: var(--gold);
+            box-shadow: 0 0 0 1px var(--gold-dim);
+        }
+
+        .hour-time-col {
+            min-width: 48px;
+            text-align: center;
+        }
+
+        .hour-time {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--charcoal-soft);
+        }
+
+        .hour-ampm {
+            font-size: 10px;
+            color: #aaa;
+            margin-top: 1px;
+        }
+
+        .hour-divider {
+            width: 1px;
+            height: 40px;
+            background: var(--border);
+            flex-shrink: 0;
+        }
+
+        .hour-info {
+            flex: 1;
+        }
+
+        .hour-name {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 19px;
+            font-weight: 400;
+            color: var(--charcoal);
+            line-height: 1.2;
+        }
+
+        .hour-latin {
+            font-size: 11px;
+            color: var(--charcoal-soft);
+            font-style: italic;
+            margin-top: 1px;
+        }
+
+        .hour-partner {
+            font-size: 11px;
+            color: var(--charcoal-soft);
+            margin-top: 4px;
+        }
+
+        .hour-right {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 6px;
+        }
+
+        .badge-live {
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.10em;
+            color: var(--live-red);
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .badge-live::before {
+            content: '';
+            width: 5px;
+            height: 5px;
+            background: var(--live-red);
+            border-radius: 50%;
+            display: inline-block;
+            animation: pulse 1.4s infinite;
+        }
+
+        .badge-recorded {
+            font-size: 9px;
+            letter-spacing: 0.06em;
+            color: #aaa;
+            text-transform: uppercase;
+        }
+
+        .badge-done {
+            font-size: 10px;
+            color: var(--gold);
+        }
+
+        .chevron {
+            font-size: 18px;
+            color: #ccc;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 430px;
+            background: var(--white);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 10px 0 18px;
+            z-index: 200;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            cursor: pointer;
+            min-width: 62px;
+        }
+
+        .nav-icon {
+            font-size: 20px;
+        }
+
+        .nav-label {
+            font-size: 10px;
+            color: var(--charcoal-soft);
+            letter-spacing: 0.04em;
+        }
+
+        .nav-item.active .nav-label {
+            color: var(--gold);
+            font-weight: 600;
+        }
+
+        @media (min-width: 700px) {
+            body {
+                padding: 28px 0;
+            }
+
+            .phone {
+                min-height: 860px;
+                border-radius: 34px;
+                overflow: hidden;
+            }
+
+            .bottom-nav {
+                border-radius: 0 0 34px 34px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="phone">
+        <header>
+            <div class="header-top">
+                <div class="logo">UNA <span>VOCE</span></div>
+                <div class="header-icon">☩</div>
+            </div>
+            <div class="date-line">Monday, June 22 · Twelfth Week in Ordinary Time</div>
+        </header>
+
+        <section class="today-banner">
+            <div>
+                <div class="today-label">Today</div>
+                <div class="today-feast">St. John Fisher &amp; St. Thomas More</div>
+                <div class="today-season">Ordinary Time · Week IV</div>
+            </div>
+
+            <div class="next-hour-pill">
+                <div class="next-hour-label">Next Hour</div>
+                <div class="next-hour-name">Vespers</div>
+                <div class="next-hour-time">6:00 PM</div>
+            </div>
+        </section>
+
+        <div class="section-header">
+            <div class="section-title">The Hours</div>
+            <div class="section-subtitle">4 of 7 prayed</div>
+        </div>
+
+        <div class="progress-wrap">
+            <div class="progress-label">
+                <span>Daily rhythm</span>
+                <span>57%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill"></div>
+            </div>
+        </div>
+
+        <section class="live-card">
+            <div class="live-card-header">
+                <div class="live-badge">
+                    <span class="live-dot"></span>
+                    Live Now
+                </div>
+                <div class="live-viewers">128 praying</div>
+            </div>
+
+            <div class="live-card-body">
+                <div class="live-hour-name">Evening Prayer</div>
+                <div class="live-partner">
+                    with <strong>Abbey of Our Lady</strong>
+                </div>
+                <button class="live-join-btn">Join the Prayer</button>
+            </div>
+        </section>
+
+        <section class="featured-card">
+            <div class="featured-kicker">Featured Community</div>
+            <div class="featured-title">A reverent path into prayer</div>
+            <div class="featured-copy">Listen with a community already praying the Liturgy of the Hours.</div>
+        </section>
+
+        <main class="hours-list">
+            <article class="hour-card prayed">
+                <div class="hour-time-col">
+                    <div class="hour-time">6:00</div>
+                    <div class="hour-ampm">AM</div>
+                </div>
+                <div class="hour-divider"></div>
+                <div class="hour-info">
+                    <div class="hour-name">Office of Readings</div>
+                    <div class="hour-latin">Matutinum</div>
+                    <div class="hour-partner">Benedictine Sisters</div>
+                </div>
+                <div class="hour-right">
+                    <div class="badge-done">✓</div>
+                </div>
+            </article>
+
+            <article class="hour-card prayed">
+                <div class="hour-time-col">
+                    <div class="hour-time">7:30</div>
+                    <div class="hour-ampm">AM</div>
+                </div>
+                <div class="hour-divider"></div>
+                <div class="hour-info">
+                    <div class="hour-name">Morning Prayer</div>
+                    <div class="hour-latin">Lauds</div>
+                    <div class="hour-partner">Sing the Hours</div>
+                </div>
+                <div class="hour-right">
+                    <div class="badge-done">✓</div>
+                </div>
+            </article>
+
+            <article class="hour-card prayed">
+                <div class="hour-time-col">
+                    <div class="hour-time">12:00</div>
+                    <div class="hour-ampm">PM</div>
+                </div>
+                <div class="hour-divider"></div>
+                <div class="hour-info">
+                    <div class="hour-name">Midday Prayer</div>
+                    <div class="hour-latin">Sext</div>
+                    <div class="hour-partner">Divine Office Community</div>
+                </div>
+                <div class="hour-right">
+                    <div class="badge-done">✓</div>
+                </div>
+            </article>
+
+            <article class="hour-card now">
+                <div class="hour-time-col">
+                    <div class="hour-time">6:00</div>
+                    <div class="hour-ampm">PM</div>
+                </div>
+                <div class="hour-divider"></div>
+                <div class="hour-info">
+                    <div class="hour-name">Evening Prayer</div>
+                    <div class="hour-latin">Vespers</div>
+                    <div class="hour-partner">Abbey of Our Lady</div>
+                </div>
+                <div class="hour-right">
+                    <div class="badge-live">Live</div>
+                    <div class="chevron">›</div>
+                </div>
+            </article>
+
+            <article class="hour-card">
+                <div class="hour-time-col">
+                    <div class="hour-time">9:00</div>
+                    <div class="hour-ampm">PM</div>
+                </div>
+                <div class="hour-divider"></div>
+                <div class="hour-info">
+                    <div class="hour-name">Night Prayer</div>
+                    <div class="hour-latin">Compline</div>
+                    <div class="hour-partner">Recorded prayer available</div>
+                </div>
+                <div class="hour-right">
+                    <div class="badge-recorded">Recorded</div>
+                    <div class="chevron">›</div>
+                </div>
+            </article>
+        </main>
+
+        <nav class="bottom-nav">
+            <div class="nav-item active">
+                <div class="nav-icon">☰</div>
+                <div class="nav-label">Today</div>
+            </div>
+            <div class="nav-item">
+                <div class="nav-icon">▶</div>
+                <div class="nav-label">Pray</div>
+            </div>
+            <div class="nav-item">
+                <div class="nav-icon">✦</div>
+                <div class="nav-label">Communities</div>
+            </div>
+            <div class="nav-item">
+                <div class="nav-icon">☩</div>
+                <div class="nav-label">More</div>
+            </div>
+        </nav>
+    </div>
+</body>
+
+</html>

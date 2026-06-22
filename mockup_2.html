@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Una Voce – The Church at Prayer</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap"
+        rel="stylesheet" />
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --gold: #B8973A;
+            --gold-light: #D4AF5A;
+            --gold-dim: #F5EDD6;
+            --charcoal: #1C1C1E;
+            --charcoal-soft: #6C6C70;
+            --white: #FFFFFF;
+            --off-white: #FAFAF8;
+            --surface: #F2F2F0;
+            --border: #E0DDD5;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #e9e6df;
+            color: var(--charcoal);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+        }
+
+        .phone {
+            width: 100%;
+            max-width: 430px;
+            min-height: 100vh;
+            background: var(--off-white);
+            position: relative;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.12);
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        @media (min-width: 1024px) {
+            .phone {
+                max-width: 100%;
+                display: grid;
+                grid-template-columns: 300px 1fr;
+                grid-template-rows: auto 1fr auto;
+                min-height: 100vh;
+                box-shadow: none;
+            }
+        }
+
+        header {
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+            padding: 18px 20px 14px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        @media (min-width: 1024px) {
+            header {
+                grid-column: 1 / -1;
+                position: relative;
+                padding: 24px 28px;
+            }
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 26px;
+            font-weight: 300;
+            letter-spacing: 0.08em;
+            color: var(--charcoal);
+        }
+
+        .logo span {
+            color: var(--gold);
+        }
+
+        .header-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--gold-dim);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .date-line {
+            font-size: 11px;
+            color: var(--charcoal-soft);
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            margin-top: 6px;
+            font-weight: 400;
+        }
+
+        .sidebar {
+            display: none;
+        }
+
+        @media (min-width: 1024px) {
+            .sidebar {
+                display: flex;
+                flex-direction: column;
+                grid-column: 1;
+                grid-row: 2;
+                background: var(--white);
+                border-right: 1px solid var(--border);
+                padding: 24px 0;
+                overflow-y: auto;
+            }
+        }
+
+        .sidebar-item {
+            padding: 14px 20px;
+            cursor: pointer;
+            border-left: 3px solid transparent;
+            color: var(--charcoal-soft);
+            transition: all 0.2s ease;
+            font-size: 13px;
+        }
+
+        .sidebar-item:hover {
+            background: var(--surface);
+            color: var(--charcoal);
+        }
+
+        .sidebar-item.active {
+            border-left-color: var(--gold);
+            background: var(--gold-dim);
+            color: var(--charcoal);
+            font-weight: 600;
+        }
+
+        main {
+            padding: 0 20px 100px;
+        }
+
+        @media (min-width: 1024px) {
+            main {
+                grid-column: 2;
+                grid-row: 2;
+                padding: 30px 40px;
+                overflow-y: auto;
+            }
+        }
+
+        .segment {
+            margin-bottom: 16px;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+        }
+
+        @media (min-width: 1024px) {
+            .segment {
+                display: none;
+                background: transparent;
+                border: none;
+                border-radius: 0;
+                margin: 0;
+            }
+
+            .segment.active-desktop {
+                display: block;
+            }
+        }
+
+        .segment-header {
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            border-bottom: 1px solid transparent;
+            transition: background-color 0.2s ease;
+        }
+
+        .segment-header:hover {
+            background: #fafaf8;
+        }
+
+        @media (min-width: 1024px) {
+            .segment-header {
+                cursor: default;
+                background: transparent;
+                padding: 0 0 20px 0;
+                margin-bottom: 20px;
+                border-bottom: 1px solid var(--border);
+            }
+
+            .segment-header:hover {
+                background: transparent;
+            }
+        }
+
+        .segment-title-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .segment-toggle {
+            font-size: 18px;
+            color: var(--charcoal-soft);
+            transition: transform 0.25s ease;
+            width: 16px;
+        }
+
+        .segment.collapsed .segment-toggle {
+            transform: rotate(-90deg);
+        }
+
+        @media (min-width: 1024px) {
+            .segment-toggle {
+                display: none;
+            }
+        }
+
+        .segment-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 21px;
+            font-weight: 400;
+        }
+
+        @media (min-width: 1024px) {
+            .segment-title {
+                font-size: 34px;
+            }
+        }
+
+        .segment-time {
+            font-size: 12px;
+            color: var(--charcoal-soft);
+        }
+
+        .segment-body {
+            max-height: 2200px;
+            overflow: hidden;
+            transition: max-height 0.28s ease, padding 0.28s ease;
+            padding: 0 16px 16px;
+        }
+
+        .segment.collapsed .segment-body {
+            max-height: 0;
+            padding: 0 16px;
+        }
+
+        @media (min-width: 1024px) {
+            .segment-body {
+                max-height: none;
+                overflow: visible;
+                transition: none;
+                padding: 0;
+            }
+
+            .segment.collapsed .segment-body {
+                max-height: none;
+                padding: 0;
+            }
+        }
+
+        .active-format-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--gold-dim);
+            color: var(--charcoal);
+            border: 1px solid var(--gold-light);
+            border-radius: 999px;
+            padding: 7px 12px;
+            font-size: 11px;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            margin-bottom: 14px;
+            font-weight: 600;
+        }
+
+        .active-format-dot {
+            width: 7px;
+            height: 7px;
+            background: var(--gold);
+            border-radius: 50%;
+        }
+
+        .prayer-panel {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 12px;
+        }
+
+        @media (min-width: 1024px) {
+            .prayer-panel {
+                border-radius: 16px;
+                padding: 18px;
+            }
+        }
+
+        .prayer-block {
+            margin-bottom: 14px;
+        }
+
+        .prayer-block:last-child {
+            margin-bottom: 0;
+        }
+
+        .prayer-label {
+            font-size: 10px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--charcoal-soft);
+            font-weight: 600;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .prayer-content {
+            font-size: 13px;
+            line-height: 1.7;
+        }
+
+        .prayer-content.latin {
+            font-style: italic;
+            color: var(--charcoal-soft);
+            margin-bottom: 8px;
+        }
+
+        .format-rail {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        @media (min-width: 640px) {
+            .format-rail {
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+            }
+        }
+
+        .format-card {
+            position: relative;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            min-height: 84px;
+            overflow: hidden;
+            cursor: pointer;
+            background-size: cover;
+            background-position: center;
+            color: var(--white);
+            display: flex;
+            align-items: flex-end;
+            padding: 10px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+
+        .format-card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(160deg, rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.66));
+        }
+
+        .format-card span {
+            position: relative;
+            z-index: 1;
+            font-size: 11px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .format-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.16);
+        }
+
+        .format-card.selected {
+            border-color: var(--gold);
+            box-shadow: 0 0 0 2px rgba(184, 151, 58, 0.28);
+        }
+
+        .format-card.text {
+            background-image:
+                linear-gradient(130deg, rgba(184, 151, 58, 0.75), rgba(45, 37, 17, 0.72)),
+                url("https://images.unsplash.com/photo-1513001900722-370f803f498d?auto=format&fit=crop&w=900&q=80");
+        }
+
+        .format-card.audio {
+            background-image:
+                linear-gradient(130deg, rgba(48, 36, 15, 0.45), rgba(14, 13, 12, 0.66)),
+                url("https://images.unsplash.com/photo-1461360228754-6e81c478b882?auto=format&fit=crop&w=900&q=80");
+        }
+
+        .format-card.video {
+            background-image:
+                linear-gradient(130deg, rgba(43, 48, 31, 0.46), rgba(11, 17, 20, 0.62)),
+                url("https://images.unsplash.com/photo-1516280440614-37939bbacd81?auto=format&fit=crop&w=900&q=80");
+        }
+
+        .format-card.live {
+            background-image:
+                linear-gradient(130deg, rgba(35, 35, 45, 0.48), rgba(15, 18, 21, 0.66)),
+                url("https://images.unsplash.com/photo-1512428559087-560fa5ceab42?auto=format&fit=crop&w=900&q=80");
+        }
+
+        .format-output {
+            margin-top: 12px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: var(--surface);
+            padding: 14px;
+        }
+
+        .format-output h4 {
+            font-size: 12px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--charcoal-soft);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .format-output p {
+            font-size: 13px;
+            line-height: 1.55;
+            color: #4d4d4f;
+        }
+
+        .format-options {
+            display: grid;
+            gap: 10px;
+            margin-top: 6px;
+        }
+
+        .format-option {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 12px;
+        }
+
+        .option-meta {
+            font-size: 10px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--charcoal-soft);
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+
+        .option-title {
+            font-size: 14px;
+            color: var(--charcoal);
+            margin-bottom: 4px;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+
+        .option-desc {
+            font-size: 12px;
+            line-height: 1.45;
+            color: #505055;
+        }
+
+        .stream-group {
+            margin-top: 10px;
+        }
+
+        .stream-group-title {
+            font-size: 10px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--charcoal-soft);
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .stream-time {
+            color: var(--gold);
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: 2px;
+        }
+
+        .format-output.hidden {
+            display: none;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 430px;
+            background: var(--white);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 10px 0 18px;
+            z-index: 200;
+        }
+
+        @media (min-width: 1024px) {
+            .bottom-nav {
+                position: relative;
+                grid-column: 1 / -1;
+                grid-row: 3;
+                transform: none;
+                left: auto;
+                width: 100%;
+                max-width: none;
+                border-radius: 0;
+                padding: 12px 0;
+            }
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            min-width: 62px;
+            cursor: pointer;
+        }
+
+        .nav-icon {
+            font-size: 20px;
+        }
+
+        .nav-label {
+            font-size: 10px;
+            color: var(--charcoal-soft);
+            letter-spacing: 0.04em;
+        }
+
+        .nav-item.active .nav-label {
+            color: var(--gold);
+            font-weight: 600;
+        }
+
+        @media (min-width: 700px) {
+            body {
+                padding: 28px 0;
+            }
+
+            .phone {
+                min-height: 860px;
+                border-radius: 34px;
+                overflow: hidden;
+            }
+
+            .bottom-nav {
+                border-radius: 0 0 34px 34px;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            body {
+                padding: 0;
+            }
+
+            .phone {
+                min-height: 100vh;
+                border-radius: 0;
+            }
+
+            .bottom-nav {
+                border-radius: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="phone">
+        <header>
+            <div class="header-top">
+                <div class="logo">UNA <span>VOCE</span></div>
+                <div class="header-icon">☩</div>
+            </div>
+            <div class="date-line">Monday, June 22 · Twelfth Week in Ordinary Time</div>
+        </header>
+
+        <aside class="sidebar">
+            <div class="sidebar-item active" data-target="segment-morning">Morning Prayer</div>
+            <div class="sidebar-item" data-target="segment-midday">Midday Prayer</div>
+            <div class="sidebar-item" data-target="segment-evening">Evening Prayer</div>
+            <div class="sidebar-item" data-target="segment-night">Night Prayer</div>
+            <div class="sidebar-item" data-target="segment-office">Office of Readings</div>
+        </aside>
+
+        <main>
+            <section class="segment" id="segment-morning">
+                <div class="segment-header" data-target="segment-morning">
+                    <div class="segment-title-area">
+                        <div class="segment-toggle">⬇</div>
+                        <h2 class="segment-title">Morning Prayer</h2>
+                    </div>
+                    <div class="segment-time">6:00 AM</div>
+                </div>
+                <div class="segment-body">
+                    <div class="active-format-pill"><span class="active-format-dot"></span>Viewing: Text</div>
+                    <div class="format-rail">
+                        <button class="format-card text selected" data-format="text" type="button"><span>Text</span></button>
+                        <button class="format-card audio" data-format="audio" type="button"><span>Audio</span></button>
+                        <button class="format-card video" data-format="video" type="button"><span>Video</span></button>
+                        <button class="format-card live" data-format="live" type="button"><span>Live</span></button>
+                    </div>
+                    <div class="prayer-panel format-output" data-format="text">
+                        <div class="prayer-block">
+                            <span class="prayer-label">Invitatory Antiphon</span>
+                            <p class="prayer-content latin">Domine, labia mea aperies.</p>
+                            <p class="prayer-content">Open my lips, O Lord, and my mouth will declare your praise.</p>
+                        </div>
+                        <div class="prayer-block">
+                            <span class="prayer-label">Psalm 95</span>
+                            <p class="prayer-content latin">Venite, exsultemus Domino; iubilemus Deo, salutari nostro...</p>
+                            <p class="prayer-content">Come, let us sing joyfully to the Lord; cry out to the God of our salvation...</p>
+                        </div>
+                    </div>
+                    <div class="format-output hidden" data-format="audio">
+                        <h4>Audio</h4>
+                        <div class="format-options">
+                            <article class="format-option">
+                                <div class="option-meta">Podcast</div>
+                                <div class="option-title">Una Voce Daily Office Audio</div>
+                                <p class="option-desc">Straight-through narrated Morning Prayer with psalm pauses for personal response.</p>
+                            </article>
+                            <article class="format-option">
+                                <div class="option-meta">Abbey Feed</div>
+                                <div class="option-title">Saint Benedict Abbey Audio Office</div>
+                                <p class="option-desc">Monastic-style spoken audio with chapel ambience and structured intercessions.</p>
+                            </article>
+                        </div>
+                    </div>
+                    <div class="format-output hidden" data-format="video">
+                        <h4>Video</h4>
+                        <div class="format-options">
+                            <article class="format-option">
+                                <div class="option-meta">Content Creator</div>
+                                <div class="option-title">The Little Oratory</div>
+                                <p class="option-desc">Guided video office with verse overlays and clear transitions through each section.</p>
+                            </article>
+                            <article class="format-option">
+                                <div class="option-meta">Content Creator</div>
+                                <div class="option-title">Psalm and Laurel</div>
+                                <p class="option-desc">Recorded visual prayer session with psalm text subtitles and response prompts.</p>
+                            </article>
+                            <article class="format-option">
+                                <div class="option-meta">Monastery</div>
+                                <div class="option-title">Clear Creek Monastery Video Office</div>
+                                <p class="option-desc">Chapel-captured Morning Prayer video with natural acoustics and full liturgical flow.</p>
+                            </article>
+                            <article class="format-option">
+                                <div class="option-meta">Abbey</div>
+                                <div class="option-title">Saint Benedict Abbey Liturgical Video</div>
+                                <p class="option-desc">Abbey-hosted prayer video with fixed camera, chant responses, and text callouts.</p>
+                            </article>
+                        </div>
+                    </div>
+                    <div class="format-output hidden" data-format="live">
+                        <h4>Live</h4>
+                        <div class="stream-group">
+                            <div class="stream-group-title">Upcoming</div>
+                            <div class="format-options">
+                                <article class="format-option">
+                                    <div class="option-meta">Monastery Live</div>
+                                    <div class="option-title">Clear Creek Monastery - Morning Office</div>
+                                    <div class="stream-time">6:00 AM</div>
+                                    <p class="option-desc">Live chapel stream with shared responses and final blessing.</p>
+                                </article>
+                                <article class="format-option">
+                                    <div class="option-meta">Creator Live</div>
+                                    <div class="option-title">The Little Oratory - Morning Prayer Together</div>
+                                    <div class="stream-time">6:30 AM</div>
+                                    <p class="option-desc">Interactive live session with opening hymn and guided pace.</p>
+                                </article>
+                            </div>
+                        </div>
+                        <div class="stream-group">
+                            <div class="stream-group-title">Previous Streams</div>
+                            <div class="format-options">
+                                <article class="format-option">
+                                    <div class="option-meta">Archived Live</div>
+                                    <div class="option-title">Benedictine Sisters - Lauds Replay</div>
+                                    <div class="stream-time">Earlier today, 6:00 AM</div>
+                                    <p class="option-desc">Replay of full live stream with psalm responses and intercessions.</p>
+                                </article>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="segment collapsed" id="segment-midday">
+                <div class="segment-header" data-target="segment-midday">
+                    <div class="segment-title-area">
+                        <div class="segment-toggle">⬇</div>
+                        <h2 class="segment-title">Midday Prayer</h2>
+                    </div>
+                    <div class="segment-time">12:00 PM</div>
+                </div>
+                <div class="segment-body">
+                    <div class="active-format-pill"><span class="active-format-dot"></span>Viewing: Text</div>
+                    <div class="format-rail">
+                        <button class="format-card text selected" data-format="text" type="button"><span>Text</span></button>
+                        <button class="format-card audio" data-format="audio" type="button"><span>Audio</span></button>
+                        <button class="format-card video" data-format="video" type="button"><span>Video</span></button>
+                        <button class="format-card live" data-format="live" type="button"><span>Live</span></button>
+                    </div>
+                    <div class="prayer-panel format-output" data-format="text">
+                        <div class="prayer-block">
+                            <span class="prayer-label">Opening</span>
+                            <p class="prayer-content latin">Deus, in adiutorium meum intende; Domine, ad adiuvandum me festina.</p>
+                            <p class="prayer-content">O God, come to my assistance; O Lord, make haste to help me.</p>
+                        </div>
+                    </div>
+                    <div class="format-output hidden" data-format="audio">
+                        <h4>Audio</h4>
+                        <div class="format-options">
+                            <article class="format-option">
+                                <div class="option-meta">Podcast</div>
+                                <div class="option-title">Midday Office Daily Audio</div>
+                                <p class="option-desc">Compact narrated Midday Prayer with one-tap continuous playback.</p>
+                            </article>
+                            <article class="format-option">
+                                <div class="option-meta">Abbey Feed</div>
+                                <div class="option-title">Saint Benedict Abbey Midday Office</div>
+                                <p class="option-desc">Abbey-recorded Midday prayer with concise psalm pacing.</p>
+                            </article>
+                        </div>
+                    </div>
+                    <div class="format-output hidden" data-format="video">
+                        <h4>Video</h4>
+                        <div class="format-options">
+                            <article class="format-option">
+                                <div class="option-meta">Content Creator</div>
+                                <div class="option-title">The Little Oratory</div>
+                                <p class="option-desc">Short visual Midday office with subtitle prompts and segment markers.</p>
+                            </article>
+                            <article class="format-option">
+                                <div class="option-meta">Content Creator</div>
+                                <div class="option-title">Psalm and Laurel</div>
+                                <p class="option-desc">Midday prayer video with psalm captions and guided cue cards.</p>
+                            </article>
+                            <article class="format-option">
+                                <div class="option-meta">Monastery</div>
+                                <div class="option-title">Benedictine Sisters Midday Video</div>
+                                <p class="option-desc">Convent-led Midday Prayer video stream archive with visible response pacing.</p>
+                            </article>
+                            <article class="format-option">
+                                <div class="option-meta">Abbey</div>
+                                <div class="option-title">Genesee Abbey Noonday Video Office</div>
+                                <p class="option-desc">Noonday liturgical video from abbey choir stalls with clear psalm sequence.</p>
+                            </article>
+                        </div>
+                    </div>
+                    <div class="format-output hidden" data-format="live">
+                        <h4>Live</h4>
+                        <div class="stream-group">
+                            <div class="stream-group-title">Upcoming</div>
+                            <div class="format-options">
+                                <article class="format-option">
+                                    <div class="option-meta">Monastery Live</div>
+                                    <div class="option-title">Clear Creek Monastery - Midday Office</div>
+                                    <div class="stream-time">12:00 PM</div>
+                                    <p class="option-desc">Live Midday office stream for daytime pause and prayer.</p>
+                                </article>
+                                <article class="format-option">
+                                    <div class="option-meta">Creator Live</div>
+                                    <div class="option-title">Psalm and Laurel - Midday Prayer Live</div>
+                                    <div class="stream-time">12:20 PM</div>
+                                    <p class="option-desc">Live guided Midday prayer with text prompts on screen.</p>
+                                </article>
+                            </div>
+                        </div>
+                        <div class="stream-group">
+                            <div class="stream-group-title">Previous Streams</div>
+                            <div class="format-options">
+                                <article class="format-option">
+                                    <div class="option-meta">Archived Live</div>
+                                    <div class="option-title">Saint Benedict Abbey - Midday Replay</div>
+                                    <div class="stream-time">Earlier today, 12:00 PM</div>
+                                    <p class="option-desc">Recorded replay of the full Midday liturgy stream.</p>
+                                </article>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="segment collapsed" id="segment-evening">
+                <div class="segment-header" data-target="segment-evening">
+                    <div class="segment-title-area">
+                        <div class="segment-toggle">⬇</div>
+                        <h2 class="segment-title">Evening Prayer</h2>
+                    </div>
+                    <div class="segment-time">6:00 PM</div>
+                </div>
+                <div class="segment-body">
+                    <div class="active-format-pill"><span class="active-format-dot"></span>Viewing: Text</div>
+                    <div class="format-rail">
+                        <button class="format-card text selected" data-format="text" type="button"><span>Text</span></button>
+                        <button class="format-card audio" data-format="audio" type="button"><span>Audio</span></button>
+                        <button class="format-card video" data-format="video" type="button"><span>Video</span></button>
+                        <button class="format-card live" data-format="live" type="button"><span>Live</span></button>
+                    </div>
+                    <div class="prayer-panel format-output" data-format="text">
+                        <div class="prayer-block">
+                            <span class="prayer-label">Magnificat</span>
+                            <p class="prayer-content latin">Magnificat anima mea Dominum; et exsultavit spiritus meus in Deo salutari meo...</p>
+                            <p class="prayer-content">My soul proclaims the greatness of the Lord; my spirit rejoices in God my Savior...</p>
+                        </div>
+                    </div>
+                    <div class="format-output hidden" data-format="audio">
+                        <h4>Audio</h4>
+                        <div class="format-options">
+                            <article class="format-option">
+                                <div class="option-meta">Podcast</div>
+                                <div class="option-title">Vespers Daily Audio Office</div>
+                                <p class="option-desc">Evening office audio with paced psalm responses and intercessions.</p>
+                            </article>
+                            <article class="format-option">
+                                <div class="option-meta">Abbey Feed</div>
+                                <div class="option-title">Saint Benedict Abbey Vespers Audio</div>
+                                <p class="option-desc">Monastic evening audio feed with complete Magnificat sequence.</p>
+                            </article>
+                        </div>
+                    </div>
+                    <div class="format-output hidden" data-format="video">
+                        <h4>Video</h4>
+                        <div class="format-options">
+                            <article class="format-option">
+                                <div class="option-meta">Content Creator</div>
+                                <div class="option-title">The Little Oratory</div>
+                                <p class="option-desc">Evening video prayer with on-screen text and guided responses.</p>
+                            </article>
+                            <article class="format-option">
+                                <div class="option-meta">Content Creator</div>
+                                <div class="option-title">Psalm and Laurel</div>
+                                <p class="option-desc">Vespers video session with chapter markers and psalm subtitles.</p>
+                            </article>
+                            <article class="format-option">
+                                <div class="option-meta">Monastery</div>
+                                <div class="option-title">Clear Creek Monastery Vespers Video</div>
+                                <p class="option-desc">Evening Office video capture with full psalm cycle and Magnificat sequence.</p>
+                            </article>
+                            <article class="format-option">
+                                <div class="option-meta">Abbey</div>
+                                <div class="option-title">Solesmes Abbey Vespers Recording</div>
+                                <p class="option-desc">Traditional abbey Vespers video with antiphon cues and reverent pacing.</p>
+                            </article>
+                        </div>
+                    </div>
+                    <div class="format-output hidden" data-format="live">
+                        <h4>Live</h4>
+                        <div class="stream-group">
+                            <div class="stream-group-title">Upcoming</div>
+                            <div class="format-options">
+                                <article class="format-option">
+                                    <div class="option-meta">Abbey Live</div>
+                                    <div class="option-title">Saint Benedict Abbey - Vespers</div>
+                                    <div class="stream-time">6:00 PM</div>
+                                    <p class="option-desc">Live evening office with Magnificat and intercessions.</p>
+                                </article>
+                                <article class="format-option">
+                                    <div class="option-meta">Creator Live</div>
+                                    <div class="option-title">The Little Oratory - Evening Prayer Live</div>
+                                    <div class="stream-time">6:25 PM</div>
+                                    <p class="option-desc">Live guided Vespers stream with visible prayer text.</p>
+                                </article>
+                            </div>
+                        </div>
+                        <div class="stream-group">
+                            <div class="stream-group-title">Previous Streams</div>
+                            <div class="format-options">
+                                <article class="format-option">
+                                    <div class="option-meta">Archived Live</div>
+                                    <div class="option-title">Clear Creek Monastery - Vespers Replay</div>
+                                    <div class="stream-time">Earlier today, 6:00 PM</div>
+                                    <p class="option-desc">Replay archive of the full evening stream liturgy.</p>
+                                </article>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="segment collapsed" id="segment-night">
+                <div class="segment-header" data-target="segment-night">
+                    <div class="segment-title-area">
+                        <div class="segment-toggle">⬇</div>
+                        <h2 class="segment-title">Night Prayer</h2>
+                    </div>
+                    <div class="segment-time">9:00 PM</div>
+                </div>
+                <div class="segment-body">
+                    <div class="active-format-pill"><span class="active-format-dot"></span>Viewing: Text</div>
+                    <div class="format-rail">
+                        <button class="format-card text selected" data-format="text" type="button"><span>Text</span></button>
+                        <button class="format-card audio" data-format="audio" type="button"><span>Audio</span></button>
+                        <button class="format-card video" data-format="video" type="button"><span>Video</span></button>
+                        <button class="format-card live" data-format="live" type="button"><span>Live</span></button>
+                    </div>
+                    <div class="prayer-panel format-output" data-format="text">
+                        <div class="prayer-block">
+                            <span class="prayer-label">Nunc Dimittis</span>
+                            <p class="prayer-content latin">Nunc dimittis servum tuum, Domine, secundum verbum tuum in pace...</p>
+                            <p class="prayer-content">Now, Master, you may let your servant go in peace, according to your word...</p>
+                        </div>
+                    </div>
+                    <div class="format-output hidden" data-format="audio">
+                        <h4>Audio</h4>
+                        <div class="format-options">
+                            <article class="format-option">
+                                <div class="option-meta">Podcast</div>
+                                <div class="option-title">Compline Daily Audio</div>
+                                <p class="option-desc">Night prayer narration with soft pacing and complete concluding prayer.</p>
+                            </article>
+                            <article class="format-option">
+                                <div class="option-meta">Abbey Feed</div>
+                                <div class="option-title">Saint Benedict Abbey Compline Audio</div>
+                                <p class="option-desc">Abbey night office audio with psalm and Marian antiphon.</p>
+                            </article>
+                        </div>
+                    </div>
+                    <div class="format-output hidden" data-format="video">
+                        <h4>Video</h4>
+                        <div class="format-options">
+                            <article class="format-option">
+                                <div class="option-meta">Content Creator</div>
+                                <div class="option-title">The Little Oratory</div>
+                                <p class="option-desc">Night prayer video with gentle pacing and readable line-by-line text.</p>
+                            </article>
+                            <article class="format-option">
+                                <div class="option-meta">Content Creator</div>
+                                <div class="option-title">Psalm and Laurel</div>
+                                <p class="option-desc">Compline video session with responsive captions and chapter timestamps.</p>
+                            </article>
+                            <article class="format-option">
+                                <div class="option-meta">Monastery</div>
+                                <div class="option-title">Benedictine Sisters Compline Video</div>
+                                <p class="option-desc">Convent chapel Compline video with closing Marian antiphon and silence.</p>
+                            </article>
+                            <article class="format-option">
+                                <div class="option-meta">Abbey</div>
+                                <div class="option-title">Genesee Abbey Night Office Video</div>
+                                <p class="option-desc">Night Office video archive with fixed camera and complete prayer structure.</p>
+                            </article>
+                        </div>
+                    </div>
+                    <div class="format-output hidden" data-format="live">
+                        <h4>Live</h4>
+                        <div class="stream-group">
+                            <div class="stream-group-title">Upcoming</div>
+                            <div class="format-options">
+                                <article class="format-option">
+                                    <div class="option-meta">Monastery Live</div>
+                                    <div class="option-title">Benedictine Sisters - Compline</div>
+                                    <div class="stream-time">9:00 PM</div>
+                                    <p class="option-desc">Live night office stream with final Marian antiphon.</p>
+                                </article>
+                                <article class="format-option">
+                                    <div class="option-meta">Creator Live</div>
+                                    <div class="option-title">Psalm and Laurel - Night Prayer Live</div>
+                                    <div class="stream-time">9:20 PM</div>
+                                    <p class="option-desc">Live guided Compline with on-screen response lines.</p>
+                                </article>
+                            </div>
+                        </div>
+                        <div class="stream-group">
+                            <div class="stream-group-title">Previous Streams</div>
+                            <div class="format-options">
+                                <article class="format-option">
+                                    <div class="option-meta">Archived Live</div>
+                                    <div class="option-title">Genesee Abbey - Compline Replay</div>
+                                    <div class="stream-time">Earlier today, 9:00 PM</div>
+                                    <p class="option-desc">Archive replay of last night&apos;s full Compline stream.</p>
+                                </article>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="segment collapsed" id="segment-office">
+                <div class="segment-header" data-target="segment-office">
+                    <div class="segment-title-area">
+                        <div class="segment-toggle">⬇</div>
+                        <h2 class="segment-title">Office of Readings</h2>
+                    </div>
+                    <div class="segment-time">Any time</div>
+                </div>
+                <div class="segment-body">
+                    <div class="active-format-pill"><span class="active-format-dot"></span>Viewing: Text</div>
+                    <div class="format-rail">
+                        <button class="format-card text selected" data-format="text" type="button"><span>Text</span></button>
+                        <button class="format-card audio" data-format="audio" type="button"><span>Audio</span></button>
+                        <button class="format-card video" data-format="video" type="button"><span>Video</span></button>
+                        <button class="format-card live" data-format="live" type="button"><span>Live</span></button>
+                    </div>
+                    <div class="prayer-panel format-output" data-format="text">
+                        <div class="prayer-block">
+                            <span class="prayer-label">First Reading</span>
+                            <p class="prayer-content">From the Letter to the Romans: present your bodies as a living sacrifice, holy and acceptable to God...</p>
+                        </div>
+                    </div>
+                    <div class="format-output hidden" data-format="audio">
+                        <h4>Audio</h4>
+                        <div class="format-options">
+                            <article class="format-option">
+                                <div class="option-meta">Podcast</div>
+                                <div class="option-title">Office of Readings Audio Cycle</div>
+                                <p class="option-desc">Narrated scripture and patristic readings in continuous audio.</p>
+                            </article>
+                            <article class="format-option">
+                                <div class="option-meta">Abbey Feed</div>
+                                <div class="option-title">Saint Benedict Abbey Readings Audio</div>
+                                <p class="option-desc">Abbey lector recording with clearly segmented readings.</p>
+                            </article>
+                        </div>
+                    </div>
+                    <div class="format-output hidden" data-format="video">
+                        <h4>Video</h4>
+                        <div class="format-options">
+                            <article class="format-option">
+                                <div class="option-meta">Content Creator</div>
+                                <div class="option-title">The Little Oratory</div>
+                                <p class="option-desc">Video readings with scripture overlays and guided response markers.</p>
+                            </article>
+                            <article class="format-option">
+                                <div class="option-meta">Content Creator</div>
+                                <div class="option-title">Psalm and Laurel</div>
+                                <p class="option-desc">Visual readings format with chapter markers and reflection pauses.</p>
+                            </article>
+                            <article class="format-option">
+                                <div class="option-meta">Monastery</div>
+                                <div class="option-title">Clear Creek Monastery Readings Video</div>
+                                <p class="option-desc">Monastic reading office video with responsory transitions and quiet pacing.</p>
+                            </article>
+                            <article class="format-option">
+                                <div class="option-meta">Abbey</div>
+                                <div class="option-title">Saint Benedict Abbey Readings Broadcast</div>
+                                <p class="option-desc">Abbey video session for readings with clear section markers and scripture cues.</p>
+                            </article>
+                        </div>
+                    </div>
+                    <div class="format-output hidden" data-format="live">
+                        <h4>Live</h4>
+                        <div class="stream-group">
+                            <div class="stream-group-title">Upcoming</div>
+                            <div class="format-options">
+                                <article class="format-option">
+                                    <div class="option-meta">Abbey Live</div>
+                                    <div class="option-title">Saint Benedict Abbey - Office of Readings</div>
+                                    <div class="stream-time">5:30 AM</div>
+                                    <p class="option-desc">Live reading office stream with responsory transitions.</p>
+                                </article>
+                                <article class="format-option">
+                                    <div class="option-meta">Creator Live</div>
+                                    <div class="option-title">Fr. Nathaniel Reads - Dawn Readings Live</div>
+                                    <div class="stream-time">6:10 AM</div>
+                                    <p class="option-desc">Live guided reading office with short reflection pauses.</p>
+                                </article>
+                            </div>
+                        </div>
+                        <div class="stream-group">
+                            <div class="stream-group-title">Previous Streams</div>
+                            <div class="format-options">
+                                <article class="format-option">
+                                    <div class="option-meta">Archived Live</div>
+                                    <div class="option-title">Clear Creek Monastery - Readings Replay</div>
+                                    <div class="stream-time">Earlier today, 5:30 AM</div>
+                                    <p class="option-desc">Replay archive of the complete Office of Readings livestream.</p>
+                                </article>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <nav class="bottom-nav">
+            <div class="nav-item active">
+                <div class="nav-icon">📖</div>
+                <div class="nav-label">Today</div>
+            </div>
+            <div class="nav-item">
+                <div class="nav-icon">👥</div>
+                <div class="nav-label">Communities</div>
+            </div>
+            <div class="nav-item">
+                <div class="nav-icon">⋯</div>
+                <div class="nav-label">More</div>
+            </div>
+        </nav>
+    </div>
+
+    <script>
+        function setDesktopSegment(segmentId) {
+            document.querySelectorAll('.segment').forEach(function (segment) {
+                segment.classList.remove('active-desktop');
+            });
+            var chosen = document.getElementById(segmentId);
+            if (chosen) {
+                chosen.classList.add('active-desktop');
+            }
+
+            document.querySelectorAll('.sidebar-item').forEach(function (item) {
+                item.classList.toggle('active', item.dataset.target === segmentId);
+            });
+        }
+
+        document.querySelectorAll('.sidebar-item').forEach(function (item) {
+            item.addEventListener('click', function () {
+                setDesktopSegment(item.dataset.target);
+            });
+        });
+
+        document.querySelectorAll('.segment-header').forEach(function (header) {
+            header.addEventListener('click', function () {
+                if (window.innerWidth >= 1024) {
+                    return;
+                }
+                var segmentId = header.dataset.target;
+                var segment = document.getElementById(segmentId);
+                if (segment) {
+                    segment.classList.toggle('collapsed');
+                }
+            });
+        });
+
+        function setFormat(segment, formatName) {
+            segment.querySelectorAll('.format-card').forEach(function (card) {
+                card.classList.toggle('selected', card.dataset.format === formatName);
+            });
+
+            segment.querySelectorAll('.format-output').forEach(function (panel) {
+                panel.classList.toggle('hidden', panel.dataset.format !== formatName);
+            });
+
+            var pill = segment.querySelector('.active-format-pill');
+            if (pill) {
+                pill.innerHTML = '<span class="active-format-dot"></span>Viewing: ' + formatName.charAt(0).toUpperCase() + formatName.slice(1);
+            }
+        }
+
+        document.querySelectorAll('.segment').forEach(function (segment) {
+            segment.querySelectorAll('.format-card').forEach(function (card) {
+                card.addEventListener('click', function () {
+                    setFormat(segment, card.dataset.format);
+                });
+            });
+        });
+
+        function initLayout() {
+            if (window.innerWidth >= 1024) {
+                setDesktopSegment('segment-morning');
+            } else {
+                document.querySelectorAll('.segment').forEach(function (segment, index) {
+                    if (index === 0) {
+                        segment.classList.remove('collapsed');
+                    } else {
+                        segment.classList.add('collapsed');
+                    }
+                });
+            }
+        }
+
+        window.addEventListener('load', initLayout);
+        window.addEventListener('resize', function () {
+            if (window.innerWidth >= 1024 && !document.querySelector('.segment.active-desktop')) {
+                setDesktopSegment('segment-morning');
+            }
+        });
+    </script>
+</body>
+
+</html>
