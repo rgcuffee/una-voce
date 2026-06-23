@@ -115,6 +115,42 @@ body {
     display: none;
 }
 
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.sidebar-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.sidebar-group-label {
+    /* padding: 12px 20px 4px; */
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--charcoal-soft);
+}
+
+.sidebar-item-title {
+    font-weight: 600;
+}
+
+.sidebar-item-subtitle {
+    font-style: italic;
+    color: var(--charcoal-soft);
+    font-size: 11px;
+    line-height: 1.1;
+}
+
+.sidebar-subitem {
+    padding-left: 42px;
+}
+
 .segment {
     margin-bottom: 16px;
     background: var(--white);
@@ -328,6 +364,22 @@ body {
 .liturgy-lines {
     display: grid;
     gap: 12px;
+}
+
+.liturgy-lines-obscured {
+    filter: blur(3.2px);
+    opacity: 0.9;
+    user-select: none;
+    pointer-events: none;
+}
+
+.mock-text-note {
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--charcoal-soft);
+    font-style: italic;
+    margin-bottom: 8px;
 }
 
 .liturgy-block {
@@ -561,7 +613,7 @@ body {
         grid-row: 2;
         background: var(--white);
         border-right: 1px solid var(--border);
-        padding: 24px 0;
+        padding: 20px 0 24px;
         overflow-y: auto;
     }
 
@@ -576,6 +628,10 @@ body {
         transition: all 0.2s ease;
         font-size: 13px;
         font: inherit;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1px;
     }
 
     .sidebar-item:hover {
@@ -588,6 +644,10 @@ body {
         background: var(--gold-dim);
         color: var(--charcoal);
         font-weight: 600;
+    }
+
+    .sidebar-item.active .sidebar-item-subtitle {
+        color: var(--charcoal);
     }
 
     .office-main {

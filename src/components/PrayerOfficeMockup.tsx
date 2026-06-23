@@ -1,4 +1,11 @@
 import { useEffect, useState } from 'react';
+import { EveningPrayer } from './prayers/EveningPrayer';
+import { MidafternoonPrayer } from './prayers/MidafternoonPrayer';
+import { MiddayPrayer } from './prayers/MiddayPrayer';
+import { MidmorningPrayer } from './prayers/MidmorningPrayer';
+import { MorningPrayer } from './prayers/MorningPrayer';
+import { NightPrayer } from './prayers/NightPrayer';
+import { OfficeOfReadingsPrayer } from './prayers/OfficeOfReadingsPrayer';
 
 type FormatKey = 'text' | 'audio' | 'video' | 'live';
 
@@ -34,6 +41,19 @@ type Segment = {
     items: OptionItem[];
   }[];
 };
+
+type SidebarLeaf = {
+  title: string;
+  subtitle?: string;
+  segmentId: string;
+};
+
+type SidebarGroup = {
+  title: string;
+  children: SidebarLeaf[];
+};
+
+type SidebarEntry = SidebarLeaf | SidebarGroup;
 
 const SEGMENTS: Segment[] = [
   {
@@ -240,6 +260,155 @@ const SEGMENTS: Segment[] = [
     ],
   },
   {
+    id: 'segment-midmorning',
+    title: 'Midmorning Prayer',
+    text: [
+      {
+        label: 'Invitatory',
+        title: 'Opening Versicles',
+        blocks: [
+          {
+            variant: 'speaker',
+            speaker: 'Officiant',
+            lines: ['O God, make speed to save us.'],
+          },
+          {
+            variant: 'speaker',
+            speaker: 'People',
+            lines: ['O Lord, make haste to help us.'],
+          },
+          {
+            variant: 'rubric',
+            lines: [
+              'The midmorning office steadies the day as work begins to gather.',
+            ],
+          },
+        ],
+      },
+      {
+        label: 'Psalm',
+        title: 'Psalms Appointed',
+        citation: 'Psalm 119:105-112 · 121 · 124 · 126',
+        blocks: [
+          {
+            variant: 'verse',
+            lines: [
+              'Your word remains a lantern in the morning hours; teach us to walk by its brightness.',
+              'Our help comes from the Maker of heaven and earth, not from the noise and weight of the passing hour.',
+            ],
+          },
+          {
+            variant: 'verse',
+            lines: [
+              'Had the Lord not stood beside us, we would have been carried away; yet he breaks the snare and steadies our feet.',
+              'Those who sow in tears shall return with songs, bearing a harvest they could not have imagined at the start.',
+            ],
+          },
+        ],
+      },
+      {
+        label: 'Reading',
+        title: 'John 12:31-32',
+        blocks: [
+          {
+            variant: 'reading',
+            lines: [
+              'The Cross stands at the center of the day: judgment is exposed there, and mercy draws the world toward Christ.',
+              'At the hour of labor and fatigue, the lifted Lord gathers what is scattered and recalls us to his love.',
+            ],
+          },
+        ],
+      },
+      {
+        label: 'Prayer',
+        title: 'The Prayers',
+        blocks: [
+          {
+            variant: 'prayer',
+            lines: [
+              'Lord, have mercy upon us. Christ, have mercy upon us. Lord, have mercy upon us.',
+              'Blessed Savior, at this hour stretch your mercy over the nations, the weary, the distracted, and the wounded.',
+              'Pour your grace into our hearts so that the remainder of this day may be obedient, clear, and fruitful.',
+            ],
+          },
+        ],
+      },
+    ],
+    audio: [
+      {
+        meta: 'Podcast',
+        title: 'Midmorning Office Daily Audio',
+        description:
+          'Compact narrated Midmorning Prayer with one-tap continuous playback.',
+      },
+      {
+        meta: 'Abbey Feed',
+        title: 'Saint Benedict Abbey Midmorning Office',
+        description:
+          'Abbey-recorded Midmorning prayer with concise psalm pacing.',
+      },
+    ],
+    video: [
+      {
+        meta: 'Content Creator',
+        title: 'The Little Oratory',
+        description:
+          'Short visual Midmorning office with subtitle prompts and segment markers.',
+      },
+      {
+        meta: 'Content Creator',
+        title: 'Psalm and Laurel',
+        description:
+          'Midmorning prayer video with psalm captions and guided cue cards.',
+      },
+      {
+        meta: 'Monastery',
+        title: 'Benedictine Sisters Midmorning Video',
+        description:
+          'Convent-led Midmorning Prayer video archive with visible response pacing.',
+      },
+      {
+        meta: 'Abbey',
+        title: 'Genesee Abbey Midmorning Video Office',
+        description:
+          'Midmorning liturgical video from abbey choir stalls with clear psalm sequence.',
+      },
+    ],
+    live: [
+      {
+        title: 'Upcoming',
+        items: [
+          {
+            meta: 'Monastery Live',
+            title: 'Clear Creek Monastery - Midmorning Office',
+            description:
+              'Live Midmorning office stream for daytime pause and prayer.',
+            time: '9:00 AM',
+          },
+          {
+            meta: 'Creator Live',
+            title: 'Psalm and Laurel - Midmorning Prayer Live',
+            description:
+              'Live guided Midmorning prayer with text prompts on screen.',
+            time: '9:20 AM',
+          },
+        ],
+      },
+      {
+        title: 'Previous Streams',
+        items: [
+          {
+            meta: 'Archived Live',
+            title: 'Saint Benedict Abbey - Midmorning Replay',
+            description:
+              'Recorded replay of the full Midmorning liturgy stream.',
+            time: 'Earlier today, 9:00 AM',
+          },
+        ],
+      },
+    ],
+  },
+  {
     id: 'segment-midday',
     title: 'Midday Prayer',
     text: [
@@ -344,7 +513,7 @@ const SEGMENTS: Segment[] = [
         meta: 'Monastery',
         title: 'Benedictine Sisters Midday Video',
         description:
-          'Convent-led Midday Prayer video stream archive with visible response pacing.',
+          'Convent-led Midday Prayer video archive with visible response pacing.',
       },
       {
         meta: 'Abbey',
@@ -381,6 +550,155 @@ const SEGMENTS: Segment[] = [
             title: 'Saint Benedict Abbey - Midday Replay',
             description: 'Recorded replay of the full Midday liturgy stream.',
             time: 'Earlier today, 12:00 PM',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'segment-midafternoon',
+    title: 'Midafternoon Prayer',
+    text: [
+      {
+        label: 'Invitatory',
+        title: 'Opening Versicles',
+        blocks: [
+          {
+            variant: 'speaker',
+            speaker: 'Officiant',
+            lines: ['O God, make speed to save us.'],
+          },
+          {
+            variant: 'speaker',
+            speaker: 'People',
+            lines: ['O Lord, make haste to help us.'],
+          },
+          {
+            variant: 'rubric',
+            lines: [
+              'The midafternoon office gathers the scattered hours and steadies what remains of the workday.',
+            ],
+          },
+        ],
+      },
+      {
+        label: 'Psalm',
+        title: 'Psalms Appointed',
+        citation: 'Psalm 119:105-112 · 121 · 124 · 126',
+        blocks: [
+          {
+            variant: 'verse',
+            lines: [
+              'Your word remains a lantern in the afternoon; teach us to walk by its brightness.',
+              'Our help comes from the Maker of heaven and earth, not from the noise and weight of the passing hour.',
+            ],
+          },
+          {
+            variant: 'verse',
+            lines: [
+              'Had the Lord not stood beside us, we would have been carried away; yet he breaks the snare and steadies our feet.',
+              'Those who sow in tears shall return with songs, bearing a harvest they could not have imagined at the start.',
+            ],
+          },
+        ],
+      },
+      {
+        label: 'Reading',
+        title: 'John 12:31-32',
+        blocks: [
+          {
+            variant: 'reading',
+            lines: [
+              'The Cross stands at the center of the day: judgment is exposed there, and mercy draws the world toward Christ.',
+              'At the hour of labor and fatigue, the lifted Lord gathers what is scattered and recalls us to his love.',
+            ],
+          },
+        ],
+      },
+      {
+        label: 'Prayer',
+        title: 'The Prayers',
+        blocks: [
+          {
+            variant: 'prayer',
+            lines: [
+              'Lord, have mercy upon us. Christ, have mercy upon us. Lord, have mercy upon us.',
+              'Blessed Savior, at this hour stretch your mercy over the nations, the weary, the distracted, and the wounded.',
+              'Pour your grace into our hearts so that the remainder of this day may be obedient, clear, and fruitful.',
+            ],
+          },
+        ],
+      },
+    ],
+    audio: [
+      {
+        meta: 'Podcast',
+        title: 'Midafternoon Office Daily Audio',
+        description:
+          'Compact narrated Midafternoon Prayer with one-tap continuous playback.',
+      },
+      {
+        meta: 'Abbey Feed',
+        title: 'Saint Benedict Abbey Midafternoon Office',
+        description:
+          'Abbey-recorded Midafternoon prayer with concise psalm pacing.',
+      },
+    ],
+    video: [
+      {
+        meta: 'Content Creator',
+        title: 'The Little Oratory',
+        description:
+          'Short visual Midafternoon office with subtitle prompts and segment markers.',
+      },
+      {
+        meta: 'Content Creator',
+        title: 'Psalm and Laurel',
+        description:
+          'Midafternoon prayer video with psalm captions and guided cue cards.',
+      },
+      {
+        meta: 'Monastery',
+        title: 'Benedictine Sisters Midafternoon Video',
+        description:
+          'Convent-led Midafternoon Prayer video archive with visible response pacing.',
+      },
+      {
+        meta: 'Abbey',
+        title: 'Genesee Abbey Midafternoon Video Office',
+        description:
+          'Midafternoon liturgical video from abbey choir stalls with clear psalm sequence.',
+      },
+    ],
+    live: [
+      {
+        title: 'Upcoming',
+        items: [
+          {
+            meta: 'Monastery Live',
+            title: 'Clear Creek Monastery - Midafternoon Office',
+            description:
+              'Live Midafternoon office stream for daytime pause and prayer.',
+            time: '3:00 PM',
+          },
+          {
+            meta: 'Creator Live',
+            title: 'Psalm and Laurel - Midafternoon Prayer Live',
+            description:
+              'Live guided Midafternoon prayer with text prompts on screen.',
+            time: '3:20 PM',
+          },
+        ],
+      },
+      {
+        title: 'Previous Streams',
+        items: [
+          {
+            meta: 'Archived Live',
+            title: 'Saint Benedict Abbey - Midafternoon Replay',
+            description:
+              'Recorded replay of the full Midafternoon liturgy stream.',
+            time: 'Earlier today, 3:00 PM',
           },
         ],
       },
@@ -895,6 +1213,48 @@ const SEGMENTS: Segment[] = [
   },
 ];
 
+const SIDEBAR_ITEMS: SidebarEntry[] = [
+  {
+    title: 'Office of Readings',
+    segmentId: 'segment-office',
+  },
+  {
+    title: 'Morning Prayer',
+    subtitle: 'Lauds',
+    segmentId: 'segment-morning',
+  },
+  {
+    title: 'Daytime Prayer',
+    children: [
+      {
+        title: 'Midmorning',
+        subtitle: 'Terce',
+        segmentId: 'segment-midmorning',
+      },
+      {
+        title: 'Midday',
+        subtitle: 'Sext',
+        segmentId: 'segment-midday',
+      },
+      {
+        title: 'Midafternoon',
+        subtitle: 'None',
+        segmentId: 'segment-midafternoon',
+      },
+    ],
+  },
+  {
+    title: 'Evening Prayer',
+    subtitle: 'Vespers',
+    segmentId: 'segment-evening',
+  },
+  {
+    title: 'Night Prayer',
+    subtitle: 'Compline',
+    segmentId: 'segment-night',
+  },
+];
+
 const FORMATS: { key: FormatKey; label: string; className: string }[] = [
   { key: 'text', label: 'Text', className: 'text' },
   { key: 'audio', label: 'Audio', className: 'audio' },
@@ -916,6 +1276,27 @@ function titleCase(format: FormatKey) {
 
 function blockClassName(variant: LiturgyBlock['variant']) {
   return `liturgy-block liturgy-block-${variant}`;
+}
+
+function renderPrayerTemplate(segmentId: string) {
+  switch (segmentId) {
+    case 'segment-office':
+      return <OfficeOfReadingsPrayer />;
+    case 'segment-morning':
+      return <MorningPrayer />;
+    case 'segment-midmorning':
+      return <MidmorningPrayer />;
+    case 'segment-midday':
+      return <MiddayPrayer />;
+    case 'segment-midafternoon':
+      return <MidafternoonPrayer />;
+    case 'segment-evening':
+      return <EveningPrayer />;
+    case 'segment-night':
+      return <NightPrayer />;
+    default:
+      return null;
+  }
 }
 
 export function PrayerOfficeMockup() {
@@ -991,16 +1372,42 @@ export function PrayerOfficeMockup() {
       </header>
 
       <aside className='sidebar' aria-label='Prayer sections'>
-        {SEGMENTS.map((segment) => (
-          <button
-            key={segment.id}
-            type='button'
-            className={`sidebar-item${activeDesktopSegment === segment.id ? ' active' : ''}`}
-            onClick={() => setActiveDesktopSegment(segment.id)}
-          >
-            {segment.title}
-          </button>
-        ))}
+        <nav className='sidebar-nav'>
+          {SIDEBAR_ITEMS.map((item) =>
+            'children' in item ? (
+              <div key={item.title} className='sidebar-group'>
+                <div className='sidebar-group-label'></div>
+                {item.children.map((child) => (
+                  <button
+                    key={`${item.title}-${child.title}`}
+                    type='button'
+                    className={`sidebar-item sidebar-subitem${activeDesktopSegment === child.segmentId ? ' active' : ''}`}
+                    onClick={() => setActiveDesktopSegment(child.segmentId)}
+                  >
+                    <span className='sidebar-item-title'>{child.title}</span>
+                    {child.subtitle ? (
+                      <span className='sidebar-item-subtitle'>
+                        {child.subtitle}
+                      </span>
+                    ) : null}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <button
+                key={item.title}
+                type='button'
+                className={`sidebar-item${activeDesktopSegment === item.segmentId ? ' active' : ''}`}
+                onClick={() => setActiveDesktopSegment(item.segmentId)}
+              >
+                <span className='sidebar-item-title'>{item.title}</span>
+                {item.subtitle ? (
+                  <span className='sidebar-item-subtitle'>{item.subtitle}</span>
+                ) : null}
+              </button>
+            ),
+          )}
+        </nav>
       </aside>
 
       <main className='office-main'>
@@ -1050,44 +1457,45 @@ export function PrayerOfficeMockup() {
                 <div
                   className={`prayer-panel format-output${selectedFormat === 'text' ? '' : ' hidden'}`}
                 >
-                  {segment.text.map((block, index) => (
-                    <section
-                      key={block.label}
-                      className={`liturgy-card${index % 2 === 1 ? ' alt' : ''}`}
-                    >
-                      <div className='liturgy-card-kicker'>{block.label}</div>
-                      <h3 className='liturgy-card-title'>{block.title}</h3>
-                      {block.citation ? (
-                        <div className='liturgy-card-citation'>
-                          {block.citation}
-                        </div>
-                      ) : null}
-                      <div className='liturgy-lines'>
-                        {block.blocks.map((entry) => (
-                          <div
-                            key={`${block.label}-${entry.variant}-${entry.lines[0]}`}
-                            className={blockClassName(entry.variant)}
-                          >
-                            {entry.speaker ? (
-                              <div className='liturgy-speaker'>
-                                {entry.speaker}
-                              </div>
-                            ) : null}
-                            {entry.lines.map((line) => (
-                              <p key={line} className='liturgy-line'>
-                                {line}
-                              </p>
-                            ))}
-                            {entry.citation ? (
-                              <div className='liturgy-inline-citation'>
-                                {entry.citation}
-                              </div>
-                            ) : null}
+                  {renderPrayerTemplate(segment.id) ??
+                    segment.text.map((block, index) => (
+                      <section
+                        key={block.label}
+                        className={`liturgy-card${index % 2 === 1 ? ' alt' : ''}`}
+                      >
+                        <div className='liturgy-card-kicker'>{block.label}</div>
+                        <h3 className='liturgy-card-title'>{block.title}</h3>
+                        {block.citation ? (
+                          <div className='liturgy-card-citation'>
+                            {block.citation}
                           </div>
-                        ))}
-                      </div>
-                    </section>
-                  ))}
+                        ) : null}
+                        <div className='liturgy-lines'>
+                          {block.blocks.map((entry) => (
+                            <div
+                              key={`${block.label}-${entry.variant}-${entry.lines[0]}`}
+                              className={blockClassName(entry.variant)}
+                            >
+                              {entry.speaker ? (
+                                <div className='liturgy-speaker'>
+                                  {entry.speaker}
+                                </div>
+                              ) : null}
+                              {entry.lines.map((line) => (
+                                <p key={line} className='liturgy-line'>
+                                  {line}
+                                </p>
+                              ))}
+                              {entry.citation ? (
+                                <div className='liturgy-inline-citation'>
+                                  {entry.citation}
+                                </div>
+                              ) : null}
+                            </div>
+                          ))}
+                        </div>
+                      </section>
+                    ))}
                 </div>
 
                 <div
