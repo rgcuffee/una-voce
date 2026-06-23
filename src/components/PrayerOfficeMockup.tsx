@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { EveningPrayer } from './prayers/EveningPrayer';
 import { MidafternoonPrayer } from './prayers/MidafternoonPrayer';
 import { MiddayPrayer } from './prayers/MiddayPrayer';
@@ -1326,6 +1326,7 @@ function renderPrayerTemplate(segmentId: string) {
 }
 
 export function PrayerOfficeMockup() {
+  const isDesktopRef = useRef<boolean>(false);
   const [selectedFormats, setSelectedFormats] = useState<
     Record<string, FormatKey>
   >(
@@ -1347,17 +1348,18 @@ export function PrayerOfficeMockup() {
   );
 
   useEffect(() => {
-    const syncLayout = () => {
-      if (window.innerWidth >= 900) {
-        setCollapsedSegments(
-          Object.fromEntries(
-            SEGMENTS.map((segment) => [segment.id, false]),
-          ) as Record<string, boolean>,
-        );
-        setActiveDesktopSegment((current) => current ?? SEGMENTS[0].id);
-        return;
-      }
+    const applyDesktopLayout = () => {
+      isDesktopRef.current = true;
+      setCollapsedSegments(
+        Object.fromEntries(
+          SEGMENTS.map((segment) => [segment.id, false]),
+        ) as Record<string, boolean>,
+      );
+      setActiveDesktopSegment((current) => current ?? SEGMENTS[0].id);
+    };
 
+    const applyMobileLayout = () => {
+      isDesktopRef.current = false;
       setCollapsedSegments(
         Object.fromEntries(
           SEGMENTS.map((segment, index) => [segment.id, index !== 0]),
@@ -1365,9 +1367,35 @@ export function PrayerOfficeMockup() {
       );
     };
 
+    const syncLayout = () => {
+      const isDesktop = window.innerWidth >= 900;
+
+      if (isDesktop) {
+        applyDesktopLayout();
+      } else {
+        applyMobileLayout();
+      }
+    };
+
+    const handleResize = () => {
+      const isDesktop = window.innerWidth >= 900;
+
+      // Mobile browsers emit resize while chrome bars hide/show.
+      // Only reset collapse state when crossing the desktop breakpoint.
+      if (isDesktop === isDesktopRef.current) {
+        return;
+      }
+
+      if (isDesktop) {
+        applyDesktopLayout();
+      } else {
+        applyMobileLayout();
+      }
+    };
+
     syncLayout();
-    window.addEventListener('resize', syncLayout);
-    return () => window.removeEventListener('resize', syncLayout);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const setFormat = (segmentId: string, format: FormatKey) => {
@@ -1437,180 +1465,180 @@ export function PrayerOfficeMockup() {
       </aside>
 
       <main className='office-main'>
-        {SEGMENTS.map((segment) => {
-          const selectedFormat = selectedFormats[segment.id] ?? 'text';
-          const isCollapsed = collapsedSegments[segment.id];
-          const isActiveDesktop = activeDesktopSegment === segment.id;
+            {SEGMENTS.map((segment) => {
+              const selectedFormat = selectedFormats[segment.id] ?? 'text';
+              const isCollapsed = collapsedSegments[segment.id];
+              const isActiveDesktop = activeDesktopSegment === segment.id;
 
-          return (
-            <section
-              key={segment.id}
-              id={segment.id}
-              className={`segment${isCollapsed ? ' collapsed' : ''}${isActiveDesktop ? ' active-desktop' : ''}`}
-            >
-              <button
-                type='button'
-                className='segment-header'
-                onClick={() => toggleSegment(segment.id)}
-                aria-expanded={!isCollapsed}
-                aria-controls={`${segment.id}-body`}
-              >
-                <div className='segment-title-area'>
-                  <div className='segment-toggle'>⬇</div>
-                  <h2 className='segment-title'>{segment.title}</h2>
-                </div>
-              </button>
+              return (
+                <section
+                  key={segment.id}
+                  id={segment.id}
+                  className={`segment${isCollapsed ? ' collapsed' : ''}${isActiveDesktop ? ' active-desktop' : ''}`}
+                >
+                  <button
+                    type='button'
+                    className='segment-header'
+                    onClick={() => toggleSegment(segment.id)}
+                    aria-expanded={!isCollapsed}
+                    aria-controls={`${segment.id}-body`}
+                  >
+                    <div className='segment-title-area'>
+                      <div className='segment-toggle'>⬇</div>
+                      <h2 className='segment-title'>{segment.title}</h2>
+                    </div>
+                  </button>
 
-              <div className='segment-body' id={`${segment.id}-body`}>
-                <div className='active-format-pill'>
-                  <span className='active-format-dot' />
-                  Viewing: {titleCase(selectedFormat)}
-                </div>
+                  <div className='segment-body' id={`${segment.id}-body`}>
+                    <div className='active-format-pill'>
+                      <span className='active-format-dot' />
+                      Viewing: {titleCase(selectedFormat)}
+                    </div>
 
-                <div className='format-rail'>
-                  {FORMATS.map((format) => (
-                    <button
-                      key={format.key}
-                      type='button'
-                      className={`format-card ${format.className}${selectedFormat === format.key ? ' selected' : ''}`}
-                      onClick={() => setFormat(segment.id, format.key)}
+                    <div className='format-rail'>
+                      {FORMATS.map((format) => (
+                        <button
+                          key={format.key}
+                          type='button'
+                          className={`format-card ${format.className}${selectedFormat === format.key ? ' selected' : ''}`}
+                          onClick={() => setFormat(segment.id, format.key)}
+                        >
+                          <span>{format.label}</span>
+                        </button>
+                      ))}
+                    </div>
+
+                    <div
+                      className={`prayer-panel format-output${selectedFormat === 'text' ? '' : ' hidden'}`}
                     >
-                      <span>{format.label}</span>
-                    </button>
-                  ))}
-                </div>
-
-                <div
-                  className={`prayer-panel format-output${selectedFormat === 'text' ? '' : ' hidden'}`}
-                >
-                  {renderPrayerTemplate(segment.id) ??
-                    segment.text.map((block, index) => (
-                      <section
-                        key={block.label}
-                        className={`liturgy-card${index % 2 === 1 ? ' alt' : ''}`}
-                      >
-                        <div className='liturgy-card-kicker'>{block.label}</div>
-                        <h3 className='liturgy-card-title'>{block.title}</h3>
-                        {block.citation ? (
-                          <div className='liturgy-card-citation'>
-                            {block.citation}
-                          </div>
-                        ) : null}
-                        <div className='liturgy-lines'>
-                          {block.blocks.map((entry) => (
-                            <div
-                              key={`${block.label}-${entry.variant}-${entry.lines[0]}`}
-                              className={blockClassName(entry.variant)}
-                            >
-                              {entry.speaker ? (
-                                <div className='liturgy-speaker'>
-                                  {entry.speaker}
+                      {renderPrayerTemplate(segment.id) ??
+                        segment.text.map((block, index) => (
+                          <section
+                            key={block.label}
+                            className={`liturgy-card${index % 2 === 1 ? ' alt' : ''}`}
+                          >
+                            <div className='liturgy-card-kicker'>{block.label}</div>
+                            <h3 className='liturgy-card-title'>{block.title}</h3>
+                            {block.citation ? (
+                              <div className='liturgy-card-citation'>
+                                {block.citation}
+                              </div>
+                            ) : null}
+                            <div className='liturgy-lines'>
+                              {block.blocks.map((entry) => (
+                                <div
+                                  key={`${block.label}-${entry.variant}-${entry.lines[0]}`}
+                                  className={blockClassName(entry.variant)}
+                                >
+                                  {entry.speaker ? (
+                                    <div className='liturgy-speaker'>
+                                      {entry.speaker}
+                                    </div>
+                                  ) : null}
+                                  {entry.lines.map((line) => (
+                                    <p key={line} className='liturgy-line'>
+                                      {line}
+                                    </p>
+                                  ))}
+                                  {entry.citation ? (
+                                    <div className='liturgy-inline-citation'>
+                                      {entry.citation}
+                                    </div>
+                                  ) : null}
                                 </div>
-                              ) : null}
-                              {entry.lines.map((line) => (
-                                <p key={line} className='liturgy-line'>
-                                  {line}
-                                </p>
                               ))}
-                              {entry.citation ? (
-                                <div className='liturgy-inline-citation'>
-                                  {entry.citation}
-                                </div>
-                              ) : null}
                             </div>
-                          ))}
-                        </div>
-                      </section>
-                    ))}
-                </div>
+                          </section>
+                        ))}
+                    </div>
 
-                <div
-                  className={`format-output${selectedFormat === 'audio' ? '' : ' hidden'}`}
-                >
-                  <h4>Listen</h4>
-                  <div className='format-options'>
-                    {segment.audio.map((item, index) => (
-                      <article
-                        key={item.title}
-                        className='format-option format-option-media'
-                        style={{
-                          backgroundImage: `linear-gradient(165deg, rgba(12, 11, 9, 0.2), rgba(12, 11, 9, 0.78)), url(${optionImageFor('audio', index)})`,
-                        }}
-                      >
-                        <div className='option-meta'>{item.meta}</div>
-                        <div className='option-title'>{item.title}</div>
-                        <p className='option-desc'>{item.description}</p>
-                      </article>
-                    ))}
-                  </div>
-                </div>
-
-                <div
-                  className={`format-output${selectedFormat === 'video' ? '' : ' hidden'}`}
-                >
-                  <h4>Watch</h4>
-                  <div className='format-options'>
-                    {segment.video.map((item, index) => (
-                      <article
-                        key={item.title}
-                        className='format-option format-option-media'
-                        style={{
-                          backgroundImage: `linear-gradient(165deg, rgba(14, 12, 9, 0.18), rgba(14, 12, 9, 0.8)), url(${optionImageFor('video', index)})`,
-                        }}
-                      >
-                        <div className='option-meta'>{item.meta}</div>
-                        <div className='option-title'>{item.title}</div>
-                        <p className='option-desc'>{item.description}</p>
-                      </article>
-                    ))}
-                  </div>
-                </div>
-
-                <div
-                  className={`format-output${selectedFormat === 'live' ? '' : ' hidden'}`}
-                >
-                  <h4>Live</h4>
-                  {segment.live.map((group, groupIndex) => (
-                    <div key={group.title} className='stream-group'>
-                      <div className='stream-group-title'>{group.title}</div>
+                    <div
+                      className={`format-output${selectedFormat === 'audio' ? '' : ' hidden'}`}
+                    >
+                      <h4>Listen</h4>
                       <div className='format-options'>
-                        {group.items.map((item, itemIndex) => (
+                        {segment.audio.map((item, index) => (
                           <article
                             key={item.title}
                             className='format-option format-option-media'
                             style={{
-                              backgroundImage: `linear-gradient(165deg, rgba(16, 13, 12, 0.26), rgba(16, 13, 12, 0.82)), url(${optionImageFor('live', groupIndex * 8 + itemIndex)})`,
+                              backgroundImage: `linear-gradient(165deg, rgba(12, 11, 9, 0.2), rgba(12, 11, 9, 0.78)), url(${optionImageFor('audio', index)})`,
                             }}
                           >
                             <div className='option-meta'>{item.meta}</div>
                             <div className='option-title'>{item.title}</div>
                             <p className='option-desc'>{item.description}</p>
-                            {item.time ? (
-                              <div className='stream-time'>{item.time}</div>
-                            ) : null}
                           </article>
                         ))}
                       </div>
                     </div>
-                  ))}
-                </div>
-              </div>
-            </section>
-          );
-        })}
-      </main>
 
-      <nav className='bottom-nav' aria-label='Primary'>
-        {NAV_ITEMS.map((item, index) => (
-          <div
-            key={item.label}
-            className={`nav-item${index === 0 ? ' active' : ''}`}
-          >
-            <div className='nav-icon'>{item.icon}</div>
-            <div className='nav-label'>{item.label}</div>
-          </div>
-        ))}
-      </nav>
-    </div>
-  );
+                    <div
+                      className={`format-output${selectedFormat === 'video' ? '' : ' hidden'}`}
+                    >
+                      <h4>Watch</h4>
+                      <div className='format-options'>
+                        {segment.video.map((item, index) => (
+                          <article
+                            key={item.title}
+                            className='format-option format-option-media'
+                            style={{
+                              backgroundImage: `linear-gradient(165deg, rgba(14, 12, 9, 0.18), rgba(14, 12, 9, 0.8)), url(${optionImageFor('video', index)})`,
+                            }}
+                          >
+                            <div className='option-meta'>{item.meta}</div>
+                            <div className='option-title'>{item.title}</div>
+                            <p className='option-desc'>{item.description}</p>
+                          </article>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div
+                      className={`format-output${selectedFormat === 'live' ? '' : ' hidden'}`}
+                    >
+                      <h4>Live</h4>
+                      {segment.live.map((group, groupIndex) => (
+                        <div key={group.title} className='stream-group'>
+                          <div className='stream-group-title'>{group.title}</div>
+                          <div className='format-options'>
+                            {group.items.map((item, itemIndex) => (
+                              <article
+                                key={item.title}
+                                className='format-option format-option-media'
+                                style={{
+                                  backgroundImage: `linear-gradient(165deg, rgba(16, 13, 12, 0.26), rgba(16, 13, 12, 0.82)), url(${optionImageFor('live', groupIndex * 8 + itemIndex)})`,
+                                }}
+                              >
+                                <div className='option-meta'>{item.meta}</div>
+                                <div className='option-title'>{item.title}</div>
+                                <p className='option-desc'>{item.description}</p>
+                                {item.time ? (
+                                  <div className='stream-time'>{item.time}</div>
+                                ) : null}
+                              </article>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </section>
+              );
+            })}
+          </main>
+
+          <nav className='bottom-nav' aria-label='Primary'>
+            {NAV_ITEMS.map((item, index) => (
+              <div
+                key={item.label}
+                className={`nav-item${index === 0 ? ' active' : ''}`}
+              >
+                <div className='nav-icon'>{item.icon}</div>
+                <div className='nav-label'>{item.label}</div>
+              </div>
+            ))}
+          </nav>
+        </div>
+      );
 }
