@@ -1213,9 +1213,30 @@ const SEGMENTS: Segment[] = [
   },
 ];
 
+const SEGMENT_SUBTITLES: Record<string, string> = {
+  'segment-office': 'Matins',
+  'segment-morning': 'Lauds',
+  'segment-midmorning': 'Terce',
+  'segment-midday': 'Sext',
+  'segment-midafternoon': 'None',
+  'segment-evening': 'Vespers',
+  'segment-night': 'Compline',
+};
+
+const MOBILE_SEGMENT_ORDER = [
+  'segment-office',
+  'segment-morning',
+  'segment-midmorning',
+  'segment-midday',
+  'segment-midafternoon',
+  'segment-evening',
+  'segment-night',
+];
+
 const SIDEBAR_ITEMS: SidebarEntry[] = [
   {
     title: 'Office of Readings',
+    subtitle: 'Matins',
     segmentId: 'segment-office',
   },
   {
@@ -1292,7 +1313,14 @@ const NAV_ITEMS = [
 const DATE_LABEL = 'Monday, June 22 · Twelfth Week in Ordinary Time';
 
 function titleCase(format: FormatKey) {
-  return format.charAt(0).toUpperCase() + format.slice(1);
+  const labels: Record<FormatKey, string> = {
+    text: 'READ',
+    audio: 'LISTEN',
+    video: 'WATCH',
+    live: 'LIVE',
+  };
+
+  return labels[format];
 }
 
 function optionImageFor(format: 'audio' | 'video' | 'live', index: number) {
@@ -1327,6 +1355,13 @@ function renderPrayerTemplate(segmentId: string) {
 
 export function PrayerOfficeMockup() {
   const isDesktopRef = useRef<boolean>(false);
+  const [isDesktopLayout, setIsDesktopLayout] = useState(() => {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+
+    return window.innerWidth >= 900;
+  });
   const [selectedFormats, setSelectedFormats] = useState<
     Record<string, FormatKey>
   >(
@@ -1350,6 +1385,7 @@ export function PrayerOfficeMockup() {
   useEffect(() => {
     const applyDesktopLayout = () => {
       isDesktopRef.current = true;
+      setIsDesktopLayout(true);
       setCollapsedSegments(
         Object.fromEntries(
           SEGMENTS.map((segment) => [segment.id, false]),
@@ -1360,6 +1396,7 @@ export function PrayerOfficeMockup() {
 
     const applyMobileLayout = () => {
       isDesktopRef.current = false;
+      setIsDesktopLayout(false);
       setCollapsedSegments(
         Object.fromEntries(
           SEGMENTS.map((segment, index) => [segment.id, index !== 0]),
@@ -1413,6 +1450,12 @@ export function PrayerOfficeMockup() {
     }));
   };
 
+  const segmentsToRender = isDesktopLayout
+    ? SEGMENTS
+    : MOBILE_SEGMENT_ORDER.map((segmentId) =>
+        SEGMENTS.find((segment) => segment.id === segmentId),
+      ).filter((segment): segment is Segment => Boolean(segment));
+
   return (
     <div className='phone'>
       <header className='app-header'>
@@ -1465,10 +1508,11 @@ export function PrayerOfficeMockup() {
       </aside>
 
       <main className='office-main'>
-        {SEGMENTS.map((segment) => {
+        {segmentsToRender.map((segment) => {
           const selectedFormat = selectedFormats[segment.id] ?? 'text';
           const isCollapsed = collapsedSegments[segment.id];
           const isActiveDesktop = activeDesktopSegment === segment.id;
+          const segmentSubtitle = SEGMENT_SUBTITLES[segment.id];
 
           return (
             <section
@@ -1485,7 +1529,14 @@ export function PrayerOfficeMockup() {
               >
                 <div className='segment-title-area'>
                   <div className='segment-toggle'>⬇</div>
-                  <h2 className='segment-title'>{segment.title}</h2>
+                  <div className='segment-title-stack'>
+                    <h2 className='segment-title'>{segment.title}</h2>
+                    {segmentSubtitle ? (
+                      <span className='segment-subtitle'>
+                        {segmentSubtitle}
+                      </span>
+                    ) : null}
+                  </div>
                 </div>
               </button>
 

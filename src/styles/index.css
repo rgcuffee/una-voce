@@ -107,7 +107,7 @@ body {
 /* rest of stylesheet replaced by mockup layout below */
 
 .office-main {
-    padding: 0 20px 100px;
+    padding: 20px 20px 100px;
     min-width: 0;
 }
 
@@ -185,6 +185,13 @@ body {
     gap: 10px;
 }
 
+.segment-title-stack {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
 .segment-toggle {
     font-size: 18px;
     color: var(--charcoal-soft);
@@ -203,6 +210,15 @@ body {
     line-height: 1.05;
     font-optical-sizing: auto;
     font-feature-settings: 'liga' 1, 'calt' 1;
+}
+
+.segment-subtitle {
+    font-size: 11px;
+    line-height: 1.1;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-style: italic;
+    color: var(--charcoal-soft);
 }
 
 .segment-body {
@@ -473,6 +489,22 @@ body {
     border: 1px solid var(--border);
     border-radius: 14px;
     padding: 10px 12px;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.format-option:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.16);
+}
+
+.format-option-media:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 18px 32px rgba(0, 0, 0, 0.22);
+}
+
+.format-option-media:hover::before {
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.02), rgba(0, 0, 0, 0.58));
 }
 
 .format-option-media {
@@ -725,6 +757,10 @@ body {
     .segment-title {
         font-size: 34px;
         line-height: 1.02;
+    }
+
+    .segment-subtitle {
+        font-size: 12px;
     }
 
     .segment-body {
