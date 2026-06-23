@@ -1256,11 +1256,32 @@ const SIDEBAR_ITEMS: SidebarEntry[] = [
 ];
 
 const FORMATS: { key: FormatKey; label: string; className: string }[] = [
-  { key: 'text', label: 'Text', className: 'text' },
-  { key: 'audio', label: 'Audio', className: 'audio' },
-  { key: 'video', label: 'Video', className: 'video' },
+  { key: 'text', label: 'Read', className: 'text' },
+  { key: 'audio', label: 'Listen', className: 'audio' },
+  { key: 'video', label: 'Watch', className: 'video' },
   { key: 'live', label: 'Live', className: 'live' },
 ];
+
+const OPTION_IMAGES: Record<'audio' | 'video' | 'live', string[]> = {
+  audio: [
+    'https://images.unsplash.com/photo-1524678714210-9917a6c619c2?auto=format&fit=crop&w=1400&q=80',
+    'https://images.unsplash.com/photo-1478737270239-2f02b77fc618?auto=format&fit=crop&w=1400&q=80',
+    'https://images.unsplash.com/photo-1516280030429-27679b3dc9cf?auto=format&fit=crop&w=1400&q=80',
+    'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?auto=format&fit=crop&w=1400&q=80',
+  ],
+  video: [
+    'https://images.unsplash.com/photo-1731258941332-844ae3f8618d?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?auto=format&fit=crop&w=1400&q=80',
+    'https://images.unsplash.com/photo-1597839977601-52b29c114af5?q=80&w=2054&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    'https://images.unsplash.com/photo-1731258940964-c0a2c18a0fb1?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+  ],
+  live: [
+    'https://plus.unsplash.com/premium_photo-1679051422153-2ea3c8cfe9ed?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    'https://images.unsplash.com/photo-1525874684015-58379d421a52?auto=format&fit=crop&w=1400&q=80',
+    'https://images.unsplash.com/photo-1518895949257-7621c3c786d7?auto=format&fit=crop&w=1400&q=80',
+    'https://images.unsplash.com/photo-1483721310020-03333e577078?auto=format&fit=crop&w=1400&q=80',
+  ],
+};
 
 const NAV_ITEMS = [
   { icon: '📖', label: 'Today' },
@@ -1272,6 +1293,11 @@ const DATE_LABEL = 'Monday, June 22 · Twelfth Week in Ordinary Time';
 
 function titleCase(format: FormatKey) {
   return format.charAt(0).toUpperCase() + format.slice(1);
+}
+
+function optionImageFor(format: 'audio' | 'video' | 'live', index: number) {
+  const images = OPTION_IMAGES[format];
+  return images[index % images.length];
 }
 
 function blockClassName(variant: LiturgyBlock['variant']) {
@@ -1501,10 +1527,16 @@ export function PrayerOfficeMockup() {
                 <div
                   className={`format-output${selectedFormat === 'audio' ? '' : ' hidden'}`}
                 >
-                  <h4>Audio</h4>
+                  <h4>Listen</h4>
                   <div className='format-options'>
-                    {segment.audio.map((item) => (
-                      <article key={item.title} className='format-option'>
+                    {segment.audio.map((item, index) => (
+                      <article
+                        key={item.title}
+                        className='format-option format-option-media'
+                        style={{
+                          backgroundImage: `linear-gradient(165deg, rgba(12, 11, 9, 0.2), rgba(12, 11, 9, 0.78)), url(${optionImageFor('audio', index)})`,
+                        }}
+                      >
                         <div className='option-meta'>{item.meta}</div>
                         <div className='option-title'>{item.title}</div>
                         <p className='option-desc'>{item.description}</p>
@@ -1516,10 +1548,16 @@ export function PrayerOfficeMockup() {
                 <div
                   className={`format-output${selectedFormat === 'video' ? '' : ' hidden'}`}
                 >
-                  <h4>Video</h4>
+                  <h4>Watch</h4>
                   <div className='format-options'>
-                    {segment.video.map((item) => (
-                      <article key={item.title} className='format-option'>
+                    {segment.video.map((item, index) => (
+                      <article
+                        key={item.title}
+                        className='format-option format-option-media'
+                        style={{
+                          backgroundImage: `linear-gradient(165deg, rgba(14, 12, 9, 0.18), rgba(14, 12, 9, 0.8)), url(${optionImageFor('video', index)})`,
+                        }}
+                      >
                         <div className='option-meta'>{item.meta}</div>
                         <div className='option-title'>{item.title}</div>
                         <p className='option-desc'>{item.description}</p>
@@ -1532,15 +1570,24 @@ export function PrayerOfficeMockup() {
                   className={`format-output${selectedFormat === 'live' ? '' : ' hidden'}`}
                 >
                   <h4>Live</h4>
-                  {segment.live.map((group) => (
+                  {segment.live.map((group, groupIndex) => (
                     <div key={group.title} className='stream-group'>
                       <div className='stream-group-title'>{group.title}</div>
                       <div className='format-options'>
-                        {group.items.map((item) => (
-                          <article key={item.title} className='format-option'>
+                        {group.items.map((item, itemIndex) => (
+                          <article
+                            key={item.title}
+                            className='format-option format-option-media'
+                            style={{
+                              backgroundImage: `linear-gradient(165deg, rgba(16, 13, 12, 0.26), rgba(16, 13, 12, 0.82)), url(${optionImageFor('live', groupIndex * 8 + itemIndex)})`,
+                            }}
+                          >
                             <div className='option-meta'>{item.meta}</div>
                             <div className='option-title'>{item.title}</div>
                             <p className='option-desc'>{item.description}</p>
+                            {item.time ? (
+                              <div className='stream-time'>{item.time}</div>
+                            ) : null}
                           </article>
                         ))}
                       </div>

@@ -288,27 +288,19 @@ body {
 }
 
 .format-card.text {
-    background-image:
-        linear-gradient(130deg, rgba(184, 151, 58, 0.75), rgba(45, 37, 17, 0.72)),
-        url('https://images.unsplash.com/photo-1513001900722-370f803f498d?auto=format&fit=crop&w=900&q=80');
+    background: linear-gradient(130deg, #b8973a, #6e571f);
 }
 
 .format-card.audio {
-    background-image:
-        linear-gradient(130deg, rgba(48, 36, 15, 0.45), rgba(14, 13, 12, 0.66)),
-        url('https://images.unsplash.com/photo-1461360228754-6e81c478b882?auto=format&fit=crop&w=900&q=80');
+    background: linear-gradient(130deg, #4b3c1e, #1f1d18);
 }
 
 .format-card.video {
-    background-image:
-        linear-gradient(130deg, rgba(43, 48, 31, 0.46), rgba(11, 17, 20, 0.62)),
-        url('https://images.unsplash.com/photo-1516280440614-37939bbacd81?auto=format&fit=crop&w=900&q=80');
+    background: linear-gradient(130deg, #3b4630, #17232a);
 }
 
 .format-card.live {
-    background-image:
-        linear-gradient(130deg, rgba(35, 35, 45, 0.48), rgba(15, 18, 21, 0.66)),
-        url('https://images.unsplash.com/photo-1512428559087-560fa5ceab42?auto=format&fit=crop&w=900&q=80');
+    background: linear-gradient(130deg, #353743, #1b2128);
 }
 
 .prayer-panel {
@@ -471,15 +463,38 @@ body {
 
 .format-options {
     display: grid;
-    gap: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
     margin-top: 6px;
 }
 
 .format-option {
     background: var(--white);
     border: 1px solid var(--border);
-    border-radius: 10px;
+    border-radius: 14px;
     padding: 10px 12px;
+}
+
+.format-option-media {
+    min-height: 220px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    border: 0;
+    background-size: cover;
+    background-position: center;
+    color: var(--white);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.18);
+}
+
+.format-option-media::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.64));
 }
 
 .option-meta {
@@ -491,6 +506,18 @@ body {
     font-weight: 600;
 }
 
+.format-option-media .option-meta,
+.format-option-media .option-title,
+.format-option-media .option-desc,
+.format-option-media .stream-time {
+    position: relative;
+    z-index: 1;
+}
+
+.format-option-media .option-meta {
+    color: rgba(255, 255, 255, 0.86);
+}
+
 .option-title {
     font-size: 14px;
     color: var(--charcoal);
@@ -499,10 +526,20 @@ body {
     line-height: 1.3;
 }
 
+.format-option-media .option-title {
+    color: var(--white);
+    font-size: 16px;
+    line-height: 1.25;
+}
+
 .option-desc {
     font-size: 12px;
     line-height: 1.45;
     color: #505055;
+}
+
+.format-option-media .option-desc {
+    color: rgba(255, 255, 255, 0.92);
 }
 
 .stream-group {
@@ -522,7 +559,7 @@ body {
     color: var(--gold);
     font-size: 11px;
     font-weight: 600;
-    margin-top: 2px;
+    margin-top: 6px;
 }
 
 .hidden {
