@@ -1,8 +1,57 @@
-export function MorePage() {
+import type { ViewKey, ViewNavigator } from '../navigation';
+
+type MenuLink = {
+  view: ViewKey;
+  title: string;
+  description: string;
+  icon: string;
+};
+
+export function MorePage({ onNavigate }: { onNavigate: ViewNavigator }) {
+  const links: MenuLink[] = [
+    {
+      view: 'getting-started',
+      title: 'Getting Started',
+      description:
+        'New to the Hours? A simple, five-step path into the prayer of the Church.',
+      icon: '✣',
+    },
+    {
+      view: 'about',
+      title: 'About Una Voce',
+      description:
+        'What this platform is, why it exists, and the tradition it serves.',
+      icon: '☩',
+    },
+  ];
+
   return (
-    <div className='stub-page'>
-      <div className='stub-page-title'>More</div>
-      <div className='stub-page-sub'>Coming soon</div>
-    </div>
+    <article className='page'>
+      <header className='page-hero'>
+        <div className='page-eyebrow'>More</div>
+        <h1 className='page-hero-title'>Learn the Hours, live the tradition</h1>
+        <p className='page-lead'>
+          Guidance for newcomers and the story behind Una Voce.
+        </p>
+      </header>
+
+      <nav className='menu-list'>
+        {links.map((link) => (
+          <button
+            key={link.view}
+            type='button'
+            className='menu-item'
+            onClick={() => onNavigate(link.view)}
+          >
+            <span className='menu-item-icon'>{link.icon}</span>
+            <span className='menu-item-body'>
+              <span className='menu-item-title'>{link.title}</span>
+              <span className='menu-item-desc'>{link.description}</span>
+            </span>
+            <span className='menu-item-chevron'>›</span>
+          </button>
+        ))}
+      </nav>
+    </article>
   );
 }

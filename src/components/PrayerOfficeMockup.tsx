@@ -1,4 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
+import { PRIMARY_NAV, type ViewKey } from '../navigation';
+import { AboutPage } from '../pages/AboutPage';
+import { CommunityPage } from '../pages/CommunityPage';
+import { DiscoverPage } from '../pages/DiscoverPage';
+import { GettingStartedPage } from '../pages/GettingStartedPage';
+import { LivePage } from '../pages/LivePage';
+import { MorePage } from '../pages/MorePage';
+import { NavIcon } from './NavIcon';
 import { EveningPrayer } from './prayers/EveningPrayer';
 import { MidafternoonPrayer } from './prayers/MidafternoonPrayer';
 import { MiddayPrayer } from './prayers/MiddayPrayer';
@@ -6,6 +14,8 @@ import { MidmorningPrayer } from './prayers/MidmorningPrayer';
 import { MorningPrayer } from './prayers/MorningPrayer';
 import { NightPrayer } from './prayers/NightPrayer';
 import { OfficeOfReadingsPrayer } from './prayers/OfficeOfReadingsPrayer';
+
+const ONRAMP_DISMISS_KEY = 'una-voce-onramp-dismissed';
 
 type FormatKey = 'text' | 'audio' | 'video' | 'live';
 
@@ -1304,11 +1314,7 @@ const OPTION_IMAGES: Record<'audio' | 'video' | 'live', string[]> = {
   ],
 };
 
-const NAV_ITEMS = [
-  { icon: '📖', label: 'Today' },
-  { icon: '👥', label: 'Communities' },
-  { icon: '⋯', label: 'More' },
-];
+const NAV_ITEMS = PRIMARY_NAV;
 
 const DATE_LABEL = 'Monday, June 22 · Twelfth Week in Ordinary Time';
 
@@ -1353,6 +1359,25 @@ function renderPrayerTemplate(segmentId: string) {
   }
 }
 
+function renderPage(view: ViewKey, onNavigate: (view: ViewKey) => void) {
+  switch (view) {
+    case 'discover':
+      return <DiscoverPage onNavigate={onNavigate} />;
+    case 'live':
+      return <LivePage onNavigate={onNavigate} />;
+    case 'community':
+      return <CommunityPage onNavigate={onNavigate} />;
+    case 'more':
+      return <MorePage onNavigate={onNavigate} />;
+    case 'about':
+      return <AboutPage onNavigate={onNavigate} />;
+    case 'getting-started':
+      return <GettingStartedPage onNavigate={onNavigate} />;
+    default:
+      return null;
+  }
+}
+
 export function PrayerOfficeMockup() {
   const isDesktopRef = useRef<boolean>(false);
   const [isDesktopLayout, setIsDesktopLayout] = useState(() => {
@@ -1381,6 +1406,28 @@ export function PrayerOfficeMockup() {
   const [activeDesktopSegment, setActiveDesktopSegment] = useState(
     SEGMENTS[0].id,
   );
+  const [activeView, setActiveView] = useState<ViewKey>('today');
+  const [onrampDismissed, setOnrampDismissed] = useState(() => {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+
+    return window.localStorage.getItem(ONRAMP_DISMISS_KEY) === 'true';
+  });
+
+  const navigateTo = (view: ViewKey) => {
+    setActiveView(view);
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0 });
+    }
+  };
+
+  const dismissOnramp = () => {
+    setOnrampDismissed(true);
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(ONRAMP_DISMISS_KEY, 'true');
+    }
+  };
 
   useEffect(() => {
     const applyDesktopLayout = () => {
@@ -1457,58 +1504,114 @@ export function PrayerOfficeMockup() {
       ).filter((segment): segment is Segment => Boolean(segment));
 
   return (
-    <div className='phone'>
+    <div className={`phone${activeView === 'today' ? '' : ' single-column'}`}>
       <header className='app-header'>
         <div className='header-top'>
-          <div className='logo'>
+          <div
+            className='logo'
+            role='button'
+            tabIndex={0}
+            onClick={() => navigateTo('today')}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                navigateTo('today');
+              }
+            }}
+          >
             UNA <span>VOCE</span>
           </div>
+          <nav className='header-nav' aria-label='Primary'>
+            {NAV_ITEMS.map((item) => (
+              <button
+                key={item.key}
+                type='button'
+                className={`header-nav-link${activeView === item.key ? ' active' : ''}`}
+                onClick={() => navigateTo(item.key)}
+              >
+                {item.label}
+              </button>
+            ))}
+          </nav>
           <div className='header-icon'>☩</div>
         </div>
         <div className='date-line'>{DATE_LABEL}</div>
       </header>
 
-      <aside className='sidebar' aria-label='Prayer sections'>
-        <nav className='sidebar-nav'>
-          {SIDEBAR_ITEMS.map((item) =>
-            'children' in item ? (
-              <div key={item.title} className='sidebar-group'>
-                <div className='sidebar-group-label'></div>
-                {item.children.map((child) => (
-                  <button
-                    key={`${item.title}-${child.title}`}
-                    type='button'
-                    className={`sidebar-item sidebar-subitem${activeDesktopSegment === child.segmentId ? ' active' : ''}`}
-                    onClick={() => setActiveDesktopSegment(child.segmentId)}
-                  >
-                    <span className='sidebar-item-title'>{child.title}</span>
-                    {child.subtitle ? (
-                      <span className='sidebar-item-subtitle'>
-                        {child.subtitle}
-                      </span>
-                    ) : null}
-                  </button>
-                ))}
-              </div>
-            ) : (
-              <button
-                key={item.title}
-                type='button'
-                className={`sidebar-item${activeDesktopSegment === item.segmentId ? ' active' : ''}`}
-                onClick={() => setActiveDesktopSegment(item.segmentId)}
-              >
-                <span className='sidebar-item-title'>{item.title}</span>
-                {item.subtitle ? (
-                  <span className='sidebar-item-subtitle'>{item.subtitle}</span>
-                ) : null}
-              </button>
-            ),
-          )}
-        </nav>
-      </aside>
+      {activeView === 'today' ? (
+        <aside className='sidebar' aria-label='Prayer sections'>
+          <nav className='sidebar-nav'>
+            {SIDEBAR_ITEMS.map((item) =>
+              'children' in item ? (
+                <div key={item.title} className='sidebar-group'>
+                  <div className='sidebar-group-label'></div>
+                  {item.children.map((child) => (
+                    <button
+                      key={`${item.title}-${child.title}`}
+                      type='button'
+                      className={`sidebar-item sidebar-subitem${activeDesktopSegment === child.segmentId ? ' active' : ''}`}
+                      onClick={() => setActiveDesktopSegment(child.segmentId)}
+                    >
+                      <span className='sidebar-item-title'>{child.title}</span>
+                      {child.subtitle ? (
+                        <span className='sidebar-item-subtitle'>
+                          {child.subtitle}
+                        </span>
+                      ) : null}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <button
+                  key={item.title}
+                  type='button'
+                  className={`sidebar-item${activeDesktopSegment === item.segmentId ? ' active' : ''}`}
+                  onClick={() => setActiveDesktopSegment(item.segmentId)}
+                >
+                  <span className='sidebar-item-title'>{item.title}</span>
+                  {item.subtitle ? (
+                    <span className='sidebar-item-subtitle'>
+                      {item.subtitle}
+                    </span>
+                  ) : null}
+                </button>
+              ),
+            )}
+          </nav>
+        </aside>
+      ) : null}
 
       <main className='office-main'>
-        {segmentsToRender.map((segment) => {
+        {activeView !== 'today' ? (
+          renderPage(activeView, navigateTo)
+        ) : (
+          <>
+            {!onrampDismissed ? (
+              <section className='onramp'>
+                <button
+                  type='button'
+                  className='onramp-close'
+                  aria-label='Dismiss'
+                  onClick={dismissOnramp}
+                >
+                  ×
+                </button>
+                <div className='onramp-eyebrow'>New to the Hours?</div>
+                <p className='onramp-text'>
+                  Most people begin with two: Morning Prayer to open the day,
+                  Night Prayer to close it. You don't need a book, just press
+                  play below.
+                </p>
+                <button
+                  type='button'
+                  className='onramp-action'
+                  onClick={() => navigateTo('getting-started')}
+                >
+                  How to begin ›
+                </button>
+              </section>
+            ) : null}
+            {segmentsToRender.map((segment) => {
           const selectedFormat = selectedFormats[segment.id] ?? 'text';
           const isCollapsed = collapsedSegments[segment.id];
           const isActiveDesktop = activeDesktopSegment === segment.id;
@@ -1677,17 +1780,23 @@ export function PrayerOfficeMockup() {
             </section>
           );
         })}
+          </>
+        )}
       </main>
 
       <nav className='bottom-nav' aria-label='Primary'>
-        {NAV_ITEMS.map((item, index) => (
-          <div
-            key={item.label}
-            className={`nav-item${index === 0 ? ' active' : ''}`}
+        {NAV_ITEMS.map((item) => (
+          <button
+            key={item.key}
+            type='button'
+            className={`nav-item${activeView === item.key ? ' active' : ''}`}
+            onClick={() => navigateTo(item.key)}
           >
-            <div className='nav-icon'>{item.icon}</div>
+            <div className='nav-icon'>
+              <NavIcon name={item.icon} />
+            </div>
             <div className='nav-label'>{item.label}</div>
-          </div>
+          </button>
         ))}
       </nav>
     </div>
