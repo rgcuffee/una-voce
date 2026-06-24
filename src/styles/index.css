@@ -1448,6 +1448,14 @@ body {
     margin-bottom: 12px;
 }
 
+.page-section-intro {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--charcoal-soft);
+    margin: -4px 0 14px;
+    max-width: 56ch;
+}
+
 .prose p {
     font-size: 15px;
     line-height: 1.7;

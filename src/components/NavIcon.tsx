@@ -11,38 +11,26 @@ const PATHS: Record<IconName, JSX.Element> = {
       <path d='M18.8 8.2 17.4 9.6' />
     </>
   ),
-  // Compass: discover voices and creators.
+  // Compass: discover voices, creators, and live prayer.
   discover: (
     <>
       <circle cx='12' cy='12' r='9' />
       <path d='m15.5 8.5-2 5-5 2 2-5z' />
     </>
   ),
-  // Radiating signal: live streams.
-  live: (
+  // Flag at the start of the path: getting started.
+  'getting-started': (
     <>
-      <circle cx='12' cy='12' r='2.2' />
-      <path d='M7.8 7.8a6 6 0 0 0 0 8.4' />
-      <path d='M16.2 16.2a6 6 0 0 0 0-8.4' />
-      <path d='M5 5a10 10 0 0 0 0 14' />
-      <path d='M19 19a10 10 0 0 0 0-14' />
+      <path d='M6 21V4' />
+      <path d='M6 4h11l-2.5 3.5L17 11H6' />
     </>
   ),
-  // Two figures: community.
-  community: (
+  // Info circle: about.
+  about: (
     <>
-      <circle cx='9' cy='8' r='3' />
-      <path d='M3.5 19a5.5 5.5 0 0 1 11 0' />
-      <path d='M16 5.2a3 3 0 0 1 0 5.6' />
-      <path d='M17 13.4A5.5 5.5 0 0 1 20.5 19' />
-    </>
-  ),
-  // Ellipsis: more.
-  more: (
-    <>
-      <circle cx='5' cy='12' r='1.4' />
-      <circle cx='12' cy='12' r='1.4' />
-      <circle cx='19' cy='12' r='1.4' />
+      <circle cx='12' cy='12' r='9' />
+      <path d='M12 11v5' />
+      <path d='M12 8h.01' />
     </>
   ),
 };

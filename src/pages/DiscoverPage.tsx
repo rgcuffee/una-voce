@@ -7,6 +7,8 @@ type MediaCard = {
   image: string;
 };
 
+type StreamCard = MediaCard & { time: string };
+
 const AUDIO: MediaCard[] = [
   {
     meta: 'Podcast',
@@ -45,6 +47,78 @@ const VIDEO: MediaCard[] = [
   },
 ];
 
+const LIVE_UPCOMING: StreamCard[] = [
+  {
+    meta: 'Monastery Live',
+    title: 'Clear Creek Monastery · Vespers',
+    description:
+      'Live chapel stream of Evening Prayer with shared responses and final blessing.',
+    time: 'Today, 5:00 PM',
+    image:
+      'https://plus.unsplash.com/premium_photo-1679051422153-2ea3c8cfe9ed?q=80&w=2070&auto=format&fit=crop',
+  },
+  {
+    meta: 'Creator Live',
+    title: 'The Little Oratory · Compline Together',
+    description:
+      'Close the day with a guided Night Prayer and an opening hymn.',
+    time: 'Today, 9:00 PM',
+    image:
+      'https://images.unsplash.com/photo-1525874684015-58379d421a52?auto=format&fit=crop&w=1400&q=80',
+  },
+];
+
+const LIVE_PREVIOUS: StreamCard[] = [
+  {
+    meta: 'Archived Live',
+    title: 'Benedictine Sisters · Lauds Replay',
+    description:
+      'Replay of a full live stream with psalm responses and intercessions.',
+    time: 'Earlier today, 6:00 AM',
+    image:
+      'https://images.unsplash.com/photo-1518895949257-7621c3c786d7?auto=format&fit=crop&w=1400&q=80',
+  },
+];
+
+const TEXT_SOURCES: StreamCard[] = [
+  {
+    meta: 'Monthly Magazine',
+    title: 'Magnificat',
+    description:
+      'Compact monthly booklet containing the daily Mass, Morning Prayer, Evening Prayer, meditations, and reflections.',
+    time: 'Monthly',
+    image:
+      'https://images.unsplash.com/photo-1504052434569-70ad5836ab65?auto=format&fit=crop&w=1400&q=80', // open devotional on a wooden pew
+  },
+  {
+    meta: 'Liturgical Books',
+    title: 'Liturgy of the Hours · Four-Volume Set',
+    description:
+      'The official English edition used throughout much of the year, organized according to the liturgical calendar.',
+    time: 'Official Text',
+    image:
+      'https://images.unsplash.com/photo-1509021436665-8f07dbf5bf1d?auto=format&fit=crop&w=1400&q=80', // richly bound old books
+  },
+  {
+    meta: 'Single Volume',
+    title: 'Christian Prayer',
+    description:
+      'A simplified one-volume edition featuring Morning Prayer, Evening Prayer, Night Prayer, and selections for the seasons.',
+    time: 'Popular Edition',
+    image:
+      'https://images.unsplash.com/photo-1491841550275-ad7854e35ca6?auto=format&fit=crop&w=1400&q=80', // person reading beside a window
+  },
+  {
+    meta: 'Pocket Edition',
+    title: 'Shorter Christian Prayer',
+    description:
+      'An accessible introduction with the core daily Hours for those beginning a regular prayer routine.',
+    time: 'Beginner',
+    image:
+      'https://images.unsplash.com/photo-1510936111840-65e151ad71bb?auto=format&fit=crop&w=1400&q=80', // small book with coffee and morning light
+  },
+];
+
 function MediaGrid({ items }: { items: MediaCard[] }) {
   return (
     <div className='format-options'>
@@ -59,6 +133,27 @@ function MediaGrid({ items }: { items: MediaCard[] }) {
           <div className='option-meta'>{item.meta}</div>
           <div className='option-title'>{item.title}</div>
           <p className='option-desc'>{item.description}</p>
+        </article>
+      ))}
+    </div>
+  );
+}
+
+function StreamGrid({ items }: { items: StreamCard[] }) {
+  return (
+    <div className='format-options'>
+      {items.map((item) => (
+        <article
+          key={item.title}
+          className='format-option format-option-media'
+          style={{
+            backgroundImage: `linear-gradient(165deg, rgba(16, 13, 12, 0.26), rgba(16, 13, 12, 0.82)), url(${item.image})`,
+          }}
+        >
+          <div className='option-meta'>{item.meta}</div>
+          <div className='option-title'>{item.title}</div>
+          <p className='option-desc'>{item.description}</p>
+          <div className='stream-time'>{item.time}</div>
         </article>
       ))}
     </div>
@@ -80,13 +175,37 @@ export function DiscoverPage({ onNavigate }: { onNavigate: ViewNavigator }) {
       </header>
 
       <section className='page-section'>
-        <h2 className='page-section-title'>Audio</h2>
+        <h2 className='page-section-title'>Listen</h2>
         <MediaGrid items={AUDIO} />
       </section>
 
       <section className='page-section'>
-        <h2 className='page-section-title'>Video</h2>
+        <h2 className='page-section-title'>Watch</h2>
         <MediaGrid items={VIDEO} />
+      </section>
+
+      <section className='page-section'>
+        <h2 className='page-section-title'>Live now &amp; upcoming</h2>
+        <p className='page-section-intro'>
+          The Church prays as one body. Join real-time streams from communities
+          around the world, or pray today's hours on your own.
+        </p>
+        <StreamGrid items={LIVE_UPCOMING} />
+      </section>
+
+      <section className='page-section'>
+        <h2 className='page-section-title'>Recent streams</h2>
+        <StreamGrid items={LIVE_PREVIOUS} />
+      </section>
+
+      <section className='page-section'>
+        <h2 className='page-section-title'>Trusted texts</h2>
+        <p className='page-section-intro'>
+          The Liturgy of the Hours is a rich tradition with many editions and
+          formats. Here are some of the most trusted sources for the daily
+          prayer of the Church.
+        </p>
+        <StreamGrid items={TEXT_SOURCES} />
       </section>
 
       <div className='page-cta'>

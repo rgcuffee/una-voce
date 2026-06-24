@@ -88,7 +88,7 @@ export function GettingStartedPage({
           </p>
         </>
       ),
-      action: { label: "See what's live", view: 'live' },
+      action: { label: "See what's live", view: 'discover' },
     },
     {
       number: 5,

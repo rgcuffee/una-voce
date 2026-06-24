@@ -1,10 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
-import { PRIMARY_NAV, type ViewKey } from '../navigation';
+import { useLocation, useNavigate } from 'react-router-dom';
+import {
+  PRIMARY_NAV,
+  pathForView,
+  type ViewKey,
+  viewForPath,
+} from '../navigation';
 import { AboutPage } from '../pages/AboutPage';
 import { CommunityPage } from '../pages/CommunityPage';
 import { DiscoverPage } from '../pages/DiscoverPage';
 import { GettingStartedPage } from '../pages/GettingStartedPage';
-import { LivePage } from '../pages/LivePage';
 import { MorePage } from '../pages/MorePage';
 import { NavIcon } from './NavIcon';
 import { EveningPrayer } from './prayers/EveningPrayer';
@@ -203,24 +208,24 @@ const SEGMENTS: Segment[] = [
           'Straight-through narrated Morning Prayer with psalm pauses for personal response.',
       },
       {
-        meta: 'Abbey Feed',
-        title: 'Saint Benedict Abbey Audio Office',
+        meta: 'Guided Audio',
+        title: 'Psalm and Laurel',
         description:
-          'Monastic-style spoken audio with chapel ambience and structured intercessions.',
+          'Guided Prayer with clear verse cues and responsive pauses for personal reflection.',
       },
     ],
     video: [
       {
-        meta: 'Content Creator',
+        meta: 'Guided Video',
         title: 'The Little Oratory',
         description:
           'Guided video office with verse overlays and clear transitions through each section.',
       },
       {
-        meta: 'Content Creator',
+        meta: 'Guided Video',
         title: 'Psalm and Laurel',
         description:
-          'Recorded visual prayer session with psalm text subtitles and response prompts.',
+          'Chanted Prayer with clear verse cues and responsive pauses for personal reflection.',
       },
       {
         meta: 'Monastery',
@@ -247,7 +252,7 @@ const SEGMENTS: Segment[] = [
             time: '6:00 AM',
           },
           {
-            meta: 'Creator Live',
+            meta: 'Community Live',
             title: 'The Little Oratory - Morning Prayer Together',
             description:
               'Interactive live session with opening hymn and guided pace.',
@@ -1363,8 +1368,6 @@ function renderPage(view: ViewKey, onNavigate: (view: ViewKey) => void) {
   switch (view) {
     case 'discover':
       return <DiscoverPage onNavigate={onNavigate} />;
-    case 'live':
-      return <LivePage onNavigate={onNavigate} />;
     case 'community':
       return <CommunityPage onNavigate={onNavigate} />;
     case 'more':
@@ -1379,6 +1382,8 @@ function renderPage(view: ViewKey, onNavigate: (view: ViewKey) => void) {
 }
 
 export function PrayerOfficeMockup() {
+  const location = useLocation();
+  const routerNavigate = useNavigate();
   const isDesktopRef = useRef<boolean>(false);
   const [isDesktopLayout, setIsDesktopLayout] = useState(() => {
     if (typeof window === 'undefined') {
@@ -1406,7 +1411,7 @@ export function PrayerOfficeMockup() {
   const [activeDesktopSegment, setActiveDesktopSegment] = useState(
     SEGMENTS[0].id,
   );
-  const [activeView, setActiveView] = useState<ViewKey>('today');
+  const activeView = viewForPath(location.pathname);
   const [onrampDismissed, setOnrampDismissed] = useState(() => {
     if (typeof window === 'undefined') {
       return false;
@@ -1416,7 +1421,10 @@ export function PrayerOfficeMockup() {
   });
 
   const navigateTo = (view: ViewKey) => {
-    setActiveView(view);
+    const targetPath = pathForView(view);
+    if (location.pathname !== targetPath) {
+      routerNavigate(targetPath);
+    }
     if (typeof window !== 'undefined') {
       window.scrollTo({ top: 0 });
     }
@@ -1803,7 +1811,7 @@ export function PrayerOfficeMockup() {
             <div className='nav-icon'>
               <NavIcon name={item.icon} />
             </div>
-            <div className='nav-label'>{item.label}</div>
+            <div className='nav-label'>{item.shortLabel ?? item.label}</div>
           </button>
         ))}
       </nav>
