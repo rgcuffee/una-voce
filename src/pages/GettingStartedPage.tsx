@@ -52,19 +52,20 @@ export function GettingStartedPage({
     },
     {
       number: 3,
-      title: 'Listen before you lead',
+      title: 'Pray with the Church, your way',
       body: (
         <>
           <p>
-            More people are discovering the Liturgy of the Hours, and there are
-            a variety of formats, in English and in Latin, to help them enter
-            in.
+            More people are discovering the Liturgy of the Hours through spoken
+            prayer, chant, video, livestreams, and traditional books. Every
+            voice and every format offers a different way to enter into the
+            Church's daily prayer.
           </p>
           <p>
-            The Discover section is your gateway to audio and video content from
-            creators who pray these Hours aloud, chanted, recited, and sung.
-            Find a voice that draws you in, and let it carry you through the
-            prayer until the rhythm becomes your own.
+            Discover brings these trusted resources together in one place.
+            Explore audio and video from creators, monasteries, and communities
+            around the world, and find the rhythm that keeps you returning to
+            prayer.
           </p>
         </>
       ),

@@ -25,7 +25,7 @@ export const PRIMARY_NAV: NavItem[] = [
     { key: 'today', label: 'Today', icon: 'today' },
     { key: 'discover', label: 'Discover', icon: 'discover' },
     { key: 'live', label: 'Live', icon: 'live' },
-    { key: 'community', label: 'Community', icon: 'community' },
+    // { key: 'community', label: 'Community', icon: 'community' },
     { key: 'more', label: 'More', icon: 'more' },
 ];
 

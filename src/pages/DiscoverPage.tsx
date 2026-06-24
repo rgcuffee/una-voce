@@ -70,11 +70,12 @@ export function DiscoverPage({ onNavigate }: { onNavigate: ViewNavigator }) {
     <article className='page'>
       <header className='page-hero'>
         <div className='page-eyebrow'>Discover</div>
-        <h1 className='page-hero-title'>Listen before you lead</h1>
+        <h1 className='page-hero-title'>Pray with the Church, your way</h1>
         <p className='page-lead'>
-          A gateway to audio and video from creators who pray these Hours aloud,
-          chanted, recited, and sung. Find a voice that draws you in, and let it
-          carry you until the rhythm becomes your own.
+          Explore audio, video, live prayer, and trusted resources from creators
+          and communities around the world. Whether you prefer chant, spoken
+          prayer, or quiet reading, find a rhythm that helps you return
+          tomorrow.
         </p>
       </header>
 
