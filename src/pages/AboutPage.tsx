@@ -50,7 +50,9 @@ export function AboutPage({ onNavigate }: { onNavigate: ViewNavigator }) {
             been the daily prayer of the Church, rooted primarily in the Psalms
             and woven through with Scripture, canticle, hymn, and intercession.
           </p>
-          <p className='prose-emphasis'>That tradition is not a relic. It is alive.</p>
+          <p className='prose-emphasis'>
+            That tradition is not a relic. It is alive.
+          </p>
           <p>
             Una Voce promotes the sacred liturgical tradition of the Roman Rite,
             along with Latin, the official language of the Church, and Gregorian
@@ -93,10 +95,10 @@ export function AboutPage({ onNavigate }: { onNavigate: ViewNavigator }) {
           <p>
             As traditional Catholics, we believe the future of the Church rests
             with the past. The Hours are not a program or a productivity hack.
-            They are a participation in the eternal prayer of Christ Himself, the
-            High Priest who ever lives to make intercession (Hebrews 7:25). When
-            the Church prays the Hours, she prays in Him, through Him, and with
-            Him.
+            They are a participation in the eternal prayer of Christ Himself,
+            the High Priest who ever lives to make intercession (Hebrews 7:25).
+            When the Church prays the Hours, she prays in Him, through Him, and
+            with Him.
           </p>
           <p>
             Una Voce is an invitation to join that prayer, wherever you are,

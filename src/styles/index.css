@@ -1673,11 +1673,9 @@ body {
 
 .onramp {
     position: relative;
-    background: linear-gradient(
-        135deg,
-        rgba(28, 28, 30, 0.96),
-        rgba(28, 28, 30, 0.82)
-    );
+    background: linear-gradient(135deg,
+            rgba(28, 28, 30, 0.96),
+            rgba(28, 28, 30, 0.82));
     color: var(--off-white);
     border-radius: 18px;
     padding: 20px 22px;

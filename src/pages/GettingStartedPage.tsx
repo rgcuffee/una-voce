@@ -43,8 +43,8 @@ export function GettingStartedPage({
           </p>
           <p>
             Open the Daily Hours and the texts are already set for today: the
-            right psalm, the right antiphon, the right reading for this moment in
-            the liturgical year. Read it. Pray it. That's it.
+            right psalm, the right antiphon, the right reading for this moment
+            in the liturgical year. Read it. Pray it. That's it.
           </p>
         </>
       ),
