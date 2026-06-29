@@ -30,3 +30,27 @@ export interface DayInfo {
     totalCount: number;
     liveSession: LiveSession | null;
 }
+
+export type {
+    CalendarConflictReason,
+    CalendarConflictSeverity,
+    CalendarSourceType,
+    CountryScope,
+    Inserts,
+    LiturgicalColor,
+    LiturgicalHour,
+    LiturgicalRank,
+    LiturgicalSeason,
+    Tables,
+    Updates,
+} from './lib/database.types';
+
+export type {
+    Calendar,
+    CalendarConflict,
+    CalendarSource,
+    LiturgicalDay,
+    LiturgicalDayWithHours,
+    LiturgicalHourInstance,
+    RawCalendarRow,
+} from './lib/liturgicalCalendar';
