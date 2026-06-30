@@ -130,6 +130,7 @@ export type Database = {
                     rss_url: string;
                     expected_content_mode: PartnerYoutubeContentMode;
                     polling_interval_minutes: number;
+                    import_from_date: string | null;
                     active: boolean;
                     last_polled_at: string | null;
                     created_at: string;
@@ -144,6 +145,7 @@ export type Database = {
                     rss_url: string;
                     expected_content_mode?: PartnerYoutubeContentMode;
                     polling_interval_minutes?: number;
+                    import_from_date?: string | null;
                     active?: boolean;
                     last_polled_at?: string | null;
                     created_at?: string;
@@ -158,6 +160,7 @@ export type Database = {
                     rss_url?: string;
                     expected_content_mode?: PartnerYoutubeContentMode;
                     polling_interval_minutes?: number;
+                    import_from_date?: string | null;
                     active?: boolean;
                     last_polled_at?: string | null;
                     created_at?: string;

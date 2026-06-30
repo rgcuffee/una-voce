@@ -76,6 +76,7 @@ async function getDueFeeds() {
         'rss_url',
         'expected_content_mode',
         'polling_interval_minutes',
+        'import_from_date',
         'last_polled_at',
         'partners!inner(active,onboarding_status)',
       ].join(','),
@@ -140,6 +141,7 @@ async function ingestFeed(feed, rulesByPartnerId) {
     feedId: feed.id,
     partnerId: feed.partner_id,
     fetched: 0,
+    skipped: 0,
     upserted: 0,
     error: null,
   };
@@ -147,10 +149,13 @@ async function ingestFeed(feed, rulesByPartnerId) {
   try {
     const xml = await fetchFeed(feed.rss_url);
     const parsedVideos = parseYouTubeAtom(xml);
-    const existingClassifications = await getExistingClassifications(
-      parsedVideos.map((video) => video.youtubeVideoId),
+    const importableVideos = parsedVideos.filter((video) =>
+      isImportableVideo(feed, video),
     );
-    const videos = parsedVideos.map((video) =>
+    const existingClassifications = await getExistingClassifications(
+      importableVideos.map((video) => video.youtubeVideoId),
+    );
+    const videos = importableVideos.map((video) =>
       normalizeVideo(
         feed,
         video,
@@ -159,7 +164,8 @@ async function ingestFeed(feed, rulesByPartnerId) {
       ),
     );
 
-    result.fetched = videos.length;
+    result.fetched = parsedVideos.length;
+    result.skipped = parsedVideos.length - importableVideos.length;
 
     if (videos.length > 0) {
       const { error } = await supabase
@@ -178,6 +184,19 @@ async function ingestFeed(feed, rulesByPartnerId) {
   }
 
   return result;
+}
+
+function isImportableVideo(feed, video) {
+  if (!feed.import_from_date) {
+    return true;
+  }
+
+  const titleDate = inferDateFromTitle(video.title);
+  if (!titleDate) {
+    return true;
+  }
+
+  return titleDate >= feed.import_from_date;
 }
 
 async function getExistingClassifications(youtubeVideoIds) {
@@ -424,6 +443,36 @@ function parseDate(value) {
 
   const time = Date.parse(value);
   return Number.isNaN(time) ? null : new Date(time).toISOString();
+}
+
+function inferDateFromTitle(title) {
+  const months = {
+    january: '01',
+    february: '02',
+    march: '03',
+    april: '04',
+    may: '05',
+    june: '06',
+    july: '07',
+    august: '08',
+    september: '09',
+    october: '10',
+    november: '11',
+    december: '12',
+  };
+  const matches = [
+    ...title.matchAll(
+      /\b(\d{1,2})(?:st|nd|rd|th)?\s+(january|february|march|april|may|june|july|august|september|october|november|december)\b/gi,
+    ),
+  ];
+
+  if (matches.length === 0) {
+    return null;
+  }
+
+  const [, day, monthName] = matches[matches.length - 1];
+  const year = new Date().getUTCFullYear();
+  return `${year}-${months[monthName.toLowerCase()]}-${day.padStart(2, '0')}`;
 }
 
 function decodeXml(value) {

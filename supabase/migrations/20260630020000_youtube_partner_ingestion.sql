@@ -57,6 +57,7 @@ create table public.partner_youtube_feeds (
   rss_url text not null,
   expected_content_mode public.partner_youtube_content_mode not null default 'mixed',
   polling_interval_minutes integer not null default 120 check (polling_interval_minutes > 0),
+  import_from_date date,
   active boolean not null default true,
   last_polled_at timestamptz,
   created_at timestamptz not null default now(),
@@ -109,8 +110,14 @@ create index partner_youtube_feeds_partner_active_idx
 create index partner_youtube_feeds_polling_idx
   on public.partner_youtube_feeds (active, last_polled_at);
 
+create unique index partner_youtube_feeds_rss_url_key
+  on public.partner_youtube_feeds (rss_url);
+
 create index partner_classification_rules_partner_priority_idx
   on public.partner_classification_rules (partner_id, active, priority desc);
+
+create unique index partner_classification_rules_partner_name_key
+  on public.partner_classification_rules (partner_id, name);
 
 create index youtube_videos_partner_published_idx
   on public.youtube_videos (partner_id, published_at desc);
