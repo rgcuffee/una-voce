@@ -9,6 +9,11 @@
   to = "/.netlify/functions/analytics"
   status = 200
 
+[[redirects]]
+  from = "/api/youtube-ingest"
+  to = "/.netlify/functions/youtube-ingest"
+  status = 200
+
   ## Uncomment to use this redirect for Single Page Applications like create-react-app.
   ## Not needed for static site generators.
   #[[redirects]]

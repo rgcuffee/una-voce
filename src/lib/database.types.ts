@@ -53,10 +53,251 @@ export type PrayerAnalyticsEventName =
     | 'prayer_completed'
     | 'prayer_session_ended'
     | 'source_opened';
+export type PartnerOnboardingStatus = 'pending' | 'active' | 'archived';
+export type PartnerYoutubeFeedType = 'channel' | 'playlist';
+export type PartnerYoutubeContentMode =
+    | 'live'
+    | 'scheduled_live'
+    | 'pre_recorded'
+    | 'mixed';
+export type PrayerVideoKind =
+    | 'video'
+    | 'scheduled_live'
+    | 'live'
+    | 'premiere'
+    | 'unknown';
+export type YoutubeVideoDisplayStatus =
+    | 'pending'
+    | 'approved'
+    | 'hidden'
+    | 'expired';
 
 export type Database = {
     public: {
         Tables: {
+            partners: {
+                Row: {
+                    id: string;
+                    slug: string;
+                    name: string;
+                    description: string | null;
+                    website: string | null;
+                    logo_url: string | null;
+                    country: string | null;
+                    timezone: string;
+                    active: boolean;
+                    onboarding_status: PartnerOnboardingStatus;
+                    created_at: string;
+                    updated_at: string;
+                };
+                Insert: {
+                    id?: string;
+                    slug: string;
+                    name: string;
+                    description?: string | null;
+                    website?: string | null;
+                    logo_url?: string | null;
+                    country?: string | null;
+                    timezone?: string;
+                    active?: boolean;
+                    onboarding_status?: PartnerOnboardingStatus;
+                    created_at?: string;
+                    updated_at?: string;
+                };
+                Update: {
+                    id?: string;
+                    slug?: string;
+                    name?: string;
+                    description?: string | null;
+                    website?: string | null;
+                    logo_url?: string | null;
+                    country?: string | null;
+                    timezone?: string;
+                    active?: boolean;
+                    onboarding_status?: PartnerOnboardingStatus;
+                    created_at?: string;
+                    updated_at?: string;
+                };
+                Relationships: [];
+            };
+            partner_youtube_feeds: {
+                Row: {
+                    id: string;
+                    partner_id: string;
+                    type: PartnerYoutubeFeedType;
+                    youtube_channel_id: string | null;
+                    youtube_playlist_id: string | null;
+                    rss_url: string;
+                    expected_content_mode: PartnerYoutubeContentMode;
+                    polling_interval_minutes: number;
+                    active: boolean;
+                    last_polled_at: string | null;
+                    created_at: string;
+                    updated_at: string;
+                };
+                Insert: {
+                    id?: string;
+                    partner_id: string;
+                    type: PartnerYoutubeFeedType;
+                    youtube_channel_id?: string | null;
+                    youtube_playlist_id?: string | null;
+                    rss_url: string;
+                    expected_content_mode?: PartnerYoutubeContentMode;
+                    polling_interval_minutes?: number;
+                    active?: boolean;
+                    last_polled_at?: string | null;
+                    created_at?: string;
+                    updated_at?: string;
+                };
+                Update: {
+                    id?: string;
+                    partner_id?: string;
+                    type?: PartnerYoutubeFeedType;
+                    youtube_channel_id?: string | null;
+                    youtube_playlist_id?: string | null;
+                    rss_url?: string;
+                    expected_content_mode?: PartnerYoutubeContentMode;
+                    polling_interval_minutes?: number;
+                    active?: boolean;
+                    last_polled_at?: string | null;
+                    created_at?: string;
+                    updated_at?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: 'partner_youtube_feeds_partner_id_fkey';
+                        columns: ['partner_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'partners';
+                        referencedColumns: ['id'];
+                    },
+                ];
+            };
+            partner_classification_rules: {
+                Row: {
+                    id: string;
+                    partner_id: string;
+                    name: string;
+                    include_keywords: string[];
+                    exclude_keywords: string[];
+                    prayer_type: LiturgicalHour | null;
+                    preferred_language: string | null;
+                    priority: number;
+                    default_display_status: YoutubeVideoDisplayStatus;
+                    active: boolean;
+                    created_at: string;
+                    updated_at: string;
+                };
+                Insert: {
+                    id?: string;
+                    partner_id: string;
+                    name: string;
+                    include_keywords?: string[];
+                    exclude_keywords?: string[];
+                    prayer_type?: LiturgicalHour | null;
+                    preferred_language?: string | null;
+                    priority?: number;
+                    default_display_status?: YoutubeVideoDisplayStatus;
+                    active?: boolean;
+                    created_at?: string;
+                    updated_at?: string;
+                };
+                Update: {
+                    id?: string;
+                    partner_id?: string;
+                    name?: string;
+                    include_keywords?: string[];
+                    exclude_keywords?: string[];
+                    prayer_type?: LiturgicalHour | null;
+                    preferred_language?: string | null;
+                    priority?: number;
+                    default_display_status?: YoutubeVideoDisplayStatus;
+                    active?: boolean;
+                    created_at?: string;
+                    updated_at?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: 'partner_classification_rules_partner_id_fkey';
+                        columns: ['partner_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'partners';
+                        referencedColumns: ['id'];
+                    },
+                ];
+            };
+            youtube_videos: {
+                Row: {
+                    id: string;
+                    partner_id: string;
+                    feed_id: string;
+                    youtube_video_id: string;
+                    title: string;
+                    description: string | null;
+                    published_at: string;
+                    scheduled_start_at: string | null;
+                    thumbnail_url: string | null;
+                    canonical_url: string;
+                    embed_url: string;
+                    prayer_type: LiturgicalHour | null;
+                    video_kind: PrayerVideoKind;
+                    display_status: YoutubeVideoDisplayStatus;
+                    created_at: string;
+                    updated_at: string;
+                };
+                Insert: {
+                    id?: string;
+                    partner_id: string;
+                    feed_id: string;
+                    youtube_video_id: string;
+                    title: string;
+                    description?: string | null;
+                    published_at: string;
+                    scheduled_start_at?: string | null;
+                    thumbnail_url?: string | null;
+                    canonical_url: string;
+                    embed_url: string;
+                    prayer_type?: LiturgicalHour | null;
+                    video_kind?: PrayerVideoKind;
+                    display_status?: YoutubeVideoDisplayStatus;
+                    created_at?: string;
+                    updated_at?: string;
+                };
+                Update: {
+                    id?: string;
+                    partner_id?: string;
+                    feed_id?: string;
+                    youtube_video_id?: string;
+                    title?: string;
+                    description?: string | null;
+                    published_at?: string;
+                    scheduled_start_at?: string | null;
+                    thumbnail_url?: string | null;
+                    canonical_url?: string;
+                    embed_url?: string;
+                    prayer_type?: LiturgicalHour | null;
+                    video_kind?: PrayerVideoKind;
+                    display_status?: YoutubeVideoDisplayStatus;
+                    created_at?: string;
+                    updated_at?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: 'youtube_videos_partner_id_fkey';
+                        columns: ['partner_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'partners';
+                        referencedColumns: ['id'];
+                    },
+                    {
+                        foreignKeyName: 'youtube_videos_feed_id_fkey';
+                        columns: ['feed_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'partner_youtube_feeds';
+                        referencedColumns: ['id'];
+                    },
+                ];
+            };
             analytics_events: {
                 Row: {
                     id: string;
@@ -533,6 +774,11 @@ export type Database = {
             calendar_conflict_severity: CalendarConflictSeverity;
             calendar_conflict_reason: CalendarConflictReason;
             prayer_analytics_event_name: PrayerAnalyticsEventName;
+            partner_onboarding_status: PartnerOnboardingStatus;
+            partner_youtube_feed_type: PartnerYoutubeFeedType;
+            partner_youtube_content_mode: PartnerYoutubeContentMode;
+            prayer_video_kind: PrayerVideoKind;
+            youtube_video_display_status: YoutubeVideoDisplayStatus;
         };
         CompositeTypes: Record<string, never>;
     };
