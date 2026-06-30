@@ -12,6 +12,11 @@ import { DiscoverPage } from '../pages/DiscoverPage';
 import { GettingStartedPage } from '../pages/GettingStartedPage';
 import { MorePage } from '../pages/MorePage';
 import { NavIcon } from './NavIcon';
+import {
+  PrayerPlayerPanel,
+  type PrayerPlayerSession,
+  type PrayerPlayerSourceType,
+} from './PrayerPlayerPanel';
 import { EveningPrayer } from './prayers/EveningPrayer';
 import { MidafternoonPrayer } from './prayers/MidafternoonPrayer';
 import { MiddayPrayer } from './prayers/MiddayPrayer';
@@ -1322,6 +1327,7 @@ const OPTION_IMAGES: Record<'audio' | 'video' | 'live', string[]> = {
 const NAV_ITEMS = PRIMARY_NAV;
 
 const DATE_LABEL = 'Monday, June 22 · Twelfth Week in Ordinary Time';
+const MOCK_YOUTUBE_VIDEO_ID = 'M7lc1UVf-VE';
 
 function titleCase(format: FormatKey) {
   const labels: Record<FormatKey, string> = {
@@ -1337,6 +1343,59 @@ function titleCase(format: FormatKey) {
 function optionImageFor(format: 'audio' | 'video' | 'live', index: number) {
   const images = OPTION_IMAGES[format];
   return images[index % images.length];
+}
+
+function sourceNameFromTitle(title: string) {
+  return title.split(' - ')[0].replace(/\s+(Video|Recording|Office)$/i, '');
+}
+
+function analyticsSlug(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/&/g, ' and ')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function createPrayerPlayerSession({
+  item,
+  segment,
+  sourceType,
+  pageContext,
+}: {
+  item: OptionItem;
+  segment: Segment;
+  sourceType: PrayerPlayerSourceType;
+  pageContext: string;
+}): PrayerPlayerSession {
+  const sourceName = sourceNameFromTitle(item.title);
+  const hour = analyticsSlug(segment.title);
+  const ministryId = analyticsSlug(sourceName);
+
+  return {
+    sourceName,
+    sourceType,
+    prayerType: segment.title,
+    prayerId: `${hour}-${sourceType}`,
+    ministryId,
+    hour,
+    locale: 'en-US',
+    provider: 'youtube',
+    videoId: MOCK_YOUTUBE_VIDEO_ID,
+    title:
+      sourceType === 'live'
+        ? item.title.replace(`${sourceName} - `, '')
+        : segment.title,
+    statusLabel:
+      sourceType === 'live'
+        ? item.time
+          ? `Live at ${item.time}`
+          : 'Live now'
+        : 'Recorded prayer',
+    devotionalLine: 'You are joining the Church at prayer.',
+    pageContext,
+    sourceUrl: `https://www.youtube.com/watch?v=${MOCK_YOUTUBE_VIDEO_ID}`,
+  };
 }
 
 function blockClassName(variant: LiturgyBlock['variant']) {
@@ -1419,6 +1478,8 @@ export function PrayerOfficeMockup() {
 
     return window.localStorage.getItem(ONRAMP_DISMISS_KEY) === 'true';
   });
+  const [prayerPlayerSession, setPrayerPlayerSession] =
+    useState<PrayerPlayerSession | null>(null);
 
   const navigateTo = (view: ViewKey) => {
     const targetPath = pathForView(view);
@@ -1503,6 +1564,10 @@ export function PrayerOfficeMockup() {
       ...current,
       [segmentId]: !current[segmentId],
     }));
+  };
+
+  const openPrayerPlayer = (session: PrayerPlayerSession) => {
+    setPrayerPlayerSession(session);
   };
 
   const segmentsToRender = isDesktopLayout
@@ -1745,17 +1810,31 @@ export function PrayerOfficeMockup() {
                       <h4>Watch</h4>
                       <div className='format-options'>
                         {segment.video.map((item, index) => (
-                          <article
+                          <button
                             key={item.title}
+                            type='button'
                             className='format-option format-option-media'
                             style={{
                               backgroundImage: `linear-gradient(165deg, rgba(14, 12, 9, 0.18), rgba(14, 12, 9, 0.8)), url(${optionImageFor('video', index)})`,
                             }}
+                            onClick={() =>
+                              openPrayerPlayer(
+                                createPrayerPlayerSession({
+                                  item,
+                                  segment,
+                                  sourceType: 'recorded',
+                                  pageContext: 'today_watch_card',
+                                }),
+                              )
+                            }
                           >
                             <div className='option-meta'>{item.meta}</div>
                             <div className='option-title'>{item.title}</div>
                             <p className='option-desc'>{item.description}</p>
-                          </article>
+                            <span className='option-prayer-action'>
+                              Begin Prayer
+                            </span>
+                          </button>
                         ))}
                       </div>
                     </div>
@@ -1771,12 +1850,23 @@ export function PrayerOfficeMockup() {
                           </div>
                           <div className='format-options'>
                             {group.items.map((item, itemIndex) => (
-                              <article
+                              <button
                                 key={item.title}
+                                type='button'
                                 className='format-option format-option-media'
                                 style={{
                                   backgroundImage: `linear-gradient(165deg, rgba(16, 13, 12, 0.26), rgba(16, 13, 12, 0.82)), url(${optionImageFor('live', groupIndex * 8 + itemIndex)})`,
                                 }}
+                                onClick={() =>
+                                  openPrayerPlayer(
+                                    createPrayerPlayerSession({
+                                      item,
+                                      segment,
+                                      sourceType: 'live',
+                                      pageContext: 'today_live_card',
+                                    }),
+                                  )
+                                }
                               >
                                 <div className='option-meta'>{item.meta}</div>
                                 <div className='option-title'>{item.title}</div>
@@ -1786,7 +1876,12 @@ export function PrayerOfficeMockup() {
                                 {item.time ? (
                                   <div className='stream-time'>{item.time}</div>
                                 ) : null}
-                              </article>
+                                <span className='option-prayer-action'>
+                                  {group.title === 'Upcoming'
+                                    ? 'Join Live'
+                                    : 'Pray Now'}
+                                </span>
+                              </button>
                             ))}
                           </div>
                         </div>
@@ -1815,6 +1910,10 @@ export function PrayerOfficeMockup() {
           </button>
         ))}
       </nav>
+      <PrayerPlayerPanel
+        session={prayerPlayerSession}
+        onClose={() => setPrayerPlayerSession(null)}
+      />
     </div>
   );
 }

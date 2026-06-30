@@ -44,10 +44,139 @@ export type CalendarConflictReason =
     | 'different_holy_day_obligation'
     | 'country_specific'
     | 'manual_review';
+export type PrayerAnalyticsEventName =
+    | 'prayer_session_started'
+    | 'prayer_play_started'
+    | 'prayer_play_paused'
+    | 'prayer_play_resumed'
+    | 'prayer_progress'
+    | 'prayer_completed'
+    | 'prayer_session_ended'
+    | 'source_opened';
 
 export type Database = {
     public: {
         Tables: {
+            analytics_events: {
+                Row: {
+                    id: string;
+                    occurred_at: string;
+                    session_id: string;
+                    event_name: PrayerAnalyticsEventName;
+                    prayer_id: string | null;
+                    ministry_id: string | null;
+                    hour: string | null;
+                    locale: string;
+                    user_id: string | null;
+                    anonymous_id: string;
+                    progress_percent: number | null;
+                    playback_seconds: number | null;
+                    metadata: Json;
+                };
+                Insert: {
+                    id?: string;
+                    occurred_at?: string;
+                    session_id: string;
+                    event_name: PrayerAnalyticsEventName;
+                    prayer_id?: string | null;
+                    ministry_id?: string | null;
+                    hour?: string | null;
+                    locale?: string;
+                    user_id?: string | null;
+                    anonymous_id: string;
+                    progress_percent?: number | null;
+                    playback_seconds?: number | null;
+                    metadata?: Json;
+                };
+                Update: {
+                    id?: string;
+                    occurred_at?: string;
+                    session_id?: string;
+                    event_name?: PrayerAnalyticsEventName;
+                    prayer_id?: string | null;
+                    ministry_id?: string | null;
+                    hour?: string | null;
+                    locale?: string;
+                    user_id?: string | null;
+                    anonymous_id?: string;
+                    progress_percent?: number | null;
+                    playback_seconds?: number | null;
+                    metadata?: Json;
+                };
+                Relationships: [];
+            };
+            analytics_sessions: {
+                Row: {
+                    session_id: string;
+                    started_at: string;
+                    ended_at: string | null;
+                    active_play_seconds: number;
+                    panel_open_seconds: number | null;
+                    highest_progress: number;
+                    completed: boolean;
+                    opened_source: boolean;
+                    ministry_id: string | null;
+                    prayer_id: string | null;
+                    hour: string | null;
+                    locale: string;
+                    user_id: string | null;
+                    anonymous_id: string;
+                    source_name: string | null;
+                    source_type: string | null;
+                    provider: string | null;
+                    video_id: string | null;
+                    page_context: string | null;
+                    created_at: string;
+                    updated_at: string;
+                };
+                Insert: {
+                    session_id: string;
+                    started_at: string;
+                    ended_at?: string | null;
+                    active_play_seconds?: number;
+                    panel_open_seconds?: number | null;
+                    highest_progress?: number;
+                    completed?: boolean;
+                    opened_source?: boolean;
+                    ministry_id?: string | null;
+                    prayer_id?: string | null;
+                    hour?: string | null;
+                    locale?: string;
+                    user_id?: string | null;
+                    anonymous_id: string;
+                    source_name?: string | null;
+                    source_type?: string | null;
+                    provider?: string | null;
+                    video_id?: string | null;
+                    page_context?: string | null;
+                    created_at?: string;
+                    updated_at?: string;
+                };
+                Update: {
+                    session_id?: string;
+                    started_at?: string;
+                    ended_at?: string | null;
+                    active_play_seconds?: number;
+                    panel_open_seconds?: number | null;
+                    highest_progress?: number;
+                    completed?: boolean;
+                    opened_source?: boolean;
+                    ministry_id?: string | null;
+                    prayer_id?: string | null;
+                    hour?: string | null;
+                    locale?: string;
+                    user_id?: string | null;
+                    anonymous_id?: string;
+                    source_name?: string | null;
+                    source_type?: string | null;
+                    provider?: string | null;
+                    video_id?: string | null;
+                    page_context?: string | null;
+                    created_at?: string;
+                    updated_at?: string;
+                };
+                Relationships: [];
+            };
             calendars: {
                 Row: {
                     id: string;
@@ -403,6 +532,7 @@ export type Database = {
             liturgical_hour: LiturgicalHour;
             calendar_conflict_severity: CalendarConflictSeverity;
             calendar_conflict_reason: CalendarConflictReason;
+            prayer_analytics_event_name: PrayerAnalyticsEventName;
         };
         CompositeTypes: Record<string, never>;
     };
