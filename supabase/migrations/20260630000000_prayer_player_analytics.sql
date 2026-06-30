@@ -93,16 +93,3 @@ create trigger protect_analytics_session_rollups
 
 alter table public.analytics_events enable row level security;
 alter table public.analytics_sessions enable row level security;
-
-create policy "Analytics events can be recorded"
-  on public.analytics_events for insert
-  with check (true);
-
-create policy "Analytics sessions can be created"
-  on public.analytics_sessions for insert
-  with check (true);
-
-create policy "Analytics sessions can be updated"
-  on public.analytics_sessions for update
-  using (true)
-  with check (true);
