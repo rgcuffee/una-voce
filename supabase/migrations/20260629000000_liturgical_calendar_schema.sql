@@ -17,6 +17,7 @@ create type public.liturgical_season as enum (
 
 create type public.liturgical_rank as enum (
   'weekday',
+  'commemoration',
   'optional_memorial',
   'memorial',
   'feast',
@@ -38,6 +39,15 @@ create type public.country_scope as enum (
   'EW',
   'E',
   'W'
+);
+
+create type public.obligation_status as enum (
+  'none',
+  'sunday',
+  'holy_day',
+  'transferred',
+  'suppressed',
+  'particular_law'
 );
 
 create type public.liturgical_hour as enum (
@@ -106,6 +116,9 @@ create table public.liturgical_days (
   id uuid primary key default gen_random_uuid(),
   calendar_id text not null references public.calendars(id) on delete cascade,
   date date not null,
+  weekday smallint not null,
+  weekday_name text not null,
+  celebration_id text not null,
   title text not null,
   display_title text not null,
   season public.liturgical_season not null,
@@ -114,13 +127,29 @@ create table public.liturgical_days (
   rank public.liturgical_rank not null,
   color public.liturgical_color,
   country_scope public.country_scope,
-  is_holy_day_of_obligation boolean not null default false,
+  obligation_status public.obligation_status not null default 'none',
   source_id uuid not null references public.calendar_sources(id),
   raw_source_text text,
-  notes text,
+  parser_notes text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   unique (calendar_id, date)
+);
+
+create table public.liturgical_day_options (
+  id uuid primary key default gen_random_uuid(),
+  calendar_id text not null references public.calendars(id),
+  date date not null,
+  celebration_id text not null,
+  title text not null,
+  rank public.liturgical_rank,
+  color public.liturgical_color,
+  country_scope public.country_scope,
+  source_id uuid references public.calendar_sources(id),
+  raw_source_text text,
+  raw_option_text text,
+  parser_notes text,
+  unique (calendar_id, date, celebration_id)
 );
 
 create table public.liturgical_hour_instances (
@@ -163,6 +192,9 @@ create index raw_calendar_rows_calendar_date_idx
 
 create index liturgical_days_date_idx
   on public.liturgical_days (date);
+
+create index liturgical_day_options_calendar_date_idx
+  on public.liturgical_day_options (calendar_id, date);
 
 create index liturgical_hour_instances_calendar_date_idx
   on public.liturgical_hour_instances (calendar_id, date, sort_order);
@@ -243,6 +275,7 @@ alter table public.calendars enable row level security;
 alter table public.calendar_sources enable row level security;
 alter table public.raw_calendar_rows enable row level security;
 alter table public.liturgical_days enable row level security;
+alter table public.liturgical_day_options enable row level security;
 alter table public.liturgical_hour_instances enable row level security;
 alter table public.calendar_conflicts enable row level security;
 
@@ -256,6 +289,10 @@ create policy "Calendar sources are readable"
 
 create policy "Liturgical days are readable"
   on public.liturgical_days for select
+  using (true);
+
+create policy "Liturgical day options are readable"
+  on public.liturgical_day_options for select
   using (true);
 
 create policy "Liturgical hour instances are readable"
