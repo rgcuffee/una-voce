@@ -27,29 +27,49 @@ export const config = {
 };
 
 export async function handler(event) {
+  logInfo('started', {
+    method: event.httpMethod,
+    scheduled: isScheduledEvent(event),
+    hasSupabaseUrl: Boolean(supabaseUrl),
+    hasServiceRoleKey: Boolean(supabaseServiceRoleKey),
+  });
+
   if (event.httpMethod === 'OPTIONS') {
     return response(204);
   }
 
   if (!['GET', 'POST'].includes(event.httpMethod)) {
+    logWarn('method_not_allowed', { method: event.httpMethod });
     return response(405, { error: 'Method not allowed' });
   }
 
   if (!supabase) {
+    logError('missing_supabase_config', {
+      hasSupabaseUrl: Boolean(supabaseUrl),
+      hasServiceRoleKey: Boolean(supabaseServiceRoleKey),
+    });
     return response(500, { error: 'YouTube ingestion is not configured' });
   }
 
   if (!isAuthorized(event)) {
+    logWarn('unauthorized');
     return response(401, { error: 'Unauthorized' });
   }
 
   const dueFeedsResult = await getDueFeeds();
   if (dueFeedsResult.error) {
+    logError('load_feeds_failed', { error: dueFeedsResult.error.message });
     return response(500, { error: 'Unable to load YouTube feeds' });
   }
 
+  logInfo('feeds_loaded', {
+    activeFeeds: dueFeedsResult.totalActiveFeeds,
+    dueFeeds: dueFeedsResult.feeds.length,
+  });
+
   const rulesResult = await getRulesForFeeds(dueFeedsResult.feeds);
   if (rulesResult.error) {
+    logError('load_rules_failed', { error: rulesResult.error.message });
     return response(500, { error: 'Unable to load classification rules' });
   }
 
@@ -58,12 +78,16 @@ export async function handler(event) {
     results.push(await ingestFeed(feed, rulesResult.rulesByPartnerId));
   }
 
-  return response(202, {
+  const summary = {
     ok: true,
     feedsChecked: results.length,
     videosUpserted: results.reduce((total, result) => total + result.upserted, 0),
     results,
-  });
+  };
+
+  logInfo('finished', summary);
+
+  return response(202, summary);
 }
 
 async function getDueFeeds() {
@@ -95,7 +119,7 @@ async function getDueFeeds() {
     .filter((feed) => isDueForPolling(feed, now))
     .slice(0, MAX_FEEDS_PER_RUN);
 
-  return { feeds };
+  return { feeds, totalActiveFeeds: data?.length ?? 0 };
 }
 
 async function getRulesForFeeds(feeds) {
@@ -147,6 +171,13 @@ async function ingestFeed(feed, rulesByPartnerId) {
   };
 
   try {
+    logInfo('feed_started', {
+      feedId: feed.id,
+      partnerId: feed.partner_id,
+      feedRef: feedRef(feed),
+      importFromDate: feed.import_from_date,
+    });
+
     const xml = await fetchFeed(feed.rss_url);
     const parsedVideos = parseYouTubeAtom(xml);
     const importableVideos = parsedVideos.filter((video) =>
@@ -179,8 +210,10 @@ async function ingestFeed(feed, rulesByPartnerId) {
 
     result.upserted = videos.length;
     await markFeedPolled(feed.id);
+    logInfo('feed_finished', result);
   } catch (error) {
     result.error = error instanceof Error ? error.message : 'Unknown error';
+    logError('feed_failed', result);
   }
 
   return result;
@@ -504,6 +537,30 @@ function isAuthorized(event) {
 
 function isScheduledEvent(event) {
   return event.headers?.['x-nf-event'] === 'schedule';
+}
+
+function feedRef(feed) {
+  if (feed.youtube_playlist_id) {
+    return `playlist:${feed.youtube_playlist_id}`;
+  }
+
+  if (feed.youtube_channel_id) {
+    return `channel:${feed.youtube_channel_id}`;
+  }
+
+  return 'unknown';
+}
+
+function logInfo(message, detail = {}) {
+  console.info(`[youtube-ingest] ${message}`, JSON.stringify(detail));
+}
+
+function logWarn(message, detail = {}) {
+  console.warn(`[youtube-ingest] ${message}`, JSON.stringify(detail));
+}
+
+function logError(message, detail = {}) {
+  console.error(`[youtube-ingest] ${message}`, JSON.stringify(detail));
 }
 
 function response(statusCode, body) {
