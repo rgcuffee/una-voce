@@ -22,14 +22,10 @@ const supabase =
     })
     : null;
 
-export const config = {
-  schedule: '*/30 * * * *',
-};
-
 export async function handler(event) {
   logInfo('started', {
     method: event.httpMethod,
-    scheduled: isScheduledEvent(event),
+    scheduled: false,
     hasSupabaseUrl: Boolean(supabaseUrl),
     hasServiceRoleKey: Boolean(supabaseServiceRoleKey),
   });
@@ -56,10 +52,16 @@ export async function handler(event) {
     return response(401, { error: 'Unauthorized' });
   }
 
+  const summary = await runYoutubeIngest();
+
+  return response(summary.ok ? 202 : 500, summary);
+}
+
+export async function runYoutubeIngest() {
   const dueFeedsResult = await getDueFeeds();
   if (dueFeedsResult.error) {
     logError('load_feeds_failed', { error: dueFeedsResult.error.message });
-    return response(500, { error: 'Unable to load YouTube feeds' });
+    return { ok: false, error: 'Unable to load YouTube feeds' };
   }
 
   logInfo('feeds_loaded', {
@@ -70,7 +72,7 @@ export async function handler(event) {
   const rulesResult = await getRulesForFeeds(dueFeedsResult.feeds);
   if (rulesResult.error) {
     logError('load_rules_failed', { error: rulesResult.error.message });
-    return response(500, { error: 'Unable to load classification rules' });
+    return { ok: false, error: 'Unable to load classification rules' };
   }
 
   const results = [];
@@ -87,7 +89,7 @@ export async function handler(event) {
 
   logInfo('finished', summary);
 
-  return response(202, summary);
+  return summary;
 }
 
 async function getDueFeeds() {
@@ -523,7 +525,7 @@ function escapeRegExp(value) {
 }
 
 function isAuthorized(event) {
-  if (isScheduledEvent(event) || !ingestSharedSecret) {
+  if (!ingestSharedSecret) {
     return true;
   }
 
@@ -533,10 +535,6 @@ function isAuthorized(event) {
     secretHeader === ingestSharedSecret ||
     authorization === `Bearer ${ingestSharedSecret}`
   );
-}
-
-function isScheduledEvent(event) {
-  return event.headers?.['x-nf-event'] === 'schedule';
 }
 
 function feedRef(feed) {

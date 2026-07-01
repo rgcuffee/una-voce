@@ -4,6 +4,9 @@
   functions = "netlify/functions"
   publish = "dist"
 
+[functions."youtube-ingest-scheduled"]
+  schedule = "*/30 * * * *"
+
 [[redirects]]
   from = "/api/analytics"
   to = "/.netlify/functions/analytics"
