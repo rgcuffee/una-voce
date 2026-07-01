@@ -61,6 +61,32 @@ body {
     z-index: 100;
 }
 
+.prototype-banner {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+    margin-bottom: 14px;
+    padding: 8px 10px;
+    border: 1px solid rgba(184, 151, 58, 0.24);
+    border-radius: 8px;
+    background: #fff8e8;
+    color: var(--charcoal-mid);
+    font-size: 12px;
+    line-height: 1.3;
+}
+
+.prototype-banner-title {
+    flex-shrink: 0;
+    color: var(--charcoal);
+    font-weight: 700;
+}
+
+.prototype-banner-copy {
+    color: var(--charcoal-soft);
+}
+
 .header-top {
     display: flex;
     justify-content: space-between;

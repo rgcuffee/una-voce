@@ -1579,6 +1579,17 @@ export function PrayerOfficeMockup() {
   return (
     <div className={`phone${activeView === 'today' ? '' : ' single-column'}`}>
       <header className='app-header'>
+        <div
+          className='prototype-banner'
+          role='status'
+          aria-label='Preview mode: This site is a mockup for prototyping and review. The official landing page is coming soon.'
+        >
+          <span className='prototype-banner-title'>Preview mode:</span>
+          <span className='prototype-banner-copy'>
+            This site is a mockup for prototyping and review. The official
+            landing page is coming soon.
+          </span>
+        </div>
         <div className='header-top'>
           <div
             className='logo'
