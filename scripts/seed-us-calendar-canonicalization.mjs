@@ -2,10 +2,36 @@ import fs from 'node:fs';
 import { dirname, join } from 'node:path';
 import { createClient } from '@supabase/supabase-js';
 
-const CALENDAR_ID = 'us';
+const DEFAULT_CALENDAR_ID = 'us';
 const DATE_START = '2025-11-30';
 const DATE_END = '2026-12-31';
-const REPORT_PATH = 'tmp/calendar/us/2026/canonicalization_report.json';
+
+function parseArgs(argv) {
+    const args = {
+        calendarId: DEFAULT_CALENDAR_ID,
+    };
+
+    for (let index = 2; index < argv.length; index += 1) {
+        const arg = argv[index];
+        const next = argv[index + 1];
+
+        if (arg === '--calendar') {
+            args.calendarId = next;
+            index += 1;
+        } else {
+            throw new Error(`Unknown argument: ${arg}`);
+        }
+    }
+
+    if (!args.calendarId) {
+        throw new Error('Usage: npm run seed:us-calendar-canonical -- [--calendar us|ew]');
+    }
+
+    return args;
+}
+
+const { calendarId: CALENDAR_ID } = parseArgs(process.argv);
+const REPORT_PATH = `tmp/calendar/${CALENDAR_ID}/2026/canonicalization_report.json`;
 
 const MANUAL_CANONICAL_IDS = new Map([
     ['all_sts', 'all_saints'],
@@ -87,6 +113,44 @@ function canonicalIdFor(sourceId) {
     }
 
     return sourceId
+        .replace(/(^|_)1st(?=_|$)/g, '$1first')
+        .replace(/(^|_)2nd(?=_|$)/g, '$1second')
+        .replace(/(^|_)3rd(?=_|$)/g, '$1third')
+        .replace(/(^|_)4th(?=_|$)/g, '$1fourth')
+        .replace(/(^|_)5th(?=_|$)/g, '$1fifth')
+        .replace(/(^|_)6th(?=_|$)/g, '$1sixth')
+        .replace(/(^|_)7th(?=_|$)/g, '$1seventh')
+        .replace(/(^|_)8th(?=_|$)/g, '$1eighth')
+        .replace(/(^|_)9th(?=_|$)/g, '$1ninth')
+        .replace(/(^|_)10th(?=_|$)/g, '$1tenth')
+        .replace(/(^|_)11th(?=_|$)/g, '$1eleventh')
+        .replace(/(^|_)12th(?=_|$)/g, '$1twelfth')
+        .replace(/(^|_)13th(?=_|$)/g, '$1thirteenth')
+        .replace(/(^|_)14th(?=_|$)/g, '$1fourteenth')
+        .replace(/(^|_)15th(?=_|$)/g, '$1fifteenth')
+        .replace(/(^|_)16th(?=_|$)/g, '$1sixteenth')
+        .replace(/(^|_)17th(?=_|$)/g, '$1seventeenth')
+        .replace(/(^|_)18th(?=_|$)/g, '$1eighteenth')
+        .replace(/(^|_)19th(?=_|$)/g, '$1nineteenth')
+        .replace(/(^|_)20th(?=_|$)/g, '$1twentieth')
+        .replace(/(^|_)21st(?=_|$)/g, '$1twenty_first')
+        .replace(/(^|_)22nd(?=_|$)/g, '$1twenty_second')
+        .replace(/(^|_)23rd(?=_|$)/g, '$1twenty_third')
+        .replace(/(^|_)24th(?=_|$)/g, '$1twenty_fourth')
+        .replace(/(^|_)25th(?=_|$)/g, '$1twenty_fifth')
+        .replace(/(^|_)26th(?=_|$)/g, '$1twenty_sixth')
+        .replace(/(^|_)27th(?=_|$)/g, '$1twenty_seventh')
+        .replace(/(^|_)28th(?=_|$)/g, '$1twenty_eighth')
+        .replace(/(^|_)29th(?=_|$)/g, '$1twenty_ninth')
+        .replace(/(^|_)30th(?=_|$)/g, '$1thirtieth')
+        .replace(/(^|_)31st(?=_|$)/g, '$1thirty_first')
+        .replace(/(^|_)32nd(?=_|$)/g, '$1thirty_second')
+        .replace(/(^|_)33rd(?=_|$)/g, '$1thirty_third')
+        .replace(/(^|_)34th(?=_|$)/g, '$1thirty_fourth')
+        .replace(/^(weekday_of_advent|advent_weekday)$/, 'advent_weekday')
+        .replace(/^(weekday_of_christmas|christmas_weekday)$/, 'christmas_weekday')
+        .replace(/^(lenten_weekday|weekday_of_lent)$/, 'lenten_weekday')
+        .replace(/^(easter_weekday|weekday_of_easter)$/, 'easter_weekday')
         .replace(/^the_/, '')
         .replace(/^sts_/, 'saints_')
         .replace(/^st_/, 'saint_');
@@ -368,23 +432,7 @@ for (const rows of chunk(staleAliasIds)) {
     );
 }
 
-const existingGeneratedReviewCanonicals = await throwIfError(
-    'read stale-review canonical celebrations',
-    await supabase
-        .from('canonical_celebrations')
-        .select('id')
-        .eq('notes', 'Generated from a source identifier that needs manual review.'),
-);
-const staleCanonicalIds = existingGeneratedReviewCanonicals.data
-    .map((celebration) => celebration.id)
-    .filter((id) => !currentCanonicalIds.has(id));
-
-for (const rows of chunk(staleCanonicalIds)) {
-    await throwIfError(
-        'delete stale-review canonical celebrations',
-        await supabase.from('canonical_celebrations').delete().in('id', rows),
-    );
-}
+const staleCanonicalIds = [];
 
 for (const rows of chunk(rowsWithEngineFields(principalRows))) {
     await Promise.all(

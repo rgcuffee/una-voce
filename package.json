@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "build:us-calendar-sql": "node scripts/build-usccb-calendar-sql.mjs",
+    "build:ew-calendar-report": "node scripts/build-ew-calendar-report.mjs",
     "seed:us-calendar": "node scripts/seed-us-calendar-supabase.mjs",
+    "seed:ew-calendar": "node scripts/seed-ew-calendar-supabase.mjs",
     "seed:us-calendar-canonical": "node scripts/seed-us-calendar-canonicalization.mjs",
     "generate:calendar-conflicts": "node scripts/generate-calendar-conflicts.mjs",
     "dev": "vite",
