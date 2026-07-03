@@ -9,6 +9,14 @@ const WORTH_ABBEY_FEED_URLS = [
 
 const FETCH_TIMEOUT_MS = 12000;
 const USER_AGENT = 'Una Voce Worth Abbey Card Fetch/1.0 (+https://unavoce.app)';
+const WORTH_ABBEY_TIMEZONE = 'Europe/London';
+const WORTH_ABBEY_FALLBACK_START_TIMES = {
+  office_of_readings: '06:15',
+  lauds: '07:30',
+  midday_prayer: '13:00',
+  vespers: '18:45',
+  compline: '20:15',
+};
 
 export async function worthAbbeyVideosResponse(date) {
   const selectedDate = validDateOrToday(date);
@@ -135,13 +143,39 @@ async function enrichWorthAbbeyVideo(video) {
   const liveDetails = watchPageDetails.startTimestamp
     ? watchPageDetails
     : await fetchPlayerLiveBroadcastDetails(video.youtubeVideoId);
+  const fallbackDetails = liveDetails.startTimestamp
+    ? null
+    : fallbackWorthAbbeyLiveDetails(video);
+  const timingDetails = liveDetails.startTimestamp
+    ? liveDetails
+    : fallbackDetails;
 
   return {
     ...video,
-    liveStartAt: liveDetails.startTimestamp,
-    liveEndAt: liveDetails.endTimestamp,
-    isLiveNow: liveDetails.isLiveNow,
-    timingSource: liveDetails.source,
+    liveStartAt: timingDetails?.startTimestamp ?? null,
+    liveEndAt: timingDetails?.endTimestamp ?? null,
+    isLiveNow: timingDetails?.isLiveNow ?? false,
+    timingSource: timingDetails?.source ?? null,
+  };
+}
+
+function fallbackWorthAbbeyLiveDetails(video) {
+  const fallbackTime =
+    video.prayerType && WORTH_ABBEY_FALLBACK_START_TIMES[video.prayerType];
+
+  if (!video.prayerDate || !fallbackTime) {
+    return null;
+  }
+
+  return {
+    startTimestamp: zonedLocalTimeToUtcIso(
+      video.prayerDate,
+      fallbackTime,
+      WORTH_ABBEY_TIMEZONE,
+    ),
+    endTimestamp: null,
+    isLiveNow: false,
+    source: 'schedule',
   };
 }
 
@@ -380,6 +414,46 @@ function stripLeadingWeekdayMarker(value) {
       '',
     )
     .trim();
+}
+
+function zonedLocalTimeToUtcIso(dateString, timeString, timeZone) {
+  const [year, month, day] = dateString.split('-').map(Number);
+  const [hour, minute] = timeString.split(':').map(Number);
+  const utcGuess = Date.UTC(year, month - 1, day, hour, minute, 0);
+  const firstOffset = timeZoneOffsetMs(new Date(utcGuess), timeZone);
+  const firstResult = new Date(utcGuess - firstOffset);
+  const secondOffset = timeZoneOffsetMs(firstResult, timeZone);
+
+  return new Date(utcGuess - secondOffset).toISOString();
+}
+
+function timeZoneOffsetMs(date, timeZone) {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    hour12: false,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  }).formatToParts(date);
+  const valueByType = Object.fromEntries(
+    parts
+      .filter((part) => part.type !== 'literal')
+      .map((part) => [part.type, Number(part.value)]),
+  );
+
+  return (
+    Date.UTC(
+      valueByType.year,
+      valueByType.month - 1,
+      valueByType.day,
+      valueByType.hour,
+      valueByType.minute,
+      valueByType.second,
+    ) - date.getTime()
+  );
 }
 
 function inferDateFromTitle(title) {
