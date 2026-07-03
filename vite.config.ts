@@ -2,9 +2,58 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
 import { VitePWA } from 'vite-plugin-pwa'
 
+declare const process: {
+    cwd(): string
+}
+
 export default defineConfig({
     plugins: [
         react(),
+        {
+            name: 'una-voce-local-functions',
+            configureServer(server) {
+                server.middlewares.use(
+                    '/.netlify/functions/cathoholic-videos',
+                    async (request, response) => {
+                        try {
+                            const requestPath =
+                                (request as { url?: string }).url ?? ''
+                            const date =
+                                requestPath.match(/[?&]date=([^&]+)/)?.[1]
+                            const functionModulePath = `file://${process.cwd()}/netlify/functions/lib/cathoholic-videos.mjs`
+                            const { cathoholicVideosResponse } = await import(
+                                functionModulePath
+                            )
+                            const body = await cathoholicVideosResponse(
+                                date ? decodeURIComponent(date) : null,
+                            )
+
+                            response.statusCode = 200
+                            response.setHeader(
+                                'content-type',
+                                'application/json',
+                            )
+                            response.end(JSON.stringify(body))
+                        } catch (error) {
+                            response.statusCode = 502
+                            response.setHeader(
+                                'content-type',
+                                'application/json',
+                            )
+                            response.end(
+                                JSON.stringify({
+                                    ok: false,
+                                    error:
+                                        error instanceof Error
+                                            ? error.message
+                                            : 'Unable to load Cathoholic videos',
+                                }),
+                            )
+                        }
+                    },
+                )
+            },
+        },
         VitePWA({
             registerType: 'autoUpdate',
             includeAssets: ['favicon.svg', 'apple-touch-icon.png'],

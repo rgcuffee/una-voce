@@ -49,6 +49,25 @@ type OptionItem = {
   title: string;
   description: string;
   time?: string;
+  source?: 'mock' | 'partner';
+  imageUrl?: string;
+  videoId?: string;
+  sourceUrl?: string;
+};
+
+type CathoholicVideo = {
+  partnerName: string;
+  prayerType: 'lauds' | 'vespers' | null;
+  prayerDate: string;
+  title: string;
+  displayTitle: string;
+  description: string | null;
+  youtubeVideoId: string;
+  thumbnailUrl: string;
+  canonicalUrl: string;
+  embedUrl: string;
+  publishedAt: string;
+  scheduledStartAt: string | null;
 };
 
 type Segment = {
@@ -1358,9 +1377,7 @@ function localDateString(date = new Date()) {
 function selectedDateFromSearch(search: string) {
   const date = new URLSearchParams(search).get('date');
 
-  return date && /^\d{4}-\d{2}-\d{2}$/.test(date)
-    ? date
-    : localDateString();
+  return date && /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : localDateString();
 }
 
 function formatCivilDate(date: string) {
@@ -1383,6 +1400,52 @@ function formatLiturgicalDateLabel(
 
 function sourceNameFromTitle(title: string) {
   return title.split(' - ')[0].replace(/\s+(Video|Recording|Office)$/i, '');
+}
+
+function cathoholicVideoForSegment(
+  segment: Segment,
+  videos: CathoholicVideo[],
+): OptionItem | null {
+  if (segment.id === 'segment-morning') {
+    const video = videos.find((item) => item.prayerType === 'lauds');
+    if (!video) {
+      return null;
+    }
+
+    return {
+      meta: 'Cathoholic Music · Lauds',
+      title: `Cathoholic Music - ${video.displayTitle}`,
+      description: 'Sing today’s Morning Prayer with visual guides.',
+      source: 'partner',
+      imageUrl: video.thumbnailUrl,
+      videoId: video.youtubeVideoId,
+      sourceUrl: video.canonicalUrl,
+    };
+  }
+
+  if (segment.id === 'segment-evening') {
+    const video = videos.find((item) => item.prayerType === 'vespers');
+    if (!video) {
+      return null;
+    }
+
+    return {
+      meta: 'Cathoholic Music · Vespers',
+      title: `Cathoholic Music - ${video.displayTitle}`,
+      description: 'Sing today’s Evening Prayer with visual guides.',
+      source: 'partner',
+      imageUrl: video.thumbnailUrl,
+      videoId: video.youtubeVideoId,
+      sourceUrl: video.canonicalUrl,
+    };
+  }
+
+  return null;
+}
+
+function videoOptionsForSegment(segment: Segment, videos: CathoholicVideo[]) {
+  const cathoholicVideo = cathoholicVideoForSegment(segment, videos);
+  return cathoholicVideo ? [cathoholicVideo, ...segment.video] : segment.video;
 }
 
 function analyticsSlug(value: string) {
@@ -1417,7 +1480,7 @@ function createPrayerPlayerSession({
     hour,
     locale: 'en-US',
     provider: 'youtube',
-    videoId: MOCK_YOUTUBE_VIDEO_ID,
+    videoId: item.videoId ?? MOCK_YOUTUBE_VIDEO_ID,
     title:
       sourceType === 'live'
         ? item.title.replace(`${sourceName} - `, '')
@@ -1430,7 +1493,9 @@ function createPrayerPlayerSession({
         : 'Recorded prayer',
     devotionalLine: 'You are joining the Church at prayer.',
     pageContext,
-    sourceUrl: `https://www.youtube.com/watch?v=${MOCK_YOUTUBE_VIDEO_ID}`,
+    sourceUrl:
+      item.sourceUrl ??
+      `https://www.youtube.com/watch?v=${item.videoId ?? MOCK_YOUTUBE_VIDEO_ID}`,
   };
 }
 
@@ -1518,6 +1583,9 @@ export function PrayerOfficeMockup() {
   const [prayerPlayerSession, setPrayerPlayerSession] =
     useState<PrayerPlayerSession | null>(null);
   const [dateLabel, setDateLabel] = useState(FALLBACK_DATE_LABEL);
+  const [cathoholicVideos, setCathoholicVideos] = useState<CathoholicVideo[]>(
+    [],
+  );
 
   const navigateTo = (view: ViewKey) => {
     const targetPath = pathForView(view);
@@ -1612,6 +1680,39 @@ export function PrayerOfficeMockup() {
     };
   }, [selectedDate]);
 
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadCathoholicVideos() {
+      try {
+        const response = await fetch(
+          `/.netlify/functions/cathoholic-videos?date=${encodeURIComponent(selectedDate)}`,
+          { signal: controller.signal },
+        );
+
+        if (!response.ok) {
+          throw new Error(`Cathoholic videos returned ${response.status}`);
+        }
+
+        const body = (await response.json()) as {
+          videos?: CathoholicVideo[];
+        };
+        setCathoholicVideos(body.videos ?? []);
+      } catch (error) {
+        if (controller.signal.aborted) {
+          return;
+        }
+
+        console.warn('Unable to load Cathoholic videos.', error);
+        setCathoholicVideos([]);
+      }
+    }
+
+    void loadCathoholicVideos();
+
+    return () => controller.abort();
+  }, [selectedDate]);
+
   const setFormat = (segmentId: string, format: FormatKey) => {
     setSelectedFormats((current) => ({ ...current, [segmentId]: format }));
   };
@@ -1639,22 +1740,22 @@ export function PrayerOfficeMockup() {
 
   return (
     <div className={`phone${activeView === 'today' ? '' : ' single-column'}`}>
-      <header className='app-header'>
+      <header className="app-header">
         <div
-          className='prototype-banner'
-          role='status'
-          aria-label='Preview mode: This site is a mockup for prototyping and review. The official landing page is coming soon.'
+          className="prototype-banner"
+          role="status"
+          aria-label="Preview mode: This site is a mockup for prototyping and review. The official landing page is coming soon."
         >
-          <span className='prototype-banner-title'>Preview mode:</span>
-          <span className='prototype-banner-copy'>
+          <span className="prototype-banner-title">Preview mode:</span>
+          <span className="prototype-banner-copy">
             This site is a mockup for prototyping and review. The official
             landing page is coming soon.
           </span>
         </div>
-        <div className='header-top'>
+        <div className="header-top">
           <div
-            className='logo'
-            role='button'
+            className="logo"
+            role="button"
             tabIndex={0}
             onClick={() => navigateTo('today')}
             onKeyDown={(event) => {
@@ -1666,11 +1767,11 @@ export function PrayerOfficeMockup() {
           >
             UNA <span>VOCE</span>
           </div>
-          <nav className='header-nav' aria-label='Primary'>
+          <nav className="header-nav" aria-label="Primary">
             {NAV_ITEMS.map((item) => (
               <button
                 key={item.key}
-                type='button'
+                type="button"
                 className={`header-nav-link${activeView === item.key ? ' active' : ''}`}
                 onClick={() => navigateTo(item.key)}
               >
@@ -1678,28 +1779,28 @@ export function PrayerOfficeMockup() {
               </button>
             ))}
           </nav>
-          <div className='header-icon'>☩</div>
+          <div className="header-icon">☩</div>
         </div>
-        <div className='date-line'>{dateLabel}</div>
+        <div className="date-line">{dateLabel}</div>
       </header>
 
       {activeView === 'today' ? (
-        <aside className='sidebar' aria-label='Prayer sections'>
-          <nav className='sidebar-nav'>
+        <aside className="sidebar" aria-label="Prayer sections">
+          <nav className="sidebar-nav">
             {SIDEBAR_ITEMS.map((item) =>
               'children' in item ? (
-                <div key={item.title} className='sidebar-group'>
-                  <div className='sidebar-group-label'></div>
+                <div key={item.title} className="sidebar-group">
+                  <div className="sidebar-group-label"></div>
                   {item.children.map((child) => (
                     <button
                       key={`${item.title}-${child.title}`}
-                      type='button'
+                      type="button"
                       className={`sidebar-item sidebar-subitem${activeDesktopSegment === child.segmentId ? ' active' : ''}`}
                       onClick={() => setActiveDesktopSegment(child.segmentId)}
                     >
-                      <span className='sidebar-item-title'>{child.title}</span>
+                      <span className="sidebar-item-title">{child.title}</span>
                       {child.subtitle ? (
-                        <span className='sidebar-item-subtitle'>
+                        <span className="sidebar-item-subtitle">
                           {child.subtitle}
                         </span>
                       ) : null}
@@ -1709,13 +1810,13 @@ export function PrayerOfficeMockup() {
               ) : (
                 <button
                   key={item.title}
-                  type='button'
+                  type="button"
                   className={`sidebar-item${activeDesktopSegment === item.segmentId ? ' active' : ''}`}
                   onClick={() => setActiveDesktopSegment(item.segmentId)}
                 >
-                  <span className='sidebar-item-title'>{item.title}</span>
+                  <span className="sidebar-item-title">{item.title}</span>
                   {item.subtitle ? (
-                    <span className='sidebar-item-subtitle'>
+                    <span className="sidebar-item-subtitle">
                       {item.subtitle}
                     </span>
                   ) : null}
@@ -1726,30 +1827,30 @@ export function PrayerOfficeMockup() {
         </aside>
       ) : null}
 
-      <main className='office-main'>
+      <main className="office-main">
         {activeView !== 'today' ? (
           renderPage(activeView, navigateTo)
         ) : (
           <>
             {!onrampDismissed ? (
-              <section className='onramp'>
+              <section className="onramp">
                 <button
-                  type='button'
-                  className='onramp-close'
-                  aria-label='Dismiss'
+                  type="button"
+                  className="onramp-close"
+                  aria-label="Dismiss"
                   onClick={dismissOnramp}
                 >
                   ×
                 </button>
-                <div className='onramp-eyebrow'>New to the Hours?</div>
-                <p className='onramp-text'>
+                <div className="onramp-eyebrow">New to the Hours?</div>
+                <p className="onramp-text">
                   Most people begin with two: Morning Prayer to open the day,
                   Night Prayer to close it. You don't need a book, just press
                   play below.
                 </p>
                 <button
-                  type='button'
-                  className='onramp-action'
+                  type="button"
+                  className="onramp-action"
                   onClick={() => navigateTo('getting-started')}
                 >
                   How to begin ›
@@ -1761,6 +1862,10 @@ export function PrayerOfficeMockup() {
               const isCollapsed = collapsedSegments[segment.id];
               const isActiveDesktop = activeDesktopSegment === segment.id;
               const segmentSubtitle = SEGMENT_SUBTITLES[segment.id];
+              const videoOptions = videoOptionsForSegment(
+                segment,
+                cathoholicVideos,
+              );
 
               return (
                 <section
@@ -1769,18 +1874,18 @@ export function PrayerOfficeMockup() {
                   className={`segment${isCollapsed ? ' collapsed' : ''}${isActiveDesktop ? ' active-desktop' : ''}`}
                 >
                   <button
-                    type='button'
-                    className='segment-header'
+                    type="button"
+                    className="segment-header"
                     onClick={() => toggleSegment(segment.id)}
                     aria-expanded={!isCollapsed}
                     aria-controls={`${segment.id}-body`}
                   >
-                    <div className='segment-title-area'>
-                      <div className='segment-toggle'>⬇</div>
-                      <div className='segment-title-stack'>
-                        <h2 className='segment-title'>{segment.title}</h2>
+                    <div className="segment-title-area">
+                      <div className="segment-toggle">⬇</div>
+                      <div className="segment-title-stack">
+                        <h2 className="segment-title">{segment.title}</h2>
                         {segmentSubtitle ? (
-                          <span className='segment-subtitle'>
+                          <span className="segment-subtitle">
                             {segmentSubtitle}
                           </span>
                         ) : null}
@@ -1788,17 +1893,17 @@ export function PrayerOfficeMockup() {
                     </div>
                   </button>
 
-                  <div className='segment-body' id={`${segment.id}-body`}>
-                    <div className='active-format-pill'>
-                      <span className='active-format-dot' />
+                  <div className="segment-body" id={`${segment.id}-body`}>
+                    <div className="active-format-pill">
+                      <span className="active-format-dot" />
                       Viewing: {titleCase(selectedFormat)}
                     </div>
 
-                    <div className='format-rail'>
+                    <div className="format-rail">
                       {FORMATS.map((format) => (
                         <button
                           key={format.key}
-                          type='button'
+                          type="button"
                           className={`format-card ${format.className}${selectedFormat === format.key ? ' selected' : ''}`}
                           onClick={() => setFormat(segment.id, format.key)}
                         >
@@ -1816,35 +1921,35 @@ export function PrayerOfficeMockup() {
                             key={block.label}
                             className={`liturgy-card${index % 2 === 1 ? ' alt' : ''}`}
                           >
-                            <div className='liturgy-card-kicker'>
+                            <div className="liturgy-card-kicker">
                               {block.label}
                             </div>
-                            <h3 className='liturgy-card-title'>
+                            <h3 className="liturgy-card-title">
                               {block.title}
                             </h3>
                             {block.citation ? (
-                              <div className='liturgy-card-citation'>
+                              <div className="liturgy-card-citation">
                                 {block.citation}
                               </div>
                             ) : null}
-                            <div className='liturgy-lines'>
+                            <div className="liturgy-lines">
                               {block.blocks.map((entry) => (
                                 <div
                                   key={`${block.label}-${entry.variant}-${entry.lines[0]}`}
                                   className={blockClassName(entry.variant)}
                                 >
                                   {entry.speaker ? (
-                                    <div className='liturgy-speaker'>
+                                    <div className="liturgy-speaker">
                                       {entry.speaker}
                                     </div>
                                   ) : null}
                                   {entry.lines.map((line) => (
-                                    <p key={line} className='liturgy-line'>
+                                    <p key={line} className="liturgy-line">
                                       {line}
                                     </p>
                                   ))}
                                   {entry.citation ? (
-                                    <div className='liturgy-inline-citation'>
+                                    <div className="liturgy-inline-citation">
                                       {entry.citation}
                                     </div>
                                   ) : null}
@@ -1859,18 +1964,18 @@ export function PrayerOfficeMockup() {
                       className={`format-output${selectedFormat === 'audio' ? '' : ' hidden'}`}
                     >
                       <h4>Listen</h4>
-                      <div className='format-options'>
+                      <div className="format-options">
                         {segment.audio.map((item, index) => (
                           <article
                             key={item.title}
-                            className='format-option format-option-media'
+                            className="format-option format-option-media"
                             style={{
                               backgroundImage: `linear-gradient(165deg, rgba(12, 11, 9, 0.2), rgba(12, 11, 9, 0.78)), url(${optionImageFor('audio', index)})`,
                             }}
                           >
-                            <div className='option-meta'>{item.meta}</div>
-                            <div className='option-title'>{item.title}</div>
-                            <p className='option-desc'>{item.description}</p>
+                            <div className="option-meta">{item.meta}</div>
+                            <div className="option-title">{item.title}</div>
+                            <p className="option-desc">{item.description}</p>
                           </article>
                         ))}
                       </div>
@@ -1880,14 +1985,14 @@ export function PrayerOfficeMockup() {
                       className={`format-output${selectedFormat === 'video' ? '' : ' hidden'}`}
                     >
                       <h4>Watch</h4>
-                      <div className='format-options'>
-                        {segment.video.map((item, index) => (
+                      <div className="format-options">
+                        {videoOptions.map((item, index) => (
                           <button
                             key={item.title}
-                            type='button'
-                            className='format-option format-option-media'
+                            type="button"
+                            className="format-option format-option-media"
                             style={{
-                              backgroundImage: `linear-gradient(165deg, rgba(14, 12, 9, 0.18), rgba(14, 12, 9, 0.8)), url(${optionImageFor('video', index)})`,
+                              backgroundImage: `linear-gradient(165deg, rgba(14, 12, 9, 0.18), rgba(14, 12, 9, 0.8)), url(${item.imageUrl ?? optionImageFor('video', index)})`,
                             }}
                             onClick={() =>
                               openPrayerPlayer(
@@ -1900,10 +2005,13 @@ export function PrayerOfficeMockup() {
                               )
                             }
                           >
-                            <div className='option-meta'>{item.meta}</div>
-                            <div className='option-title'>{item.title}</div>
-                            <p className='option-desc'>{item.description}</p>
-                            <span className='option-prayer-action'>
+                            <div className="option-meta">{item.meta}</div>
+                            {item.source === 'partner' ? (
+                              <div className="option-source">Partner</div>
+                            ) : null}
+                            <div className="option-title">{item.title}</div>
+                            <p className="option-desc">{item.description}</p>
+                            <span className="option-prayer-action">
                               Begin Prayer
                             </span>
                           </button>
@@ -1916,16 +2024,16 @@ export function PrayerOfficeMockup() {
                     >
                       <h4>Live</h4>
                       {segment.live.map((group, groupIndex) => (
-                        <div key={group.title} className='stream-group'>
-                          <div className='stream-group-title'>
+                        <div key={group.title} className="stream-group">
+                          <div className="stream-group-title">
                             {group.title}
                           </div>
-                          <div className='format-options'>
+                          <div className="format-options">
                             {group.items.map((item, itemIndex) => (
                               <button
                                 key={item.title}
-                                type='button'
-                                className='format-option format-option-media'
+                                type="button"
+                                className="format-option format-option-media"
                                 style={{
                                   backgroundImage: `linear-gradient(165deg, rgba(16, 13, 12, 0.26), rgba(16, 13, 12, 0.82)), url(${optionImageFor('live', groupIndex * 8 + itemIndex)})`,
                                 }}
@@ -1940,15 +2048,15 @@ export function PrayerOfficeMockup() {
                                   )
                                 }
                               >
-                                <div className='option-meta'>{item.meta}</div>
-                                <div className='option-title'>{item.title}</div>
-                                <p className='option-desc'>
+                                <div className="option-meta">{item.meta}</div>
+                                <div className="option-title">{item.title}</div>
+                                <p className="option-desc">
                                   {item.description}
                                 </p>
                                 {item.time ? (
-                                  <div className='stream-time'>{item.time}</div>
+                                  <div className="stream-time">{item.time}</div>
                                 ) : null}
-                                <span className='option-prayer-action'>
+                                <span className="option-prayer-action">
                                   {group.title === 'Upcoming'
                                     ? 'Join Live'
                                     : 'Pray Now'}
@@ -1967,18 +2075,18 @@ export function PrayerOfficeMockup() {
         )}
       </main>
 
-      <nav className='bottom-nav' aria-label='Primary'>
+      <nav className="bottom-nav" aria-label="Primary">
         {NAV_ITEMS.map((item) => (
           <button
             key={item.key}
-            type='button'
+            type="button"
             className={`nav-item${activeView === item.key ? ' active' : ''}`}
             onClick={() => navigateTo(item.key)}
           >
-            <div className='nav-icon'>
+            <div className="nav-icon">
               <NavIcon name={item.icon} />
             </div>
-            <div className='nav-label'>{item.shortLabel ?? item.label}</div>
+            <div className="nav-label">{item.shortLabel ?? item.label}</div>
           </button>
         ))}
       </nav>

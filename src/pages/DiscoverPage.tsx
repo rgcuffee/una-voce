@@ -1,7 +1,5 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import type { ViewNavigator } from '../navigation';
-import { isSupabaseConfigured, supabase } from '../lib/supabase';
-import type { LiturgicalHour, PrayerVideoKind } from '../lib/database.types';
 
 type MediaCard = {
   meta: string;
@@ -9,31 +7,10 @@ type MediaCard = {
   description: string;
   image: string;
   href?: string;
-  source: 'mock' | 'live';
+  source: 'mock' | 'partner';
 };
 
 type StreamCard = MediaCard & { time: string };
-
-type CathaholicVideoRow = {
-  id: string;
-  title: string;
-  description: string | null;
-  published_at: string;
-  prayer_date: string | null;
-  scheduled_start_at: string | null;
-  thumbnail_url: string | null;
-  canonical_url: string;
-  prayer_type: LiturgicalHour | null;
-  video_kind: PrayerVideoKind;
-  partners: {
-    name: string;
-    slug: string;
-  } | null;
-};
-
-const CATHAHOLIC_PARTNER_SLUG = 'cathaholic-music';
-const FALLBACK_VIDEO_IMAGE =
-  'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?auto=format&fit=crop&w=1400&q=80';
 
 const AUDIO: MediaCard[] = [
   {
@@ -57,6 +34,15 @@ const AUDIO: MediaCard[] = [
 ];
 
 const VIDEO: MediaCard[] = [
+  {
+    meta: 'Cathoholic Music',
+    title: 'Cathoholic Lauds & Vespers',
+    description:
+      'Partner Morning Prayer and Evening Prayer videos matched to the prayer date.',
+    image:
+      'https://images.unsplash.com/photo-1731258941332-844ae3f8618d?q=80&w=1887&auto=format&fit=crop',
+    source: 'partner',
+  },
   {
     meta: 'Content Creator',
     title: 'The Little Oratory',
@@ -166,8 +152,8 @@ function MediaGrid({ items }: { items: MediaCard[] }) {
           gradient='linear-gradient(165deg, rgba(12, 11, 9, 0.2), rgba(12, 11, 9, 0.78))'
         >
           <div className='option-meta'>{item.meta}</div>
-          {item.source === 'live' && (
-            <div className='option-source'>Live partner</div>
+          {item.source === 'partner' && (
+            <div className='option-source'>Partner</div>
           )}
           <div className='option-title'>{item.title}</div>
           <p className='option-desc'>{item.description}</p>
@@ -187,8 +173,8 @@ function StreamGrid({ items }: { items: StreamCard[] }) {
           gradient='linear-gradient(165deg, rgba(16, 13, 12, 0.26), rgba(16, 13, 12, 0.82))'
         >
           <div className='option-meta'>{item.meta}</div>
-          {item.source === 'live' && (
-            <div className='option-source'>Live partner</div>
+          {item.source === 'partner' && (
+            <div className='option-source'>Partner</div>
           )}
           <div className='option-title'>{item.title}</div>
           <p className='option-desc'>{item.description}</p>
@@ -240,134 +226,7 @@ function MediaCardShell({
   );
 }
 
-function useCathaholicVideos() {
-  const [videos, setVideos] = useState<CathaholicVideoRow[]>([]);
-
-  useEffect(() => {
-    if (!isSupabaseConfigured || !supabase) {
-      return;
-    }
-
-    const client = supabase;
-    let isMounted = true;
-
-    async function loadVideos() {
-      const { data, error } = await client
-        .from('youtube_videos')
-        .select(
-          [
-            'id',
-            'title',
-            'description',
-            'published_at',
-            'prayer_date',
-            'scheduled_start_at',
-            'thumbnail_url',
-            'canonical_url',
-            'prayer_type',
-            'video_kind',
-            'partners!inner(name,slug)',
-          ].join(','),
-        )
-        .eq('display_status', 'approved')
-        .eq('partners.slug', CATHAHOLIC_PARTNER_SLUG)
-        .in('prayer_type', ['lauds', 'vespers'])
-        .order('prayer_date', { ascending: false, nullsFirst: false })
-        .order('published_at', { ascending: false })
-        .limit(6);
-
-      if (!isMounted || error) {
-        return;
-      }
-
-      setVideos((data ?? []) as unknown as CathaholicVideoRow[]);
-    }
-
-    void loadVideos();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  return videos;
-}
-
-function toCathaholicCards(videos: CathaholicVideoRow[]): StreamCard[] {
-  return videos.map((video) => {
-    const partnerName = video.partners?.name ?? 'Cathaholic Music';
-    const prayerLabel = formatPrayerType(video.prayer_type);
-
-    return {
-      meta: `${partnerName} · ${video.video_kind === 'scheduled_live' ? 'Scheduled' : 'Video'}`,
-      title: video.title,
-      description:
-        summarizeDescription(video.description) ??
-        `${prayerLabel} from ${partnerName}.`,
-      image: video.thumbnail_url ?? FALLBACK_VIDEO_IMAGE,
-      href: video.canonical_url,
-      time: formatVideoDate(video.prayer_date ?? video.published_at),
-      source: 'live',
-    };
-  });
-}
-
-function formatPrayerType(prayerType: LiturgicalHour | null) {
-  switch (prayerType) {
-    case 'office_of_readings':
-      return 'Office of Readings';
-    case 'lauds':
-      return 'Morning Prayer';
-    case 'midday_prayer':
-      return 'Midday Prayer';
-    case 'vespers':
-      return 'Evening Prayer';
-    case 'compline':
-      return 'Night Prayer';
-    default:
-      return 'Prayer video';
-  }
-}
-
-function formatVideoDate(value: string) {
-  const dateOnlyMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  const date = dateOnlyMatch
-    ? new Date(
-        Number(dateOnlyMatch[1]),
-        Number(dateOnlyMatch[2]) - 1,
-        Number(dateOnlyMatch[3]),
-      )
-    : new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return 'Date pending';
-  }
-
-  return new Intl.DateTimeFormat(undefined, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  }).format(date);
-}
-
-function summarizeDescription(description: string | null) {
-  const normalized = description?.replace(/\s+/g, ' ').trim();
-  if (!normalized) {
-    return null;
-  }
-
-  return normalized.length > 130
-    ? `${normalized.slice(0, 127).trim()}...`
-    : normalized;
-}
-
 export function DiscoverPage({ onNavigate }: { onNavigate: ViewNavigator }) {
-  const cathaholicVideos = useCathaholicVideos();
-  const cathaholicCards = useMemo(
-    () => toCathaholicCards(cathaholicVideos),
-    [cathaholicVideos],
-  );
-
   return (
     <article className='page'>
       <header className='page-hero'>
@@ -390,17 +249,6 @@ export function DiscoverPage({ onNavigate }: { onNavigate: ViewNavigator }) {
         <h2 className='page-section-title'>Watch</h2>
         <MediaGrid items={VIDEO} />
       </section>
-
-      {cathaholicCards.length > 0 && (
-        <section className='page-section'>
-          <h2 className='page-section-title'>Cathaholic Lauds &amp; Vespers</h2>
-          <p className='page-section-intro'>
-            Real partner Morning Prayer and Evening Prayer videos from
-            Cathaholic Music, organized by prayer date.
-          </p>
-          <StreamGrid items={cathaholicCards} />
-        </section>
-      )}
 
       <section className='page-section'>
         <h2 className='page-section-title'>Live now &amp; upcoming</h2>
