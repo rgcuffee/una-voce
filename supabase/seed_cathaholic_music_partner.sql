@@ -37,6 +37,7 @@ feed as (
     rss_url,
     expected_content_mode,
     polling_interval_minutes,
+    import_from_date,
     active
   )
   select
@@ -46,6 +47,7 @@ feed as (
     'https://www.youtube.com/feeds/videos.xml?channel_id=UCP5XkSkU2UDKWL4CFNMDQEA',
     'pre_recorded',
     120,
+    current_date,
     true
   from partner
   on conflict (rss_url) do update
@@ -55,6 +57,7 @@ feed as (
         youtube_playlist_id = null,
         expected_content_mode = excluded.expected_content_mode,
         polling_interval_minutes = excluded.polling_interval_minutes,
+        import_from_date = excluded.import_from_date,
         active = excluded.active
   returning id
 )
@@ -84,15 +87,7 @@ cross join feed
 cross join (
   values
     (
-      'Hide standalone music resources',
-      array[]::text[],
-      array['Cathaholic Music -']::text[],
-      null,
-      300,
-      'hidden'
-    ),
-    (
-      'Morning Prayer / Lauds',
+      'Morning Prayer and Lauds',
       array['Morning Prayer', 'Lauds']::text[],
       array[]::text[],
       'lauds',
@@ -100,7 +95,7 @@ cross join (
       'approved'
     ),
     (
-      'Evening Prayer / Vespers',
+      'Evening Prayer and Vespers',
       array['Evening Prayer', 'Vespers']::text[],
       array[]::text[],
       'vespers',

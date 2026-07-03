@@ -146,6 +146,7 @@ create table if not exists public.youtube_videos (
   title text not null,
   description text,
   published_at timestamptz not null,
+  prayer_date date,
   scheduled_start_at timestamptz,
   thumbnail_url text,
   canonical_url text not null,
@@ -156,6 +157,9 @@ create table if not exists public.youtube_videos (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+alter table public.youtube_videos
+  add column if not exists prayer_date date;
 
 create index if not exists partner_youtube_feeds_partner_active_idx
   on public.partner_youtube_feeds (partner_id, active);
@@ -177,6 +181,9 @@ create index if not exists youtube_videos_partner_published_idx
 
 create index if not exists youtube_videos_display_published_idx
   on public.youtube_videos (display_status, published_at desc);
+
+create index if not exists youtube_videos_display_prayer_date_idx
+  on public.youtube_videos (display_status, prayer_date desc);
 
 drop trigger if exists set_partners_updated_at on public.partners;
 create trigger set_partners_updated_at

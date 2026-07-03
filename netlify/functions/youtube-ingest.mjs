@@ -226,12 +226,7 @@ function isImportableVideo(feed, video) {
     return true;
   }
 
-  const titleDate = inferDateFromTitle(video.title);
-  if (!titleDate) {
-    return true;
-  }
-
-  return titleDate >= feed.import_from_date;
+  return inferPrayerDate(video) >= feed.import_from_date;
 }
 
 async function getExistingClassifications(youtubeVideoIds) {
@@ -337,6 +332,7 @@ function normalizeVideo(feed, parsedVideo, rules, existingClassification) {
     title: parsedVideo.title,
     description: parsedVideo.description,
     published_at: parsedVideo.publishedAt,
+    prayer_date: inferPrayerDate(parsedVideo),
     scheduled_start_at: parsedVideo.scheduledStartAt,
     thumbnail_url: parsedVideo.thumbnailUrl,
     canonical_url: parsedVideo.canonicalUrl,
@@ -497,7 +493,7 @@ function inferDateFromTitle(title) {
   };
   const matches = [
     ...title.matchAll(
-      /\b(\d{1,2})(?:st|nd|rd|th)?\s+(january|february|march|april|may|june|july|august|september|october|november|december)\b/gi,
+      /\b(\d{1,2})(?:st|nd|rd|th)?\s+(january|february|march|april|may|june|july|august|september|october|november|december)(?:\s+(\d{4}))?\b/gi,
     ),
   ];
 
@@ -505,9 +501,19 @@ function inferDateFromTitle(title) {
     return null;
   }
 
-  const [, day, monthName] = matches[matches.length - 1];
-  const year = new Date().getUTCFullYear();
+  const [, day, monthName, titleYear] = matches[matches.length - 1];
+  const year = titleYear ?? new Date().getUTCFullYear();
   return `${year}-${months[monthName.toLowerCase()]}-${day.padStart(2, '0')}`;
+}
+
+function inferPrayerDate(video) {
+  const titleDate = inferDateFromTitle(video.title);
+  if (titleDate) {
+    return titleDate;
+  }
+
+  const sourceDate = video.scheduledStartAt ?? video.publishedAt;
+  return new Date(sourceDate).toISOString().slice(0, 10);
 }
 
 function decodeXml(value) {

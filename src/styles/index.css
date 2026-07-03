@@ -569,6 +569,7 @@ body {
 }
 
 .format-option-media .option-meta,
+.format-option-media .option-source,
 .format-option-media .option-title,
 .format-option-media .option-desc,
 .format-option-media .stream-time {
@@ -578,6 +579,25 @@ body {
 
 .format-option-media .option-meta {
     color: rgba(255, 255, 255, 0.86);
+}
+
+.format-option-link {
+    display: flex;
+    text-decoration: none;
+}
+
+.option-source {
+    align-self: flex-start;
+    margin-bottom: 7px;
+    padding: 4px 7px;
+    border-radius: 999px;
+    background: rgba(248, 202, 116, 0.2);
+    border: 1px solid rgba(248, 202, 116, 0.46);
+    color: var(--gold);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
 }
 
 .option-title {

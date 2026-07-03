@@ -238,6 +238,7 @@ export type Database = {
                     title: string;
                     description: string | null;
                     published_at: string;
+                    prayer_date: string | null;
                     scheduled_start_at: string | null;
                     thumbnail_url: string | null;
                     canonical_url: string;
@@ -256,6 +257,7 @@ export type Database = {
                     title: string;
                     description?: string | null;
                     published_at: string;
+                    prayer_date?: string | null;
                     scheduled_start_at?: string | null;
                     thumbnail_url?: string | null;
                     canonical_url: string;
@@ -274,6 +276,7 @@ export type Database = {
                     title?: string;
                     description?: string | null;
                     published_at?: string;
+                    prayer_date?: string | null;
                     scheduled_start_at?: string | null;
                     thumbnail_url?: string | null;
                     canonical_url?: string;
