@@ -401,7 +401,7 @@ Evening Mass of the Lord''s Supper: Ex 12:1-8, 11-14/1 Cor 11:23-26/Jn 13:1-15 (
 Pss Prop', 'US'),
     ('2026-04-03'::date, 'Friday of the Passion of the Lord (Good Friday)', 'weekday', 'red', '3 Fri Friday of the Passion of the Lord (Good Friday) red
 Is 52:13—53:12/Heb 4:14-16; 5:7-9/Jn 18:1—19:42 (40) Pss Prop', 'US'),
-    ('2026-04-04'::date, 'Holy Saturday Ex 14:15—15:1/Is 54:5-14/Is 55:1-11/Bar 3:9-15, 32—4:4/Ez 36:16-17a, 18-28/', 'weekday', 'white', '4 Sat Holy Saturday9 white
+    ('2026-04-04'::date, 'Holy Saturday', 'weekday', 'white', '4 Sat Holy Saturday9 white
 Easter Vigil: Gn 1:1—2:2 or 1:1, 26-31a/Gn 22:1-18 or 22:1-2, 9a, 10-13, 15-18/
 Ex 14:15—15:1/Is 54:5-14/Is 55:1-11/Bar 3:9-15, 32—4:4/Ez 36:16-17a, 18-28/
 Rom 6:3-11/Mt 28:1-10 (41) Pss Prop', 'US'),
@@ -409,7 +409,7 @@ Rom 6:3-11/Mt 28:1-10 (41) Pss Prop', 'US'),
 Solemnity
 Acts 10:34a, 37-43/Col 3:1-4 or 1 Cor 5:6b-8/Jn 20:1-9 (42) or Mt 28:1-10 (41)
 or, at an afternoon or evening Mass, Lk 24:13-35 (46) Pss Prop', 'US'),
-    ('2026-04-06'::date, 'Monday within the Octave of Easter If necessary, the Chrism Mass may be celebrated on a suitable day before Holy Thursday. Nine readings are assigned to the Easter Vigil: seven from the Old Testament and two from the New. If circumstances demand in individual cases, the number of prescribed readings may be reduced. Three selections from the Old Testament, both from the Law and the Prophets, should be read before the Epistle and Gospel. In any case, the reading from Exodus about the escape through the Red Sea (reading 3) should never be omitted. Although not given the title of Solemnity, “he first eight days of Easter Time constitute the Octave of Easter and are celebrated as Solemnities of the Lord” (Universal Norms on the Liturgical Year and the Calendar, no. 24).', 'weekday', 'white', '6 Mon Monday within the Octave of Easter10 white
+    ('2026-04-06'::date, 'Monday within the Octave of Easter', 'weekday', 'white', '6 Mon Monday within the Octave of Easter10 white
 Acts 2:14, 22-33/Mt 28:8-15 (261) Pss Prop
 If necessary, the Chrism Mass may be celebrated on a suitable day before Holy Thursday.
 Nine readings are assigned to the Easter Vigil: seven from the Old Testament and two from the New. If circumstances
@@ -498,14 +498,14 @@ Acts 15:22-31/Jn 15:12-17 (289)', 'US'),
 Acts 16:1-10/Jn 15:18-21 (290)', 'US'),
     ('2026-05-10'::date, 'SIXTH SUNDAY OF EASTER', 'sunday', 'white', '10 SUN SIXTH SUNDAY OF EASTER11 white
 Acts 8:5-8, 14-17/1 Pt 3:15-18/Jn 14:15-21 (55) Pss II', 'US'),
-    ('2026-05-11'::date, 'Easter Weekday When the Ascension of the Lord is celebrated on the following Sunday, the Second Reading and Gospel from the Seventh Sunday of Easter (see no. 59) may be read on the Sixth Sunday of Easter.', 'weekday', 'white', '11 Mon Easter Weekday white
+    ('2026-05-11'::date, 'Easter Weekday', 'weekday', 'white', '11 Mon Easter Weekday white
 Acts 16:11-15/Jn 15:26—16:4a (291)
 When the Ascension of the Lord is celebrated on the following Sunday, the Second Reading and Gospel from the
 Seventh Sunday of Easter (see no. 59) may be read on the Sixth Sunday of Easter.', 'US'),
     ('2026-05-12'::date, 'Easter Weekday', 'weekday', 'white/red/red', '12 Tue Easter Weekday white/red/red
 [Saints Nereus and Achilleus, Martyrs; Saint Pancras, Martyr]
 Acts 16:22-34/Jn 16:5-11 (292)', 'US'),
-    ('2026-05-13'::date, 'Easter Weekday Ecclesiastical Provinces of Boston, Hartford, New York, Omaha, Philadelphia:', 'weekday', 'white/white', '13 Wed Easter Weekday white/white
+    ('2026-05-13'::date, 'Easter Weekday', 'weekday', 'white/white', '13 Wed Easter Weekday white/white
 [Our Lady of Fatima]
 Acts 17:15, 22—18:1/Jn 16:12-15 (293)
 Ecclesiastical Provinces of Boston, Hartford, New York, Omaha, Philadelphia:', 'US'),
@@ -518,7 +518,7 @@ Acts 1:15-17, 20-26/Jn 15:9-17 (564) Pss Prop', 'US'),
     ('2026-05-15'::date, 'Easter Weekday', 'weekday', 'white/white', '15 Fri Easter Weekday white/white
 [USA: Saint Isidore]
 Acts 18:9-18/Jn 16:20-23 (295)', 'US'),
-    ('2026-05-16'::date, 'Easter Weekday Ecclesiastical Provinces of Boston, Hartford, New York, Omaha, Philadelphia:', 'weekday', 'white', '16 Sat Easter Weekday white
+    ('2026-05-16'::date, 'Easter Weekday', 'weekday', 'white', '16 Sat Easter Weekday white
 Acts 18:23-28/Jn 16:23b-28 (296)
 Ecclesiastical Provinces of Boston, Hartford, New York, Omaha, Philadelphia:', 'US'),
     ('2026-05-17'::date, 'SEVENTH SUNDAY OF EASTER', 'sunday', 'white', '17 SUN SEVENTH SUNDAY OF EASTER white
@@ -1137,7 +1137,7 @@ Day: Is 52:7-10/Heb 1:1-6/Jn 1:1-18 or 1:1-5, 9-14 (16) Pss Prop', 'US'),
     ('2026-12-26'::date, 'Saint Stephen, The First Martyr', 'feast', 'red', '26 Sat Saint Stephen, The First Martyr red
 Feast
 Acts 6:8-10; 7:54-59/Mt 10:17-22 (696) Pss Prop', 'US'),
-    ('2026-12-27'::date, 'THE HOLY FAMILY OF JESUS, MARY AND JOSEPH Sir 3:2-6, 12-14/Col 3:12-21 or 3:12-17/Lk 2:22-40 or 2:22, 39-40', 'feast', 'white', '27 SUN THE HOLY FAMILY OF JESUS, MARY AND JOSEPH white
+    ('2026-12-27'::date, 'THE HOLY FAMILY OF JESUS, MARY AND JOSEPH', 'feast', 'white', '27 SUN THE HOLY FAMILY OF JESUS, MARY AND JOSEPH white
 Feast
 Sir 3:2-6, 12-14/Col 3:12-21 or 3:12-17/Lk 2:22-40 or 2:22, 39-40
 or, in Year B, Gn 15:1-6; 21:1-3/Heb 11:8, 11-12, 17-19/Lk 2:22-40 or 2:22, 39-40 (17) Pss Prop', 'US'),
@@ -1522,7 +1522,7 @@ Evening Mass of the Lord''s Supper: Ex 12:1-8, 11-14/1 Cor 11:23-26/Jn 13:1-15 (
 Pss Prop', null),
     ('2026-04-03'::date, 5, 'Friday', 'friday_of_the_passion_of_the_lord', 'Friday of the Passion of the Lord (Good Friday)', 'Friday of the Passion of the Lord (Good Friday)', 'triduum'::public.liturgical_season, null, null, 'weekday'::public.liturgical_rank, 'red'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '3 Fri Friday of the Passion of the Lord (Good Friday) red
 Is 52:13—53:12/Heb 4:14-16; 5:7-9/Jn 18:1—19:42 (40) Pss Prop', null),
-    ('2026-04-04'::date, 6, 'Saturday', 'holy_saturday_ex_14_15_15_1_is_54_5_14_is_55_1_11_bar_3_9_15_32_4_4_ez_36_16_17a_18_28', 'Holy Saturday Ex 14:15—15:1/Is 54:5-14/Is 55:1-11/Bar 3:9-15, 32—4:4/Ez 36:16-17a, 18-28/', 'Holy Saturday Ex 14:15—15:1/Is 54:5-14/Is 55:1-11/Bar 3:9-15, 32—4:4/Ez 36:16-17a, 18-28/', 'triduum'::public.liturgical_season, null, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '4 Sat Holy Saturday9 white
+    ('2026-04-04'::date, 6, 'Saturday', 'holy_saturday', 'Holy Saturday', 'Holy Saturday', 'triduum'::public.liturgical_season, null, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '4 Sat Holy Saturday9 white
 Easter Vigil: Gn 1:1—2:2 or 1:1, 26-31a/Gn 22:1-18 or 22:1-2, 9a, 10-13, 15-18/
 Ex 14:15—15:1/Is 54:5-14/Is 55:1-11/Bar 3:9-15, 32—4:4/Ez 36:16-17a, 18-28/
 Rom 6:3-11/Mt 28:1-10 (41) Pss Prop', null),
@@ -1530,7 +1530,7 @@ Rom 6:3-11/Mt 28:1-10 (41) Pss Prop', null),
 Solemnity
 Acts 10:34a, 37-43/Col 3:1-4 or 1 Cor 5:6b-8/Jn 20:1-9 (42) or Mt 28:1-10 (41)
 or, at an afternoon or evening Mass, Lk 24:13-35 (46) Pss Prop', null),
-    ('2026-04-06'::date, 1, 'Monday', 'monday_within_the_octave_of_easter_if_necessary_the_chrism_mass_may_be_celebrated_on_a_suitable_day_before_holy_thursday_nine_readings_are_assigned_to_the_easter_vigil_seven_from_the_old_testament_and_two_from_the_new_if_circumstances_demand_in_individual_cases_the_number_of_prescribed_readings_may_be_reduced_three_selections_from_the_old_testament_both_from_the_law_and_the_prophets_should_be_read_before_the_epistle_and_gospel_in_any_case_the_reading_from_exodus_about_the_escape_through_the_red_sea_should_never_be_omitted_although_not_given_the_title_of_solemnity_he_first_eight_days_of_easter_time_constitute_the_octave_of_easter_and_are_celebrated_as_solemnities_of_the_lord', 'Monday within the Octave of Easter If necessary, the Chrism Mass may be celebrated on a suitable day before Holy Thursday. Nine readings are assigned to the Easter Vigil: seven from the Old Testament and two from the New. If circumstances demand in individual cases, the number of prescribed readings may be reduced. Three selections from the Old Testament, both from the Law and the Prophets, should be read before the Epistle and Gospel. In any case, the reading from Exodus about the escape through the Red Sea (reading 3) should never be omitted. Although not given the title of Solemnity, “he first eight days of Easter Time constitute the Octave of Easter and are celebrated as Solemnities of the Lord” (Universal Norms on the Liturgical Year and the Calendar, no. 24).', 'Monday within the Octave of Easter If necessary, the Chrism Mass may be celebrated on a suitable day before Holy Thursday. Nine readings are assigned to the Easter Vigil: seven from the Old Testament and two from the New. If circumstances demand in individual cases, the number of prescribed readings may be reduced. Three selections from the Old Testament, both from the Law and the Prophets, should be read before the Epistle and Gospel. In any case, the reading from Exodus about the escape through the Red Sea (reading 3) should never be omitted. Although not given the title of Solemnity, “he first eight days of Easter Time constitute the Octave of Easter and are celebrated as Solemnities of the Lord” (Universal Norms on the Liturgical Year and the Calendar, no. 24).', 'easter'::public.liturgical_season, 1, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '6 Mon Monday within the Octave of Easter10 white
+    ('2026-04-06'::date, 1, 'Monday', 'monday_within_the_octave_of_easter', 'Monday within the Octave of Easter', 'Monday within the Octave of Easter', 'easter'::public.liturgical_season, 1, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '6 Mon Monday within the Octave of Easter10 white
 Acts 2:14, 22-33/Mt 28:8-15 (261) Pss Prop
 If necessary, the Chrism Mass may be celebrated on a suitable day before Holy Thursday.
 Nine readings are assigned to the Easter Vigil: seven from the Old Testament and two from the New. If circumstances
@@ -1619,14 +1619,14 @@ Acts 15:22-31/Jn 15:12-17 (289)', null),
 Acts 16:1-10/Jn 15:18-21 (290)', null),
     ('2026-05-10'::date, 0, 'Sunday', 'sixth_sunday_of_easter', 'SIXTH SUNDAY OF EASTER', 'SIXTH SUNDAY OF EASTER', 'easter'::public.liturgical_season, 6, 2, 'sunday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'sunday'::public.obligation_status, '10 SUN SIXTH SUNDAY OF EASTER11 white
 Acts 8:5-8, 14-17/1 Pt 3:15-18/Jn 14:15-21 (55) Pss II', null),
-    ('2026-05-11'::date, 1, 'Monday', 'easter_weekday_when_the_ascension_of_the_lord_is_celebrated_on_the_following_sunday_the_second_reading_and_gospel_from_the_seventh_sunday_of_easter_may_be_read_on_the_sixth_sunday_of_easter', 'Easter Weekday When the Ascension of the Lord is celebrated on the following Sunday, the Second Reading and Gospel from the Seventh Sunday of Easter (see no. 59) may be read on the Sixth Sunday of Easter.', 'Easter Weekday When the Ascension of the Lord is celebrated on the following Sunday, the Second Reading and Gospel from the Seventh Sunday of Easter (see no. 59) may be read on the Sixth Sunday of Easter.', 'easter'::public.liturgical_season, 7, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '11 Mon Easter Weekday white
+    ('2026-05-11'::date, 1, 'Monday', 'easter_weekday', 'Easter Weekday', 'Monday of the Seventh Week of Easter', 'easter'::public.liturgical_season, 7, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '11 Mon Easter Weekday white
 Acts 16:11-15/Jn 15:26—16:4a (291)
 When the Ascension of the Lord is celebrated on the following Sunday, the Second Reading and Gospel from the
 Seventh Sunday of Easter (see no. 59) may be read on the Sixth Sunday of Easter.', null),
     ('2026-05-12'::date, 2, 'Tuesday', 'easter_weekday', 'Easter Weekday', 'Tuesday of the Sixth Week of Easter', 'easter'::public.liturgical_season, 6, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '12 Tue Easter Weekday white/red/red
 [Saints Nereus and Achilleus, Martyrs; Saint Pancras, Martyr]
 Acts 16:22-34/Jn 16:5-11 (292)', null),
-    ('2026-05-13'::date, 3, 'Wednesday', 'easter_weekday_ecclesiastical_provinces_of_boston_hartford_new_york_omaha_philadelphia', 'Easter Weekday Ecclesiastical Provinces of Boston, Hartford, New York, Omaha, Philadelphia:', 'Easter Weekday Ecclesiastical Provinces of Boston, Hartford, New York, Omaha, Philadelphia:', 'easter'::public.liturgical_season, 6, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '13 Wed Easter Weekday white/white
+    ('2026-05-13'::date, 3, 'Wednesday', 'easter_weekday', 'Easter Weekday', 'Wednesday of the Sixth Week of Easter', 'easter'::public.liturgical_season, 6, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '13 Wed Easter Weekday white/white
 [Our Lady of Fatima]
 Acts 17:15, 22—18:1/Jn 16:12-15 (293)
 Ecclesiastical Provinces of Boston, Hartford, New York, Omaha, Philadelphia:', null),
@@ -1636,7 +1636,7 @@ Acts 1:15-17, 20-26/Jn 15:9-17 (564) Pss Prop', null),
     ('2026-05-15'::date, 5, 'Friday', 'easter_weekday', 'Easter Weekday', 'Friday of the Sixth Week of Easter', 'easter'::public.liturgical_season, 6, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '15 Fri Easter Weekday white/white
 [USA: Saint Isidore]
 Acts 18:9-18/Jn 16:20-23 (295)', null),
-    ('2026-05-16'::date, 6, 'Saturday', 'easter_weekday_ecclesiastical_provinces_of_boston_hartford_new_york_omaha_philadelphia', 'Easter Weekday Ecclesiastical Provinces of Boston, Hartford, New York, Omaha, Philadelphia:', 'Easter Weekday Ecclesiastical Provinces of Boston, Hartford, New York, Omaha, Philadelphia:', 'easter'::public.liturgical_season, 6, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '16 Sat Easter Weekday white
+    ('2026-05-16'::date, 6, 'Saturday', 'easter_weekday', 'Easter Weekday', 'Saturday of the Sixth Week of Easter', 'easter'::public.liturgical_season, 6, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '16 Sat Easter Weekday white
 Acts 18:23-28/Jn 16:23b-28 (296)
 Ecclesiastical Provinces of Boston, Hartford, New York, Omaha, Philadelphia:', null),
     ('2026-05-17'::date, 0, 'Sunday', 'ascension_of_the_lord', 'THE ASCENSION OF THE LORD', 'THE ASCENSION OF THE LORD', 'easter'::public.liturgical_season, 7, null, 'solemnity'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '17 SUN THE ASCENSION OF THE LORD white
@@ -2253,7 +2253,7 @@ Day: Is 52:7-10/Heb 1:1-6/Jn 1:1-18 or 1:1-5, 9-14 (16) Pss Prop', null),
     ('2026-12-26'::date, 6, 'Saturday', 'st_stephen', 'Saint Stephen, The First Martyr', 'Saint Stephen, The First Martyr', 'christmas'::public.liturgical_season, null, null, 'feast'::public.liturgical_rank, 'red'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '26 Sat Saint Stephen, The First Martyr red
 Feast
 Acts 6:8-10; 7:54-59/Mt 10:17-22 (696) Pss Prop', null),
-    ('2026-12-27'::date, 0, 'Sunday', 'holy_family_of_jesus_mary_and_joseph_sir_3_2_6_12_14_col_3_12_21_or_3_12_17_lk_2_22_40_or_2_22_39_40', 'THE HOLY FAMILY OF JESUS, MARY AND JOSEPH Sir 3:2-6, 12-14/Col 3:12-21 or 3:12-17/Lk 2:22-40 or 2:22, 39-40', 'THE HOLY FAMILY OF JESUS, MARY AND JOSEPH Sir 3:2-6, 12-14/Col 3:12-21 or 3:12-17/Lk 2:22-40 or 2:22, 39-40', 'christmas'::public.liturgical_season, null, null, 'feast'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '27 SUN THE HOLY FAMILY OF JESUS, MARY AND JOSEPH white
+    ('2026-12-27'::date, 0, 'Sunday', 'holy_family_of_jesus_mary_and_joseph', 'THE HOLY FAMILY OF JESUS, MARY AND JOSEPH', 'THE HOLY FAMILY OF JESUS, MARY AND JOSEPH', 'christmas'::public.liturgical_season, null, null, 'feast'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '27 SUN THE HOLY FAMILY OF JESUS, MARY AND JOSEPH white
 Feast
 Sir 3:2-6, 12-14/Col 3:12-21 or 3:12-17/Lk 2:22-40 or 2:22, 39-40
 or, in Year B, Gn 15:1-6; 21:1-3/Heb 11:8, 11-12, 17-19/Lk 2:22-40 or 2:22, 39-40 (17) Pss Prop', null),

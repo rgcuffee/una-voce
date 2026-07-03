@@ -16,6 +16,7 @@ export type LiturgicalSeason =
     | 'easter';
 export type LiturgicalRank =
     | 'weekday'
+    | 'commemoration'
     | 'optional_memorial'
     | 'memorial'
     | 'feast'
@@ -29,6 +30,13 @@ export type LiturgicalColor =
     | 'rose'
     | 'black';
 export type CountryScope = 'US' | 'EW' | 'E' | 'W';
+export type ObligationStatus =
+    | 'none'
+    | 'sunday'
+    | 'holy_day'
+    | 'transferred'
+    | 'suppressed'
+    | 'particular_law';
 export type LiturgicalHour =
     | 'office_of_readings'
     | 'lauds'
@@ -38,12 +46,21 @@ export type LiturgicalHour =
 export type CalendarConflictSeverity = 'none' | 'minor' | 'major';
 export type CalendarConflictReason =
     | 'same'
+    | 'missing_base_day'
+    | 'missing_comparison_day'
+    | 'missing_canonical_identity'
+    | 'missing_precedence'
+    | 'different_principal_celebration'
     | 'different_title'
     | 'different_rank'
     | 'different_color'
     | 'different_holy_day_obligation'
+    | 'different_obligation'
+    | 'different_options'
     | 'country_specific'
     | 'manual_review';
+export type CalendarReviewSeverity = 'low' | 'medium' | 'high';
+export type CalendarReviewStatus = 'open' | 'resolved' | 'ignored';
 export type PrayerAnalyticsEventName =
     | 'prayer_session_started'
     | 'prayer_play_started'
@@ -504,6 +521,165 @@ export type Database = {
                     },
                 ];
             };
+            canonical_celebrations: {
+                Row: {
+                    id: string;
+                    default_title: string;
+                    category: string;
+                    is_universal: boolean;
+                    notes: string | null;
+                    created_at: string;
+                    updated_at: string;
+                };
+                Insert: {
+                    id: string;
+                    default_title: string;
+                    category: string;
+                    is_universal?: boolean;
+                    notes?: string | null;
+                    created_at?: string;
+                    updated_at?: string;
+                };
+                Update: {
+                    id?: string;
+                    default_title?: string;
+                    category?: string;
+                    is_universal?: boolean;
+                    notes?: string | null;
+                    created_at?: string;
+                    updated_at?: string;
+                };
+                Relationships: [];
+            };
+            celebration_aliases: {
+                Row: {
+                    id: string;
+                    canonical_celebration_id: string;
+                    calendar_id: string | null;
+                    source_celebration_id: string;
+                    source_title: string;
+                    match_confidence: number;
+                    notes: string | null;
+                    created_at: string;
+                    updated_at: string;
+                };
+                Insert: {
+                    id?: string;
+                    canonical_celebration_id: string;
+                    calendar_id?: string | null;
+                    source_celebration_id: string;
+                    source_title: string;
+                    match_confidence?: number;
+                    notes?: string | null;
+                    created_at?: string;
+                    updated_at?: string;
+                };
+                Update: {
+                    id?: string;
+                    canonical_celebration_id?: string;
+                    calendar_id?: string | null;
+                    source_celebration_id?: string;
+                    source_title?: string;
+                    match_confidence?: number;
+                    notes?: string | null;
+                    created_at?: string;
+                    updated_at?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: 'celebration_aliases_calendar_id_fkey';
+                        columns: ['calendar_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'calendars';
+                        referencedColumns: ['id'];
+                    },
+                    {
+                        foreignKeyName: 'celebration_aliases_canonical_celebration_id_fkey';
+                        columns: ['canonical_celebration_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'canonical_celebrations';
+                        referencedColumns: ['id'];
+                    },
+                ];
+            };
+            calendar_review_items: {
+                Row: {
+                    id: string;
+                    issue_key: string;
+                    calendar_id: string;
+                    date: string | null;
+                    source_table: string;
+                    source_row_id: string | null;
+                    source_celebration_id: string | null;
+                    source_title: string | null;
+                    issue_type: string;
+                    severity: CalendarReviewSeverity;
+                    status: CalendarReviewStatus;
+                    suggested_canonical_celebration_id: string | null;
+                    details: Json;
+                    notes: string | null;
+                    detected_at: string;
+                    resolved_at: string | null;
+                    created_at: string;
+                    updated_at: string;
+                };
+                Insert: {
+                    id?: string;
+                    issue_key: string;
+                    calendar_id: string;
+                    date?: string | null;
+                    source_table: string;
+                    source_row_id?: string | null;
+                    source_celebration_id?: string | null;
+                    source_title?: string | null;
+                    issue_type: string;
+                    severity?: CalendarReviewSeverity;
+                    status?: CalendarReviewStatus;
+                    suggested_canonical_celebration_id?: string | null;
+                    details?: Json;
+                    notes?: string | null;
+                    detected_at?: string;
+                    resolved_at?: string | null;
+                    created_at?: string;
+                    updated_at?: string;
+                };
+                Update: {
+                    id?: string;
+                    issue_key?: string;
+                    calendar_id?: string;
+                    date?: string | null;
+                    source_table?: string;
+                    source_row_id?: string | null;
+                    source_celebration_id?: string | null;
+                    source_title?: string | null;
+                    issue_type?: string;
+                    severity?: CalendarReviewSeverity;
+                    status?: CalendarReviewStatus;
+                    suggested_canonical_celebration_id?: string | null;
+                    details?: Json;
+                    notes?: string | null;
+                    detected_at?: string;
+                    resolved_at?: string | null;
+                    created_at?: string;
+                    updated_at?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: 'calendar_review_items_calendar_id_fkey';
+                        columns: ['calendar_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'calendars';
+                        referencedColumns: ['id'];
+                    },
+                    {
+                        foreignKeyName: 'calendar_review_items_suggested_canonical_celebration_id_fkey';
+                        columns: ['suggested_canonical_celebration_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'canonical_celebrations';
+                        referencedColumns: ['id'];
+                    },
+                ];
+            };
             raw_calendar_rows: {
                 Row: {
                     id: string;
@@ -566,6 +742,9 @@ export type Database = {
                     id: string;
                     calendar_id: string;
                     date: string;
+                    weekday: number;
+                    weekday_name: string;
+                    celebration_id: string;
                     title: string;
                     display_title: string;
                     season: LiturgicalSeason;
@@ -574,10 +753,13 @@ export type Database = {
                     rank: LiturgicalRank;
                     color: LiturgicalColor | null;
                     country_scope: CountryScope | null;
-                    is_holy_day_of_obligation: boolean;
+                    obligation_status: ObligationStatus;
+                    canonical_celebration_id: string | null;
+                    precedence_rank: number | null;
+                    precedence_category: string | null;
                     source_id: string;
                     raw_source_text: string | null;
-                    notes: string | null;
+                    parser_notes: string | null;
                     created_at: string;
                     updated_at: string;
                 };
@@ -585,6 +767,9 @@ export type Database = {
                     id?: string;
                     calendar_id: string;
                     date: string;
+                    weekday: number;
+                    weekday_name: string;
+                    celebration_id: string;
                     title: string;
                     display_title: string;
                     season: LiturgicalSeason;
@@ -593,10 +778,13 @@ export type Database = {
                     rank: LiturgicalRank;
                     color?: LiturgicalColor | null;
                     country_scope?: CountryScope | null;
-                    is_holy_day_of_obligation?: boolean;
+                    obligation_status?: ObligationStatus;
+                    canonical_celebration_id?: string | null;
+                    precedence_rank?: number | null;
+                    precedence_category?: string | null;
                     source_id: string;
                     raw_source_text?: string | null;
-                    notes?: string | null;
+                    parser_notes?: string | null;
                     created_at?: string;
                     updated_at?: string;
                 };
@@ -604,6 +792,9 @@ export type Database = {
                     id?: string;
                     calendar_id?: string;
                     date?: string;
+                    weekday?: number;
+                    weekday_name?: string;
+                    celebration_id?: string;
                     title?: string;
                     display_title?: string;
                     season?: LiturgicalSeason;
@@ -612,10 +803,13 @@ export type Database = {
                     rank?: LiturgicalRank;
                     color?: LiturgicalColor | null;
                     country_scope?: CountryScope | null;
-                    is_holy_day_of_obligation?: boolean;
+                    obligation_status?: ObligationStatus;
+                    canonical_celebration_id?: string | null;
+                    precedence_rank?: number | null;
+                    precedence_category?: string | null;
                     source_id?: string;
                     raw_source_text?: string | null;
-                    notes?: string | null;
+                    parser_notes?: string | null;
                     created_at?: string;
                     updated_at?: string;
                 };
@@ -632,6 +826,95 @@ export type Database = {
                         columns: ['source_id'];
                         isOneToOne: false;
                         referencedRelation: 'calendar_sources';
+                        referencedColumns: ['id'];
+                    },
+                    {
+                        foreignKeyName: 'liturgical_days_canonical_celebration_id_fkey';
+                        columns: ['canonical_celebration_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'canonical_celebrations';
+                        referencedColumns: ['id'];
+                    },
+                ];
+            };
+            liturgical_day_options: {
+                Row: {
+                    id: string;
+                    calendar_id: string;
+                    date: string;
+                    celebration_id: string;
+                    title: string;
+                    rank: LiturgicalRank | null;
+                    color: LiturgicalColor | null;
+                    country_scope: CountryScope | null;
+                    canonical_celebration_id: string | null;
+                    precedence_rank: number | null;
+                    precedence_category: string | null;
+                    source_id: string | null;
+                    raw_source_text: string | null;
+                    raw_option_text: string | null;
+                    parser_notes: string | null;
+                    created_at: string;
+                    updated_at: string;
+                };
+                Insert: {
+                    id?: string;
+                    calendar_id: string;
+                    date: string;
+                    celebration_id: string;
+                    title: string;
+                    rank?: LiturgicalRank | null;
+                    color?: LiturgicalColor | null;
+                    country_scope?: CountryScope | null;
+                    canonical_celebration_id?: string | null;
+                    precedence_rank?: number | null;
+                    precedence_category?: string | null;
+                    source_id?: string | null;
+                    raw_source_text?: string | null;
+                    raw_option_text?: string | null;
+                    parser_notes?: string | null;
+                    created_at?: string;
+                    updated_at?: string;
+                };
+                Update: {
+                    id?: string;
+                    calendar_id?: string;
+                    date?: string;
+                    celebration_id?: string;
+                    title?: string;
+                    rank?: LiturgicalRank | null;
+                    color?: LiturgicalColor | null;
+                    country_scope?: CountryScope | null;
+                    canonical_celebration_id?: string | null;
+                    precedence_rank?: number | null;
+                    precedence_category?: string | null;
+                    source_id?: string | null;
+                    raw_source_text?: string | null;
+                    raw_option_text?: string | null;
+                    parser_notes?: string | null;
+                    created_at?: string;
+                    updated_at?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: 'liturgical_day_options_calendar_id_fkey';
+                        columns: ['calendar_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'calendars';
+                        referencedColumns: ['id'];
+                    },
+                    {
+                        foreignKeyName: 'liturgical_day_options_source_id_fkey';
+                        columns: ['source_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'calendar_sources';
+                        referencedColumns: ['id'];
+                    },
+                    {
+                        foreignKeyName: 'liturgical_day_options_canonical_celebration_id_fkey';
+                        columns: ['canonical_celebration_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'canonical_celebrations';
                         referencedColumns: ['id'];
                     },
                 ];
@@ -690,49 +973,124 @@ export type Database = {
                     },
                 ];
             };
-            calendar_conflicts: {
+            calendar_conflict_runs: {
                 Row: {
                     id: string;
-                    date: string;
                     base_calendar_id: string;
                     comparison_calendar_id: string;
-                    base_liturgical_day_id: string;
-                    comparison_liturgical_day_id: string;
-                    severity: CalendarConflictSeverity;
-                    reason: CalendarConflictReason;
-                    base_display: string;
-                    comparison_display: string;
-                    should_show_warning: boolean;
+                    start_date: string;
+                    end_date: string;
+                    compared_date_count: number;
+                    conflict_count: number;
+                    include_none: boolean;
+                    generator: string;
+                    status: string;
+                    details: Json;
+                    started_at: string;
+                    completed_at: string | null;
                     created_at: string;
                     updated_at: string;
                 };
                 Insert: {
                     id?: string;
-                    date: string;
                     base_calendar_id: string;
                     comparison_calendar_id: string;
-                    base_liturgical_day_id: string;
-                    comparison_liturgical_day_id: string;
-                    severity: CalendarConflictSeverity;
-                    reason: CalendarConflictReason;
-                    base_display: string;
-                    comparison_display: string;
-                    should_show_warning?: boolean;
+                    start_date: string;
+                    end_date: string;
+                    compared_date_count?: number;
+                    conflict_count?: number;
+                    include_none?: boolean;
+                    generator?: string;
+                    status?: string;
+                    details?: Json;
+                    started_at?: string;
+                    completed_at?: string | null;
                     created_at?: string;
                     updated_at?: string;
                 };
                 Update: {
                     id?: string;
+                    base_calendar_id?: string;
+                    comparison_calendar_id?: string;
+                    start_date?: string;
+                    end_date?: string;
+                    compared_date_count?: number;
+                    conflict_count?: number;
+                    include_none?: boolean;
+                    generator?: string;
+                    status?: string;
+                    details?: Json;
+                    started_at?: string;
+                    completed_at?: string | null;
+                    created_at?: string;
+                    updated_at?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: 'calendar_conflict_runs_base_calendar_id_fkey';
+                        columns: ['base_calendar_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'calendars';
+                        referencedColumns: ['id'];
+                    },
+                    {
+                        foreignKeyName: 'calendar_conflict_runs_comparison_calendar_id_fkey';
+                        columns: ['comparison_calendar_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'calendars';
+                        referencedColumns: ['id'];
+                    },
+                ];
+            };
+            calendar_conflicts: {
+                Row: {
+                    id: string;
+                    run_id: string | null;
+                    date: string;
+                    base_calendar_id: string;
+                    comparison_calendar_id: string;
+                    base_liturgical_day_id: string | null;
+                    comparison_liturgical_day_id: string | null;
+                    severity: CalendarConflictSeverity;
+                    reason: CalendarConflictReason;
+                    base_display: string;
+                    comparison_display: string;
+                    should_show_warning: boolean;
+                    details: Json;
+                    created_at: string;
+                    updated_at: string;
+                };
+                Insert: {
+                    id?: string;
+                    run_id?: string | null;
+                    date: string;
+                    base_calendar_id: string;
+                    comparison_calendar_id: string;
+                    base_liturgical_day_id?: string | null;
+                    comparison_liturgical_day_id?: string | null;
+                    severity: CalendarConflictSeverity;
+                    reason: CalendarConflictReason;
+                    base_display: string;
+                    comparison_display: string;
+                    should_show_warning?: boolean;
+                    details?: Json;
+                    created_at?: string;
+                    updated_at?: string;
+                };
+                Update: {
+                    id?: string;
+                    run_id?: string | null;
                     date?: string;
                     base_calendar_id?: string;
                     comparison_calendar_id?: string;
-                    base_liturgical_day_id?: string;
-                    comparison_liturgical_day_id?: string;
+                    base_liturgical_day_id?: string | null;
+                    comparison_liturgical_day_id?: string | null;
                     severity?: CalendarConflictSeverity;
                     reason?: CalendarConflictReason;
                     base_display?: string;
                     comparison_display?: string;
                     should_show_warning?: boolean;
+                    details?: Json;
                     created_at?: string;
                     updated_at?: string;
                 };
@@ -763,6 +1121,13 @@ export type Database = {
                         columns: ['comparison_liturgical_day_id'];
                         isOneToOne: false;
                         referencedRelation: 'liturgical_days';
+                        referencedColumns: ['id'];
+                    },
+                    {
+                        foreignKeyName: 'calendar_conflicts_run_id_fkey';
+                        columns: ['run_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'calendar_conflict_runs';
                         referencedColumns: ['id'];
                     },
                 ];

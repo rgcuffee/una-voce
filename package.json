@@ -6,6 +6,8 @@
   "scripts": {
     "build:us-calendar-sql": "node scripts/build-usccb-calendar-sql.mjs",
     "seed:us-calendar": "node scripts/seed-us-calendar-supabase.mjs",
+    "seed:us-calendar-canonical": "node scripts/seed-us-calendar-canonicalization.mjs",
+    "generate:calendar-conflicts": "node scripts/generate-calendar-conflicts.mjs",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview"

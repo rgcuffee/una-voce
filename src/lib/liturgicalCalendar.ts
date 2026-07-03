@@ -3,9 +3,14 @@ import type { Tables } from './database.types';
 
 export type Calendar = Tables<'calendars'>;
 export type CalendarSource = Tables<'calendar_sources'>;
+export type CanonicalCelebration = Tables<'canonical_celebrations'>;
+export type CelebrationAlias = Tables<'celebration_aliases'>;
+export type CalendarReviewItem = Tables<'calendar_review_items'>;
 export type RawCalendarRow = Tables<'raw_calendar_rows'>;
 export type LiturgicalDay = Tables<'liturgical_days'>;
+export type LiturgicalDayOption = Tables<'liturgical_day_options'>;
 export type LiturgicalHourInstance = Tables<'liturgical_hour_instances'>;
+export type CalendarConflictRun = Tables<'calendar_conflict_runs'>;
 export type CalendarConflict = Tables<'calendar_conflicts'>;
 
 export type LiturgicalDayWithHours = LiturgicalDay & {

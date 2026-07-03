@@ -197,9 +197,9 @@ const rawRows = splitTuples(extractValuesBlock(sql, 'raw_rows')).map((tuple) => 
 const liturgicalDays = splitTuples(extractValuesBlock(sql, 'days')).map((tuple) => {
     const [
         date,
-        ,
-        ,
-        ,
+        weekday,
+        weekday_name,
+        celebration_id,
         title,
         display_title,
         season,
@@ -216,6 +216,9 @@ const liturgicalDays = splitTuples(extractValuesBlock(sql, 'days')).map((tuple) 
     return {
         calendar_id: CALENDAR_ID,
         date,
+        weekday,
+        weekday_name,
+        celebration_id,
         title,
         display_title,
         season,
@@ -224,13 +227,82 @@ const liturgicalDays = splitTuples(extractValuesBlock(sql, 'days')).map((tuple) 
         rank,
         color,
         country_scope,
-        is_holy_day_of_obligation: obligation_status === 'holy_day',
+        obligation_status,
         raw_source_text,
-        notes: parser_notes,
+        parser_notes,
+    };
+});
+
+const liturgicalDayOptions = splitTuples(extractValuesBlock(sql, 'options')).map((tuple) => {
+    const [
+        date,
+        celebration_id,
+        title,
+        rank,
+        color,
+        country_scope,
+        raw_source_text,
+        raw_option_text,
+        parser_notes,
+    ] = splitFields(tuple);
+
+    return {
+        calendar_id: CALENDAR_ID,
+        date,
+        celebration_id,
+        title,
+        rank,
+        color,
+        country_scope,
+        raw_source_text,
+        raw_option_text,
+        parser_notes,
     };
 });
 
 const supabase = createClient(supabaseUrl, serviceRoleKey);
+
+async function assertEngineSchema() {
+    const { error: dayError } = await supabase
+        .from('liturgical_days')
+        .select('calendar_id,date,weekday,weekday_name,celebration_id,obligation_status,parser_notes')
+        .limit(1);
+
+    if (dayError) {
+        if (dayError.message?.includes('fetch failed')) {
+            throw new Error(`Unable to reach Supabase. Check network/DNS access, then run this seed again. ${dayError.details || dayError.message}`);
+        }
+
+        throw new Error(
+            [
+                'Supabase liturgical_days is missing engine-ready columns.',
+                'Apply supabase/migrations/20260703010000_liturgical_calendar_engine_readiness.sql, then run this seed again.',
+                `${dayError.message}`,
+            ].join(' '),
+        );
+    }
+
+    const { error: optionError } = await supabase
+        .from('liturgical_day_options')
+        .select('calendar_id,date,celebration_id,title,rank,color,country_scope,parser_notes')
+        .limit(1);
+
+    if (optionError) {
+        if (optionError.message?.includes('fetch failed')) {
+            throw new Error(`Unable to reach Supabase. Check network/DNS access, then run this seed again. ${optionError.details || optionError.message}`);
+        }
+
+        throw new Error(
+            [
+                'Supabase liturgical_day_options is not available.',
+                'Apply supabase/migrations/20260703010000_liturgical_calendar_engine_readiness.sql, then run this seed again.',
+                `${optionError.message}`,
+            ].join(' '),
+        );
+    }
+}
+
+await assertEngineSchema();
 
 await throwIfError(
     'upsert calendars',
@@ -245,6 +317,16 @@ await throwIfError(
         },
         { onConflict: 'id' },
     ),
+);
+
+await throwIfError(
+    'delete liturgical_day_options',
+    await supabase
+        .from('liturgical_day_options')
+        .delete()
+        .eq('calendar_id', CALENDAR_ID)
+        .gte('date', DATE_START)
+        .lte('date', DATE_END),
 );
 
 await throwIfError(
@@ -304,6 +386,11 @@ const liturgicalDaysWithSource = liturgicalDays.map((day) => ({
     source_id: source.id,
 }));
 
+const liturgicalDayOptionsWithSource = liturgicalDayOptions.map((option) => ({
+    ...option,
+    source_id: source.id,
+}));
+
 for (const rows of chunk(rawRowsWithSource)) {
     await throwIfError(
         'insert raw_calendar_rows',
@@ -318,10 +405,27 @@ for (const rows of chunk(liturgicalDaysWithSource)) {
     );
 }
 
+for (const rows of chunk(liturgicalDayOptionsWithSource)) {
+    await throwIfError(
+        'insert liturgical_day_options',
+        await supabase.from('liturgical_day_options').insert(rows),
+    );
+}
+
 const { count: dayCount } = await throwIfError(
     'count liturgical_days',
     await supabase
         .from('liturgical_days')
+        .select('*', { count: 'exact', head: true })
+        .eq('calendar_id', CALENDAR_ID)
+        .gte('date', DATE_START)
+        .lte('date', DATE_END),
+);
+
+const { count: optionCount } = await throwIfError(
+    'count liturgical_day_options',
+    await supabase
+        .from('liturgical_day_options')
         .select('*', { count: 'exact', head: true })
         .eq('calendar_id', CALENDAR_ID)
         .gte('date', DATE_START)
@@ -338,4 +442,4 @@ const { count: hourCount } = await throwIfError(
         .lte('date', DATE_END),
 );
 
-console.log(`Seeded ${dayCount} liturgical days and ${hourCount} hour instances.`);
+console.log(`Seeded ${dayCount} liturgical days, ${optionCount} optional celebrations, and ${hourCount} hour instances.`);

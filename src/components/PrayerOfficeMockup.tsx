@@ -1339,9 +1339,9 @@ const OPTION_IMAGES: Record<'audio' | 'video' | 'live', string[]> = {
 
 const NAV_ITEMS = PRIMARY_NAV;
 
-const FALLBACK_DATE_LABEL = 'Monday, June 22 · Twelfth Week in Ordinary Time';
 const MOCK_YOUTUBE_VIDEO_ID = 'M7lc1UVf-VE';
 const DEFAULT_CALENDAR_ID = 'us';
+const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
 function titleCase(format: FormatKey) {
   const labels: Record<FormatKey, string> = {
@@ -1370,7 +1370,7 @@ function localDateString(date = new Date()) {
 function selectedDateFromSearch(search: string) {
   const date = new URLSearchParams(search).get('date');
 
-  return date && /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : localDateString();
+  return date && DATE_PATTERN.test(date) ? date : localDateString();
 }
 
 function formatCivilDate(date: string) {
@@ -1381,14 +1381,23 @@ function formatCivilDate(date: string) {
   }).format(new Date(`${date}T12:00:00`));
 }
 
+function formatPendingDateLabel(date: string) {
+  return formatCivilDate(date);
+}
+
 function formatLiturgicalDateLabel(
   day: Awaited<ReturnType<typeof getLiturgicalDayWithHours>>,
+  date: string,
 ) {
   if (!day) {
-    return FALLBACK_DATE_LABEL;
+    return formatPendingDateLabel(date);
   }
 
   return `${formatCivilDate(day.date)} · ${day.display_title}`;
+}
+
+function isTodayDate(date: string) {
+  return date === localDateString();
 }
 
 function sourceNameFromTitle(title: string) {
@@ -1738,6 +1747,8 @@ export function PrayerOfficeMockup() {
   const location = useLocation();
   const routerNavigate = useNavigate();
   const selectedDate = selectedDateFromSearch(location.search);
+  const dateControlRef = useRef<HTMLDivElement | null>(null);
+  const dateInputRef = useRef<HTMLInputElement | null>(null);
   const isDesktopRef = useRef<boolean>(false);
   const [isDesktopLayout, setIsDesktopLayout] = useState(() => {
     if (typeof window === 'undefined') {
@@ -1775,7 +1786,10 @@ export function PrayerOfficeMockup() {
   });
   const [prayerPlayerSession, setPrayerPlayerSession] =
     useState<PrayerPlayerSession | null>(null);
-  const [dateLabel, setDateLabel] = useState(FALLBACK_DATE_LABEL);
+  const [dateLabel, setDateLabel] = useState(() =>
+    formatPendingDateLabel(selectedDate),
+  );
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [cathoholicVideos, setCathoholicVideos] = useState<CathoholicVideo[]>(
     [],
   );
@@ -1798,6 +1812,47 @@ export function PrayerOfficeMockup() {
     if (typeof window !== 'undefined') {
       window.localStorage.setItem(ONRAMP_DISMISS_KEY, 'true');
     }
+  };
+
+  const changePrayerDate = (date: string) => {
+    const params = new URLSearchParams(location.search);
+
+    if (isTodayDate(date)) {
+      params.delete('date');
+    } else {
+      params.set('date', date);
+    }
+
+    const search = params.toString();
+    routerNavigate({
+      pathname: location.pathname,
+      search: search ? `?${search}` : '',
+    });
+  };
+
+  const returnToToday = () => {
+    changePrayerDate(localDateString());
+    setIsDatePickerOpen(false);
+  };
+
+  const applyDateInputValue = (date: string) => {
+    if (!DATE_PATTERN.test(date)) {
+      return;
+    }
+
+    changePrayerDate(date);
+    setIsDatePickerOpen(false);
+  };
+
+  const closeDatePicker = () => {
+    const date = dateInputRef.current?.value;
+
+    if (date && DATE_PATTERN.test(date) && date !== selectedDate) {
+      applyDateInputValue(date);
+      return;
+    }
+
+    setIsDatePickerOpen(false);
   };
 
   useEffect(() => {
@@ -1854,20 +1909,42 @@ export function PrayerOfficeMockup() {
   }, []);
 
   useEffect(() => {
+    if (!isDatePickerOpen) {
+      return;
+    }
+
+    dateInputRef.current?.focus();
+
+    const closeOnOutsideClick = (event: MouseEvent) => {
+      if (
+        dateControlRef.current &&
+        !dateControlRef.current.contains(event.target as Node)
+      ) {
+        closeDatePicker();
+      }
+    };
+
+    document.addEventListener('mousedown', closeOnOutsideClick);
+    return () => document.removeEventListener('mousedown', closeOnOutsideClick);
+  }, [isDatePickerOpen, selectedDate]);
+
+  useEffect(() => {
     let isActive = true;
+
+    setDateLabel(formatPendingDateLabel(selectedDate));
 
     getLiturgicalDayWithHours(DEFAULT_CALENDAR_ID, selectedDate)
       .then((day) => {
-        if (!isActive || !day) {
+        if (!isActive) {
           return;
         }
 
-        setDateLabel(formatLiturgicalDateLabel(day));
+        setDateLabel(formatLiturgicalDateLabel(day, selectedDate));
       })
       .catch((error) => {
         console.warn('Unable to load liturgical calendar date.', error);
         if (isActive) {
-          setDateLabel(FALLBACK_DATE_LABEL);
+          setDateLabel(formatPendingDateLabel(selectedDate));
         }
       });
 
@@ -2061,6 +2138,78 @@ export function PrayerOfficeMockup() {
           renderPage(activeView, navigateTo)
         ) : (
           <>
+            <section
+              className="date-control"
+              ref={dateControlRef}
+              aria-label="Prayer date"
+            >
+              <div className="date-copy">
+                <div className="date-label">
+                  {isTodayDate(selectedDate) ? 'Today' : 'Selected date'}
+                </div>
+                <div className="date-value">{formatCivilDate(selectedDate)}</div>
+                {!isTodayDate(selectedDate) ? (
+                  <button
+                    type="button"
+                    className="return-today-button"
+                    onClick={returnToToday}
+                  >
+                    Return to today
+                  </button>
+                ) : null}
+              </div>
+              <div className="date-control-actions">
+                <button
+                  type="button"
+                  className="date-change-button"
+                  aria-expanded={isDatePickerOpen}
+                  aria-controls="prayer-date-picker"
+                  onClick={() => {
+                    if (isDatePickerOpen) {
+                      setIsDatePickerOpen(false);
+                      return;
+                    }
+
+                    setIsDatePickerOpen(true);
+                  }}
+                >
+                  Change date
+                </button>
+                {isDatePickerOpen ? (
+                  <div
+                    className="date-picker-popover"
+                    id="prayer-date-picker"
+                  >
+                    <input
+                      ref={dateInputRef}
+                      type="date"
+                      value={selectedDate}
+                      aria-label="Select prayer date"
+                      onChange={(event) => {
+                        applyDateInputValue(event.target.value);
+                      }}
+                      onInput={(event) => {
+                        applyDateInputValue(event.currentTarget.value);
+                      }}
+                      onBlur={(event) => {
+                        applyDateInputValue(event.currentTarget.value);
+                      }}
+                    />
+                    <button
+                      type="button"
+                      className="date-picker-apply"
+                      onClick={() => {
+                        applyDateInputValue(
+                          dateInputRef.current?.value ?? selectedDate,
+                        );
+                      }}
+                    >
+                      Set date
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+            </section>
             {!onrampDismissed ? (
               <section className="onramp">
                 <button

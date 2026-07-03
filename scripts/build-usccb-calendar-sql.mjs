@@ -428,6 +428,11 @@ function isLectionaryLine(line) {
   return (
     /^Pss\s+(Prop|I|II|III|IV)$/.test(trimmed) ||
     /^(Chrism Mass|Evening Mass|Easter Vigil|Vigil|Day):/.test(trimmed) ||
+    /^(If necessary|Nine readings|demand in individual cases|both from the Law|about the escape|Although not given|celebrated as Solemnities)\b/.test(trimmed) ||
+    /^When the Ascension of the Lord is celebrated\b/.test(trimmed) ||
+    /^Seventh Sunday of Easter\b/.test(trimmed) ||
+    /^Ecclesiastical Provinces of\b/.test(trimmed) ||
+    /^[1-3]?\s?[A-Z][a-z]{1,4}\s+\d/.test(trimmed) ||
     /\(\d+[A-Z]?(?:-\d+[A-Z]?)?\b[^)]*\)/.test(trimmed) ||
     /Lectionary for Mass Supplement/.test(trimmed) ||
     /^or,/.test(trimmed) ||
@@ -915,6 +920,38 @@ function validateNormalizedDays(days) {
   if (adventOne?.season_week !== 1) {
     errors.push(`2025-11-30 season week expected 1, got ${adventOne?.season_week}`);
   }
+
+  assertSpotCheck(errors, byDate.get('2026-04-06'), '2026-04-06', {
+    title: 'Monday within the Octave of Easter',
+    rank: 'weekday',
+    color: 'white',
+  });
+
+  assertSpotCheck(errors, byDate.get('2026-05-11'), '2026-05-11', {
+    title: 'Easter Weekday',
+    rank: 'weekday',
+    color: 'white',
+  });
+
+  assertSpotCheck(errors, byDate.get('2026-05-13'), '2026-05-13', {
+    title: 'Easter Weekday',
+    rank: 'weekday',
+    color: 'white',
+    optionalTitle: 'Our Lady of Fatima',
+    optionalColor: 'white',
+  });
+
+  assertSpotCheck(errors, byDate.get('2026-05-16'), '2026-05-16', {
+    title: 'Easter Weekday',
+    rank: 'weekday',
+    color: 'white',
+  });
+
+  assertSpotCheck(errors, byDate.get('2026-12-27'), '2026-12-27', {
+    title: 'THE HOLY FAMILY OF JESUS, MARY AND JOSEPH',
+    rank: 'feast',
+    color: 'white',
+  });
 
   if (errors.length > 0) {
     throw new Error(`Calendar validation failed:\n- ${errors.join('\n- ')}`);
