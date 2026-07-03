@@ -1554,10 +1554,23 @@ function worthAbbeyLiveOptionsForSegment(
 }
 
 function isWorthAbbeyUpcomingOrCurrent(item: OptionItem) {
+  if (item.isLiveNow) {
+    return true;
+  }
+
+  const liveEndAt = item.liveEndAt ? Date.parse(item.liveEndAt) : NaN;
+
+  if (!Number.isNaN(liveEndAt)) {
+    const previousThreshold =
+      liveEndAt + WORTH_ABBEY_PREVIOUS_STREAM_BUFFER_MINUTES * 60 * 1000;
+
+    return Date.now() < previousThreshold;
+  }
+
   const liveStartAt = item.liveStartAt ? Date.parse(item.liveStartAt) : NaN;
 
   if (Number.isNaN(liveStartAt)) {
-    return true;
+    return false;
   }
 
   const previousThreshold =
