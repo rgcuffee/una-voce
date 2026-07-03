@@ -33,6 +33,9 @@ export async function worthAbbeyVideosResponse(date) {
     ),
     feedErrors: xmlResults.filter((result) => result.status === 'rejected').length,
     detailErrors: enrichedResults.filter((result) => result.status === 'rejected').length,
+    detailMissing: enrichedResults.filter(
+      (result) => result.status === 'fulfilled' && !result.value.liveStartAt,
+    ).length,
   };
 }
 
@@ -122,6 +125,7 @@ function normalizeWorthAbbeyVideo(video) {
     liveStartAt: null,
     liveEndAt: null,
     isLiveNow: false,
+    timingSource: null,
   };
 }
 
@@ -137,6 +141,7 @@ async function enrichWorthAbbeyVideo(video) {
     liveStartAt: liveDetails.startTimestamp,
     liveEndAt: liveDetails.endTimestamp,
     isLiveNow: liveDetails.isLiveNow,
+    timingSource: liveDetails.source,
   };
 }
 
@@ -176,11 +181,23 @@ async function fetchPlayerLiveBroadcastDetails(youtubeVideoId) {
     const body = await response.json();
     const liveBroadcastDetails =
       body?.microformat?.playerMicroformatRenderer?.liveBroadcastDetails ?? {};
+    const offlineSlate =
+      body?.playabilityStatus?.liveStreamability?.liveStreamabilityRenderer
+        ?.offlineSlate?.liveStreamOfflineSlateRenderer ?? {};
+    const scheduledStartAt = offlineSlate.scheduledStartTime
+      ? new Date(Number(offlineSlate.scheduledStartTime) * 1000).toISOString()
+      : null;
 
     return {
-      startTimestamp: parseDate(liveBroadcastDetails.startTimestamp),
+      startTimestamp:
+        parseDate(liveBroadcastDetails.startTimestamp) ??
+        parseDate(scheduledStartAt),
       endTimestamp: parseDate(liveBroadcastDetails.endTimestamp),
       isLiveNow: liveBroadcastDetails.isLiveNow === true,
+      source:
+        liveBroadcastDetails.startTimestamp || scheduledStartAt
+          ? 'player'
+          : null,
     };
   } finally {
     clearTimeout(timeout);
@@ -218,14 +235,27 @@ function extractLiveBroadcastDetails(html) {
   const liveDetails = liveDetailsMatch?.[1] ?? '';
   const metaStartDate = metaItempropContent(html, 'startDate');
   const metaEndDate = metaItempropContent(html, 'endDate');
+  const scheduledStartAt = unixTimestampField(html, 'scheduledStartTime');
+  const startTimestamp =
+    parseDate(jsonStringField(liveDetails, 'startTimestamp')) ??
+    metaStartDate ??
+    scheduledStartAt;
 
   return {
-    startTimestamp:
-      parseDate(jsonStringField(liveDetails, 'startTimestamp')) ?? metaStartDate,
+    startTimestamp,
     endTimestamp:
       parseDate(jsonStringField(liveDetails, 'endTimestamp')) ?? metaEndDate,
     isLiveNow: jsonBooleanField(liveDetails, 'isLiveNow') ?? false,
+    source: startTimestamp ? 'watch' : null,
   };
+}
+
+function unixTimestampField(text, fieldName) {
+  const match = text.match(
+    new RegExp(`"${escapeRegExp(fieldName)}"\\s*:\\s*"?(\\d{10})"?`),
+  );
+
+  return match?.[1] ? new Date(Number(match[1]) * 1000).toISOString() : null;
 }
 
 function jsonStringField(jsonFragment, fieldName) {
@@ -245,12 +275,13 @@ function jsonBooleanField(jsonFragment, fieldName) {
 }
 
 function metaItempropContent(html, itemprop) {
-  const match = html.match(
+  const itempropFirst = html.match(
     new RegExp(
-      `<meta\\s+itemprop=["']${escapeRegExp(itemprop)}["']\\s+content=["']([^"']+)["']`,
+      `<meta\\b(?=[^>]*\\bitemprop=["']${escapeRegExp(itemprop)}["'])(?=[^>]*\\bcontent=["']([^"']+)["'])[^>]*>`,
       'i',
     ),
   );
+  const match = itempropFirst;
 
   return match?.[1] ? parseDate(decodeXml(match[1])) : null;
 }
