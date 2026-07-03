@@ -127,7 +127,10 @@ function normalizeWorthAbbeyVideo(video) {
 
 async function enrichWorthAbbeyVideo(video) {
   const html = await fetchWatchPage(video.youtubeVideoId);
-  const liveDetails = extractLiveBroadcastDetails(html);
+  const watchPageDetails = extractLiveBroadcastDetails(html);
+  const liveDetails = watchPageDetails.startTimestamp
+    ? watchPageDetails
+    : await fetchPlayerLiveBroadcastDetails(video.youtubeVideoId);
 
   return {
     ...video,
@@ -135,6 +138,53 @@ async function enrichWorthAbbeyVideo(video) {
     liveEndAt: liveDetails.endTimestamp,
     isLiveNow: liveDetails.isLiveNow,
   };
+}
+
+async function fetchPlayerLiveBroadcastDetails(youtubeVideoId) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+
+  try {
+    const response = await fetch(
+      'https://www.youtube.com/youtubei/v1/player?prettyPrint=false',
+      {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'user-agent':
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/126 Safari/537.36',
+          'x-youtube-client-name': '1',
+          'x-youtube-client-version': '2.20260701.01.00',
+        },
+        body: JSON.stringify({
+          context: {
+            client: {
+              clientName: 'WEB',
+              clientVersion: '2.20260701.01.00',
+            },
+          },
+          videoId: youtubeVideoId,
+        }),
+        signal: controller.signal,
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(`Player metadata returned ${response.status}`);
+    }
+
+    const body = await response.json();
+    const liveBroadcastDetails =
+      body?.microformat?.playerMicroformatRenderer?.liveBroadcastDetails ?? {};
+
+    return {
+      startTimestamp: parseDate(liveBroadcastDetails.startTimestamp),
+      endTimestamp: parseDate(liveBroadcastDetails.endTimestamp),
+      isLiveNow: liveBroadcastDetails.isLiveNow === true,
+    };
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 async function fetchWatchPage(youtubeVideoId) {
