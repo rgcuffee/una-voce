@@ -1504,7 +1504,7 @@ function worthAbbeyLiveOptionsForSegment(
         imageUrl: video.thumbnailUrl,
         videoId: video.youtubeVideoId,
         sourceUrl: video.canonicalUrl,
-        liveStartAt: video.liveStartAt,
+        liveStartAt: video.liveStartAt ?? video.scheduledStartAt,
         liveEndAt: video.liveEndAt,
         isLiveNow: video.isLiveNow,
       };
