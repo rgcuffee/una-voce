@@ -1204,19 +1204,19 @@ days (
   values
     ('2025-11-30'::date, 0, 'Sunday', 'first_sunday_of_advent', 'FIRST SUNDAY OF ADVENT', 'FIRST SUNDAY OF ADVENT', 'advent'::public.liturgical_season, 1, 1, 'sunday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'sunday'::public.obligation_status, '30 SUN FIRST SUNDAY OF ADVENT violet
 Is 2:1-5/Rom 13:11-14/Mt 24:37-44 (1) Pss I3', null),
-    ('2025-12-01'::date, 1, 'Monday', 'advent_weekday', 'Advent Weekday', 'Advent Weekday', 'advent'::public.liturgical_season, 1, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '1 Mon Advent Weekday violet
+    ('2025-12-01'::date, 1, 'Monday', 'advent_weekday', 'Advent Weekday', 'Monday of the First Week of Advent', 'advent'::public.liturgical_season, 1, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '1 Mon Advent Weekday violet
 Is 4:2-6 (second choice)/Mt 8:5-11 (175)', null),
-    ('2025-12-02'::date, 2, 'Tuesday', 'advent_weekday', 'Advent Weekday', 'Advent Weekday', 'advent'::public.liturgical_season, 1, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '2 Tue Advent Weekday violet
+    ('2025-12-02'::date, 2, 'Tuesday', 'advent_weekday', 'Advent Weekday', 'Tuesday of the First Week of Advent', 'advent'::public.liturgical_season, 1, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '2 Tue Advent Weekday violet
 Is 11:1-10/Lk 10:21-24 (176)', null),
     ('2025-12-03'::date, 3, 'Wednesday', 'st_francis_xavier', 'Saint Francis Xavier, Priest', 'Saint Francis Xavier, Priest', 'advent'::public.liturgical_season, 1, null, 'memorial'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '3 Wed Saint Francis Xavier, Priest white
 Memorial
 Is 25:6-10a/Mt 15:29-37 (177)', null),
-    ('2025-12-04'::date, 4, 'Thursday', 'advent_weekday', 'Advent Weekday', 'Advent Weekday', 'advent'::public.liturgical_season, 1, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '4 Thu Advent Weekday violet/white
+    ('2025-12-04'::date, 4, 'Thursday', 'advent_weekday', 'Advent Weekday', 'Thursday of the First Week of Advent', 'advent'::public.liturgical_season, 1, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '4 Thu Advent Weekday violet/white
 [Saint John Damascene, Priest and Doctor of the Church]4
 Is 26:1-6/Mt 7:21, 24-27 (178)', null),
-    ('2025-12-05'::date, 5, 'Friday', 'advent_weekday', 'Advent Weekday', 'Advent Weekday', 'advent'::public.liturgical_season, 1, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '5 Fri Advent Weekday violet
+    ('2025-12-05'::date, 5, 'Friday', 'advent_weekday', 'Advent Weekday', 'Friday of the First Week of Advent', 'advent'::public.liturgical_season, 1, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '5 Fri Advent Weekday violet
 Is 29:17-24/Mt 9:27-31 (179)', null),
-    ('2025-12-06'::date, 6, 'Saturday', 'advent_weekday', 'Advent Weekday', 'Advent Weekday', 'advent'::public.liturgical_season, 1, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '6 Sat Advent Weekday violet/white
+    ('2025-12-06'::date, 6, 'Saturday', 'advent_weekday', 'Advent Weekday', 'Saturday of the First Week of Advent', 'advent'::public.liturgical_season, 1, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '6 Sat Advent Weekday violet/white
 [Saint Nicholas, Bishop]
 Is 30:19-21, 23-26/Mt 9:35—10:1, 5a, 6-8 (180)', null),
     ('2025-12-07'::date, 0, 'Sunday', 'second_sunday_of_advent', 'SECOND SUNDAY OF ADVENT', 'SECOND SUNDAY OF ADVENT', 'advent'::public.liturgical_season, 2, 2, 'sunday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'sunday'::public.obligation_status, '7 SUN SECOND SUNDAY OF ADVENT violet
@@ -1226,13 +1226,13 @@ BLESSED VIRGIN MARY
 (Patronal Feastday of the United States of America)
 Solemnity [Holyday of Obligation]
 Gn 3:9-15, 20/Eph 1:3-6, 11-12/Lk 1:26-38 (689) Pss Prop', null),
-    ('2025-12-09'::date, 2, 'Tuesday', 'advent_weekday', 'Advent Weekday', 'Advent Weekday', 'advent'::public.liturgical_season, 2, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '9 Tue Advent Weekday violet/white
+    ('2025-12-09'::date, 2, 'Tuesday', 'advent_weekday', 'Advent Weekday', 'Tuesday of the Second Week of Advent', 'advent'::public.liturgical_season, 2, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '9 Tue Advent Weekday violet/white
 [Saint Juan Diego Cuauhtlatoatzin]
 Is 40:1-11/Mt 18:12-14 (182)', null),
-    ('2025-12-10'::date, 3, 'Wednesday', 'advent_weekday', 'Advent Weekday', 'Advent Weekday', 'advent'::public.liturgical_season, 2, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '10 Wed Advent Weekday violet/white
+    ('2025-12-10'::date, 3, 'Wednesday', 'advent_weekday', 'Advent Weekday', 'Wednesday of the Second Week of Advent', 'advent'::public.liturgical_season, 2, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '10 Wed Advent Weekday violet/white
 [Our Lady of Loreto]
 Is 40:25-31/Mt 11:28-30 (183)', null),
-    ('2025-12-11'::date, 4, 'Thursday', 'advent_weekday', 'Advent Weekday', 'Advent Weekday', 'advent'::public.liturgical_season, 2, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '11 Thu Advent Weekday violet/white
+    ('2025-12-11'::date, 4, 'Thursday', 'advent_weekday', 'Advent Weekday', 'Thursday of the Second Week of Advent', 'advent'::public.liturgical_season, 2, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '11 Thu Advent Weekday violet/white
 [Saint Damasus I, Pope]
 Is 41:13-20/Mt 11:11-15 (184)', null),
     ('2025-12-12'::date, 5, 'Friday', 'our_lady_of_guadalupe', 'Our Lady of Guadalupe', 'Our Lady of Guadalupe', 'advent'::public.liturgical_season, 2, null, 'feast'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '12 Fri USA: Our Lady of Guadalupe white
@@ -1244,26 +1244,26 @@ Memorial
 Sir 48:1-4, 9-11/Mt 17:9a, 10-13 (186)', null),
     ('2025-12-14'::date, 0, 'Sunday', 'third_sunday_of_advent', 'THIRD SUNDAY OF ADVENT', 'THIRD SUNDAY OF ADVENT', 'advent'::public.liturgical_season, 3, 3, 'sunday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'sunday'::public.obligation_status, '14 SUN THIRD SUNDAY OF ADVENT violet or rose
 Is 35:1-6a, 10/Jas 5:7-10/Mt 11:2-11 (7) Pss III', 'Rose may be used.'),
-    ('2025-12-15'::date, 1, 'Monday', 'advent_weekday', 'Advent Weekday', 'Advent Weekday', 'advent'::public.liturgical_season, 3, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '15 Mon Advent Weekday violet
+    ('2025-12-15'::date, 1, 'Monday', 'advent_weekday', 'Advent Weekday', 'Monday of the Third Week of Advent', 'advent'::public.liturgical_season, 3, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '15 Mon Advent Weekday violet
 Nm 24:2-7, 15-17a/Mt 21:23-27 (187)', null),
-    ('2025-12-16'::date, 2, 'Tuesday', 'advent_weekday', 'Advent Weekday', 'Advent Weekday', 'advent'::public.liturgical_season, 3, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '16 Tue Advent Weekday violet
+    ('2025-12-16'::date, 2, 'Tuesday', 'advent_weekday', 'Advent Weekday', 'Tuesday of the Third Week of Advent', 'advent'::public.liturgical_season, 3, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '16 Tue Advent Weekday violet
 Zep 3:1-2, 9-13/Mt 21:28-32 (188)', null),
-    ('2025-12-17'::date, 3, 'Wednesday', 'advent_weekday', 'Advent Weekday', 'Advent Weekday', 'advent'::public.liturgical_season, 3, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '17 Wed Advent Weekday violet
+    ('2025-12-17'::date, 3, 'Wednesday', 'advent_weekday', 'Advent Weekday', 'Wednesday of the Third Week of Advent', 'advent'::public.liturgical_season, 3, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '17 Wed Advent Weekday violet
 Gn 49:2, 8-10/Mt 1:1-17 (193)', null),
-    ('2025-12-18'::date, 4, 'Thursday', 'advent_weekday', 'Advent Weekday', 'Advent Weekday', 'advent'::public.liturgical_season, 3, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '18 Thu Advent Weekday violet
+    ('2025-12-18'::date, 4, 'Thursday', 'advent_weekday', 'Advent Weekday', 'Thursday of the Third Week of Advent', 'advent'::public.liturgical_season, 3, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '18 Thu Advent Weekday violet
 Jer 23:5-8/Mt 1:18-25 (194)', null),
-    ('2025-12-19'::date, 5, 'Friday', 'advent_weekday', 'Advent Weekday', 'Advent Weekday', 'advent'::public.liturgical_season, 3, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '19 Fri Advent Weekday violet
+    ('2025-12-19'::date, 5, 'Friday', 'advent_weekday', 'Advent Weekday', 'Friday of the Third Week of Advent', 'advent'::public.liturgical_season, 3, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '19 Fri Advent Weekday violet
 Jgs 13:2-7, 24-25a/Lk 1:5-25 (195)', null),
-    ('2025-12-20'::date, 6, 'Saturday', 'advent_weekday', 'Advent Weekday', 'Advent Weekday', 'advent'::public.liturgical_season, 3, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '20 Sat Advent Weekday violet
+    ('2025-12-20'::date, 6, 'Saturday', 'advent_weekday', 'Advent Weekday', 'Saturday of the Third Week of Advent', 'advent'::public.liturgical_season, 3, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '20 Sat Advent Weekday violet
 Is 7:10-14/Lk 1:26-38 (196)', null),
     ('2025-12-21'::date, 0, 'Sunday', 'fourth_sunday_of_advent', 'FOURTH SUNDAY OF ADVENT', 'FOURTH SUNDAY OF ADVENT', 'advent'::public.liturgical_season, 4, 4, 'sunday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'sunday'::public.obligation_status, '21 SUN FOURTH SUNDAY OF ADVENT violet
 Is 7:10-14/Rom 1:1-7/Mt 1:18-24 (10) Pss IV', null),
-    ('2025-12-22'::date, 1, 'Monday', 'advent_weekday', 'Advent Weekday', 'Advent Weekday', 'advent'::public.liturgical_season, 4, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '22 Mon Advent Weekday violet
+    ('2025-12-22'::date, 1, 'Monday', 'advent_weekday', 'Advent Weekday', 'Monday of the Fourth Week of Advent', 'advent'::public.liturgical_season, 4, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '22 Mon Advent Weekday violet
 1 Sm 1:24-28/Lk 1:46-56 (198)', null),
-    ('2025-12-23'::date, 2, 'Tuesday', 'advent_weekday', 'Advent Weekday', 'Advent Weekday', 'advent'::public.liturgical_season, 4, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '23 Tue Advent Weekday violet
+    ('2025-12-23'::date, 2, 'Tuesday', 'advent_weekday', 'Advent Weekday', 'Tuesday of the Fourth Week of Advent', 'advent'::public.liturgical_season, 4, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '23 Tue Advent Weekday violet
 [Saint John of Kanty, Priest]
 Mal 3:1-4, 23-24/Lk 1:57-66 (199)', null),
-    ('2025-12-24'::date, 3, 'Wednesday', 'advent_weekday', 'Advent Weekday', 'Advent Weekday', 'advent'::public.liturgical_season, 4, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '24 Wed Advent Weekday violet', null),
+    ('2025-12-24'::date, 3, 'Wednesday', 'advent_weekday', 'Advent Weekday', 'Wednesday of the Fourth Week of Advent', 'advent'::public.liturgical_season, 4, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '24 Wed Advent Weekday violet', null),
     ('2025-12-25'::date, 4, 'Thursday', 'nativity_of_the_lord', 'THE NATIVITY OF THE LORD (Christmas)', 'THE NATIVITY OF THE LORD (Christmas)', 'christmas'::public.liturgical_season, null, null, 'solemnity'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'holy_day'::public.obligation_status, '25 Thu THE NATIVITY OF THE LORD (Christmas) white
 Solemnity [Holyday of Obligation]
 Vigil: Is 62:1-5/Acts 13:16-17, 22-25/Mt 1:1-25 or 1:18-25 (13)
@@ -1319,25 +1319,25 @@ Memorial
     ('2026-01-11'::date, 0, 'Sunday', 'baptism_of_the_lord', 'THE BAPTISM OF THE LORD', 'THE BAPTISM OF THE LORD', 'christmas'::public.liturgical_season, null, null, 'feast'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '11 SUN THE BAPTISM OF THE LORD white
 Feast
 Is 42:1-4, 6-7/Acts 10:34-38/Mt 3:13-17 (21) Pss Prop', null),
-    ('2026-01-12'::date, 1, 'Monday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 1, 1, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '12 Mon Weekday (First Week in Ordinary Time) green
+    ('2026-01-12'::date, 1, 'Monday', 'weekday', 'Weekday', 'Monday of the First Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 1, 1, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '12 Mon Weekday (First Week in Ordinary Time) green
 1 Sm 1:1-8/Mk 1:14-20 (305) Pss I', null),
-    ('2026-01-13'::date, 2, 'Tuesday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 1, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '13 Tue Weekday green/white
+    ('2026-01-13'::date, 2, 'Tuesday', 'weekday', 'Weekday', 'Tuesday of the First Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 1, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '13 Tue Weekday green/white
 [Saint Hilary, Bishop and Doctor of the Church]
 1 Sm 1:9-20/Mk 1:21-28 (306)', null),
-    ('2026-01-14'::date, 3, 'Wednesday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 1, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '14 Wed Weekday green
+    ('2026-01-14'::date, 3, 'Wednesday', 'weekday', 'Weekday', 'Wednesday of the First Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 1, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '14 Wed Weekday green
 1 Sm 3:1-10, 19-20/Mk 1:29-39 (307)', null),
-    ('2026-01-15'::date, 4, 'Thursday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 1, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '15 Thu Weekday green
+    ('2026-01-15'::date, 4, 'Thursday', 'weekday', 'Weekday', 'Thursday of the First Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 1, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '15 Thu Weekday green
 1 Sm 4:1-11/Mk 1:40-45 (308)', null),
-    ('2026-01-16'::date, 5, 'Friday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 1, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '16 Fri Weekday green
+    ('2026-01-16'::date, 5, 'Friday', 'weekday', 'Weekday', 'Friday of the First Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 1, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '16 Fri Weekday green
 1 Sm 8:4-7, 10-22a/Mk 2:1-12 (309)', null),
     ('2026-01-17'::date, 6, 'Saturday', 'st_anthony', 'Saint Anthony, Abbot', 'Saint Anthony, Abbot', 'ordinary_time'::public.liturgical_season, 1, null, 'memorial'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '17 Sat Saint Anthony, Abbot white
 Memorial
 1 Sm 9:1-4, 17-19; 10:1a/Mk 2:13-17 (310)', null),
     ('2026-01-18'::date, 0, 'Sunday', 'second_sunday_in_ordinary_time', 'SECOND SUNDAY IN ORDINARY TIME', 'SECOND SUNDAY IN ORDINARY TIME', 'ordinary_time'::public.liturgical_season, 2, 2, 'sunday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'sunday'::public.obligation_status, '18 SUN SECOND SUNDAY IN ORDINARY TIME green
 Is 49:3, 5-6/1 Cor 1:1-3/Jn 1:29-34 (64) Pss II', null),
-    ('2026-01-19'::date, 1, 'Monday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 2, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '19 Mon Weekday green
+    ('2026-01-19'::date, 1, 'Monday', 'weekday', 'Weekday', 'Monday of the Second Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 2, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '19 Mon Weekday green
 1 Sm 15:16-23/Mk 2:18-22 (311)', null),
-    ('2026-01-20'::date, 2, 'Tuesday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 2, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '20 Tue Weekday green/red/red
+    ('2026-01-20'::date, 2, 'Tuesday', 'weekday', 'Weekday', 'Tuesday of the Second Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 2, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '20 Tue Weekday green/red/red
 [Saint Fabian, Pope and Martyr; Saint Sebastian, Martyr]
 1 Sm 16:1-13/Mk 2:23-28 (312)', null),
     ('2026-01-21'::date, 3, 'Wednesday', 'st_agnes', 'Saint Agnes, Virgin and Martyr', 'Saint Agnes, Virgin and Martyr', 'ordinary_time'::public.liturgical_season, 2, null, 'memorial'::public.liturgical_rank, 'red'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '21 Wed Saint Agnes, Virgin and Martyr red
@@ -1349,7 +1349,7 @@ Protection of Unborn Children
 or, for the Day of Prayer, any readings from the Mass “For Giving Thanks to God
 for the Gift of Human Life” (Lectionary for Mass Supplement, 947A-947E)
 or the Mass “For Peace and Justice” (887-891)', 'Violet may be used.'),
-    ('2026-01-23'::date, 5, 'Friday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 2, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '23 Fri Weekday green/red/white
+    ('2026-01-23'::date, 5, 'Friday', 'weekday', 'Weekday', 'Friday of the Second Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 2, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '23 Fri Weekday green/red/white
 [USA: Saint Vincent, Deacon and Martyr; USA: Saint Marianne Cope, Virgin]
 1 Sm 24:3-21/Mk 3:13-19 (315)', null),
     ('2026-01-24'::date, 6, 'Saturday', 'st_francis_de_sales', 'Saint Francis de Sales, Bishop and Doctor of the Church', 'Saint Francis de Sales, Bishop and Doctor of the Church', 'ordinary_time'::public.liturgical_season, 2, null, 'memorial'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '24 Sat Saint Francis de Sales, Bishop and Doctor of the Church white
@@ -1360,15 +1360,15 @@ Is 8:23—9:3/1 Cor 1:10-13, 17/Mt 4:12-23 or 4:12-17 (67) Pss III', null),
     ('2026-01-26'::date, 1, 'Monday', 'sts_timothy_and_titus_bishops', 'Saints Timothy and Titus, Bishops', 'Saints Timothy and Titus, Bishops', 'ordinary_time'::public.liturgical_season, 3, null, 'memorial'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '26 Mon Saints Timothy and Titus, Bishops white
 Memorial
 2 Tm 1:1-8 or Ti 1:1-5 (520)/Mk 3:22-30 (317)', null),
-    ('2026-01-27'::date, 2, 'Tuesday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 3, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '27 Tue Weekday green/white
+    ('2026-01-27'::date, 2, 'Tuesday', 'weekday', 'Weekday', 'Tuesday of the Third Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 3, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '27 Tue Weekday green/white
 [Saint Angela Merici, Virgin]
 2 Sm 6:12b-15, 17-19/Mk 3:31-35 (318)', null),
     ('2026-01-28'::date, 3, 'Wednesday', 'st_thomas_aquinas', 'Saint Thomas Aquinas, Priest and Doctor of the Church', 'Saint Thomas Aquinas, Priest and Doctor of the Church', 'ordinary_time'::public.liturgical_season, 3, null, 'memorial'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '28 Wed Saint Thomas Aquinas, Priest and Doctor of the Church white
 Memorial
 2 Sm 7:4-17/Mk 4:1-20 (319)', null),
-    ('2026-01-29'::date, 4, 'Thursday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 3, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '29 Thu Weekday green
+    ('2026-01-29'::date, 4, 'Thursday', 'weekday', 'Weekday', 'Thursday of the Third Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 3, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '29 Thu Weekday green
 2 Sm 7:18-19, 24-29/Mk 4:21-25 (320)', null),
-    ('2026-01-30'::date, 5, 'Friday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 3, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '30 Fri Weekday green
+    ('2026-01-30'::date, 5, 'Friday', 'weekday', 'Weekday', 'Friday of the Third Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 3, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '30 Fri Weekday green
 2 Sm 11:1-4a, 5-10a, 13-17/Mk 4:26-34 (321)', null),
     ('2026-01-31'::date, 6, 'Saturday', 'st_john_bosco', 'Saint John Bosco, Priest', 'Saint John Bosco, Priest', 'ordinary_time'::public.liturgical_season, 3, null, 'memorial'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '31 Sat Saint John Bosco, Priest white
 Memorial
@@ -1378,10 +1378,10 @@ Zep 2:3; 3:12-13/1 Cor 1:26-31/Mt 5:1-12a (70) Pss IV', null),
     ('2026-02-02'::date, 1, 'Monday', 'presentation_of_the_lord', 'The Presentation of the Lord', 'The Presentation of the Lord', 'ordinary_time'::public.liturgical_season, 4, null, 'feast'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '2 Mon The Presentation of the Lord white
 Feast
 Mal 3:1-4/Heb 2:14-18/Lk 2:22-40 or 2:22-32 (524) Pss Prop', null),
-    ('2026-02-03'::date, 2, 'Tuesday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 4, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '3 Tue Weekday green/red/white
+    ('2026-02-03'::date, 2, 'Tuesday', 'weekday', 'Weekday', 'Tuesday of the Fourth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 4, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '3 Tue Weekday green/red/white
 [Saint Blaise, Bishop and Martyr; Saint Ansgar, Bishop]
 2 Sm 18:9-10, 14b, 24-25a, 30—19:3/Mk 5:21-43 (324)', null),
-    ('2026-02-04'::date, 3, 'Wednesday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 4, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '4 Wed Weekday green
+    ('2026-02-04'::date, 3, 'Wednesday', 'weekday', 'Weekday', 'Wednesday of the Fourth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 4, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '4 Wed Weekday green
 2 Sm 24:2, 9-17/Mk 6:1-6 (325)', null),
     ('2026-02-05'::date, 4, 'Thursday', 'st_agatha', 'Saint Agatha, Virgin and Martyr', 'Saint Agatha, Virgin and Martyr', 'ordinary_time'::public.liturgical_season, 4, null, 'memorial'::public.liturgical_rank, 'red'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '5 Thu Saint Agatha, Virgin and Martyr red
 Memorial
@@ -1389,31 +1389,31 @@ Memorial
     ('2026-02-06'::date, 5, 'Friday', 'st_paul_miki_and_companions', 'Saint Paul Miki and Companions, Martyrs', 'Saint Paul Miki and Companions, Martyrs', 'ordinary_time'::public.liturgical_season, 4, null, 'memorial'::public.liturgical_rank, 'red'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '6 Fri Saint Paul Miki and Companions, Martyrs red
 Memorial
 Sir 47:2-11/Mk 6:14-29 (327)', null),
-    ('2026-02-07'::date, 6, 'Saturday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 4, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '7 Sat Weekday green/white
+    ('2026-02-07'::date, 6, 'Saturday', 'weekday', 'Weekday', 'Saturday of the Fourth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 4, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '7 Sat Weekday green/white
 [BVM]
 1 Kgs 3:4-13/Mk 6:30-34 (328)', null),
     ('2026-02-08'::date, 0, 'Sunday', 'fifth_sunday_in_ordinary_time', 'FIFTH SUNDAY IN ORDINARY TIME', 'FIFTH SUNDAY IN ORDINARY TIME', 'ordinary_time'::public.liturgical_season, 5, 1, 'sunday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'sunday'::public.obligation_status, '8 SUN FIFTH SUNDAY IN ORDINARY TIME green
 Is 58:7-10/1 Cor 2:1-5/Mt 5:13-16 (73) Pss I', null),
-    ('2026-02-09'::date, 1, 'Monday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 5, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '9 Mon Weekday green
+    ('2026-02-09'::date, 1, 'Monday', 'weekday', 'Weekday', 'Monday of the Fifth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 5, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '9 Mon Weekday green
 1 Kgs 8:1-7, 9-13/Mk 6:53-56 (329)', null),
     ('2026-02-10'::date, 2, 'Tuesday', 'st_scholastica', 'Saint Scholastica, Virgin', 'Saint Scholastica, Virgin', 'ordinary_time'::public.liturgical_season, 5, null, 'memorial'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '10 Tue Saint Scholastica, Virgin white
 Memorial
 1 Kgs 8:22-23, 27-30/Mk 7:1-13 (330)', null),
-    ('2026-02-11'::date, 3, 'Wednesday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 5, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '11 Wed Weekday green/white
+    ('2026-02-11'::date, 3, 'Wednesday', 'weekday', 'Weekday', 'Wednesday of the Fifth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 5, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '11 Wed Weekday green/white
 [Our Lady of Lourdes]
 1 Kgs 10:1-10/Mk 7:14-23 (331)', null),
-    ('2026-02-12'::date, 4, 'Thursday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 5, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '12 Thu Weekday green
+    ('2026-02-12'::date, 4, 'Thursday', 'weekday', 'Weekday', 'Thursday of the Fifth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 5, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '12 Thu Weekday green
 1 Kgs 11:4-13/Mk 7:24-30 (332)', null),
-    ('2026-02-13'::date, 5, 'Friday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 5, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '13 Fri Weekday green
+    ('2026-02-13'::date, 5, 'Friday', 'weekday', 'Weekday', 'Friday of the Fifth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 5, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '13 Fri Weekday green
 1 Kgs 11:29-32; 12:19/Mk 7:31-37 (333)', null),
     ('2026-02-14'::date, 6, 'Saturday', 'sts_cyril_monk_and_methodius_bishop', 'Saints Cyril, Monk, and Methodius, Bishop', 'Saints Cyril, Monk, and Methodius, Bishop', 'ordinary_time'::public.liturgical_season, 5, null, 'memorial'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '14 Sat Saints Cyril, Monk, and Methodius, Bishop white
 Memorial
 1 Kgs 12:26-32; 13:33-34/Mk 8:1-10 (334)', null),
     ('2026-02-15'::date, 0, 'Sunday', 'sixth_sunday_in_ordinary_time', 'SIXTH SUNDAY IN ORDINARY TIME', 'SIXTH SUNDAY IN ORDINARY TIME', 'ordinary_time'::public.liturgical_season, 6, 2, 'sunday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'sunday'::public.obligation_status, '15 SUN SIXTH SUNDAY IN ORDINARY TIME green
 Sir 15:15-20/1 Cor 2:6-10/Mt 5:17-37 or 5:20-22a, 27-28, 33-34a, 37 (76) Pss II', null),
-    ('2026-02-16'::date, 1, 'Monday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 6, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '16 Mon Weekday green
+    ('2026-02-16'::date, 1, 'Monday', 'weekday', 'Weekday', 'Monday of the Sixth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 6, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '16 Mon Weekday green
 Jas 1:1-11/Mk 8:11-13 (335)', null),
-    ('2026-02-17'::date, 2, 'Tuesday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 6, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '17 Tue Weekday green/white
+    ('2026-02-17'::date, 2, 'Tuesday', 'weekday', 'Weekday', 'Tuesday of the Sixth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 6, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '17 Tue Weekday green/white
 [The Seven Holy Founders of the Servite Order]
 Jas 1:12-18/Mk 8:14-21 (336)', null),
     ('2026-02-18'::date, 3, 'Wednesday', 'ash_wednesday', 'Ash Wednesday', 'Ash Wednesday', 'lent'::public.liturgical_season, null, 4, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '18 Wed Ash Wednesday violet
@@ -1427,60 +1427,60 @@ Is 58:1-9a/Mt 9:14-15 (221)', null),
 Is 58:9b-14/Lk 5:27-32 (222)', null),
     ('2026-02-22'::date, 0, 'Sunday', 'first_sunday_of_lent', 'FIRST SUNDAY OF LENT', 'FIRST SUNDAY OF LENT', 'lent'::public.liturgical_season, 1, 1, 'sunday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'sunday'::public.obligation_status, '22 SUN FIRST SUNDAY OF LENT violet
 Gn 2:7-9; 3:1-7/Rom 5:12-19 or 5:12, 17-19/Mt 4:1-11 (22) Pss I', null),
-    ('2026-02-23'::date, 1, 'Monday', 'lenten_weekday', 'Lenten Weekday', 'Lenten Weekday', 'lent'::public.liturgical_season, 1, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '23 Mon Lenten Weekday violet
+    ('2026-02-23'::date, 1, 'Monday', 'lenten_weekday', 'Lenten Weekday', 'Monday of the First Week of Lent', 'lent'::public.liturgical_season, 1, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '23 Mon Lenten Weekday violet
 [Saint Polycarp, Bishop and Martyr]
 Lv 19:1-2, 11-18/Mt 25:31-46 (224)', null),
-    ('2026-02-24'::date, 2, 'Tuesday', 'lenten_weekday', 'Lenten Weekday', 'Lenten Weekday', 'lent'::public.liturgical_season, 1, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '24 Tue Lenten Weekday violet
+    ('2026-02-24'::date, 2, 'Tuesday', 'lenten_weekday', 'Lenten Weekday', 'Tuesday of the First Week of Lent', 'lent'::public.liturgical_season, 1, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '24 Tue Lenten Weekday violet
 Is 55:10-11/Mt 6:7-15 (225)', null),
-    ('2026-02-25'::date, 3, 'Wednesday', 'lenten_weekday', 'Lenten Weekday', 'Lenten Weekday', 'lent'::public.liturgical_season, 1, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '25 Wed Lenten Weekday violet
+    ('2026-02-25'::date, 3, 'Wednesday', 'lenten_weekday', 'Lenten Weekday', 'Wednesday of the First Week of Lent', 'lent'::public.liturgical_season, 1, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '25 Wed Lenten Weekday violet
 Jon 3:1-10/Lk 11:29-32 (226)', null),
-    ('2026-02-26'::date, 4, 'Thursday', 'lenten_weekday', 'Lenten Weekday', 'Lenten Weekday', 'lent'::public.liturgical_season, 1, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '26 Thu Lenten Weekday violet
+    ('2026-02-26'::date, 4, 'Thursday', 'lenten_weekday', 'Lenten Weekday', 'Thursday of the First Week of Lent', 'lent'::public.liturgical_season, 1, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '26 Thu Lenten Weekday violet
 Est C:12, 14-16, 23-25/Mt 7:7-12 (227)', null),
-    ('2026-02-27'::date, 5, 'Friday', 'lenten_weekday', 'Lenten Weekday', 'Lenten Weekday', 'lent'::public.liturgical_season, 1, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '27 Fri Lenten Weekday violet
+    ('2026-02-27'::date, 5, 'Friday', 'lenten_weekday', 'Lenten Weekday', 'Friday of the First Week of Lent', 'lent'::public.liturgical_season, 1, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '27 Fri Lenten Weekday violet
 [Saint Gregory of Narek, Abbot and Doctor of the Church]
 Ez 18:21-28/Mt 5:20-26 (228)', null),
-    ('2026-02-28'::date, 6, 'Saturday', 'lenten_weekday', 'Lenten Weekday', 'Lenten Weekday', 'lent'::public.liturgical_season, 1, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '28 Sat Lenten Weekday violet
+    ('2026-02-28'::date, 6, 'Saturday', 'lenten_weekday', 'Lenten Weekday', 'Saturday of the First Week of Lent', 'lent'::public.liturgical_season, 1, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '28 Sat Lenten Weekday violet
 Dt 26:16-19/Mt 5:43-48 (229)', null),
     ('2026-03-01'::date, 0, 'Sunday', 'second_sunday_of_lent', 'SECOND SUNDAY OF LENT', 'SECOND SUNDAY OF LENT', 'lent'::public.liturgical_season, 2, 2, 'sunday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'sunday'::public.obligation_status, '1 SUN SECOND SUNDAY OF LENT violet
 Gn 12:1-4a/2 Tm 1:8b-10/Mt 17:1-9 (25) Pss II', null),
-    ('2026-03-02'::date, 1, 'Monday', 'lenten_weekday', 'Lenten Weekday', 'Lenten Weekday', 'lent'::public.liturgical_season, 2, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '2 Mon Lenten Weekday violet
+    ('2026-03-02'::date, 1, 'Monday', 'lenten_weekday', 'Lenten Weekday', 'Monday of the Second Week of Lent', 'lent'::public.liturgical_season, 2, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '2 Mon Lenten Weekday violet
 Dn 9:4b-10/Lk 6:36-38 (230)', null),
-    ('2026-03-03'::date, 2, 'Tuesday', 'lenten_weekday', 'Lenten Weekday', 'Lenten Weekday', 'lent'::public.liturgical_season, 2, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '3 Tue Lenten Weekday violet
+    ('2026-03-03'::date, 2, 'Tuesday', 'lenten_weekday', 'Lenten Weekday', 'Tuesday of the Second Week of Lent', 'lent'::public.liturgical_season, 2, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '3 Tue Lenten Weekday violet
 [USA: Saint Katharine Drexel, Virgin]
 Is 1:10, 16-20/Mt 23:1-12 (231)', null),
-    ('2026-03-04'::date, 3, 'Wednesday', 'lenten_weekday', 'Lenten Weekday', 'Lenten Weekday', 'lent'::public.liturgical_season, 2, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '4 Wed Lenten Weekday violet
+    ('2026-03-04'::date, 3, 'Wednesday', 'lenten_weekday', 'Lenten Weekday', 'Wednesday of the Second Week of Lent', 'lent'::public.liturgical_season, 2, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '4 Wed Lenten Weekday violet
 [Saint Casimir]
 Jer 18:18-20/Mt 20:17-28 (232)', null),
-    ('2026-03-05'::date, 4, 'Thursday', 'lenten_weekday', 'Lenten Weekday', 'Lenten Weekday', 'lent'::public.liturgical_season, 2, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '5 Thu Lenten Weekday violet
+    ('2026-03-05'::date, 4, 'Thursday', 'lenten_weekday', 'Lenten Weekday', 'Thursday of the Second Week of Lent', 'lent'::public.liturgical_season, 2, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '5 Thu Lenten Weekday violet
 Jer 17:5-10/Lk 16:19-31 (233)', null),
-    ('2026-03-06'::date, 5, 'Friday', 'lenten_weekday', 'Lenten Weekday', 'Lenten Weekday', 'lent'::public.liturgical_season, 2, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '6 Fri Lenten Weekday violet
+    ('2026-03-06'::date, 5, 'Friday', 'lenten_weekday', 'Lenten Weekday', 'Friday of the Second Week of Lent', 'lent'::public.liturgical_season, 2, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '6 Fri Lenten Weekday violet
 Gn 37:3-4, 12-13a, 17b-28a/Mt 21:33-43, 45-46 (234)', null),
-    ('2026-03-07'::date, 6, 'Saturday', 'lenten_weekday', 'Lenten Weekday', 'Lenten Weekday', 'lent'::public.liturgical_season, 2, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '7 Sat Lenten Weekday violet
+    ('2026-03-07'::date, 6, 'Saturday', 'lenten_weekday', 'Lenten Weekday', 'Saturday of the Second Week of Lent', 'lent'::public.liturgical_season, 2, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '7 Sat Lenten Weekday violet
 [Saints Perpetua and Felicity, Martyrs]
 Mi 7:14-15, 18-20/Lk 15:1-3, 11-32 (235)', null),
     ('2026-03-08'::date, 0, 'Sunday', 'third_sunday_of_lent', 'THIRD SUNDAY OF LENT', 'THIRD SUNDAY OF LENT', 'lent'::public.liturgical_season, 3, 3, 'sunday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'sunday'::public.obligation_status, '8 SUN THIRD SUNDAY OF LENT violet
 Ex 17:3-7/Rom 5:1-2, 5-8/Jn 4:5-42 or 4:5-15, 19b-26, 39a, 40-42 (28) Pss III', null),
-    ('2026-03-09'::date, 1, 'Monday', 'lenten_weekday', 'Lenten Weekday', 'Lenten Weekday', 'lent'::public.liturgical_season, 3, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '9 Mon Lenten Weekday5 violet
+    ('2026-03-09'::date, 1, 'Monday', 'lenten_weekday', 'Lenten Weekday', 'Monday of the Third Week of Lent', 'lent'::public.liturgical_season, 3, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '9 Mon Lenten Weekday5 violet
 [Saint Frances of Rome, Religious]
 2 Kgs 5:1-15ab/Lk 4:24-30 (237)', null),
-    ('2026-03-10'::date, 2, 'Tuesday', 'lenten_weekday', 'Lenten Weekday', 'Lenten Weekday', 'lent'::public.liturgical_season, 3, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '10 Tue Lenten Weekday violet
+    ('2026-03-10'::date, 2, 'Tuesday', 'lenten_weekday', 'Lenten Weekday', 'Tuesday of the Third Week of Lent', 'lent'::public.liturgical_season, 3, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '10 Tue Lenten Weekday violet
 Dn 3:25, 34-43/Mt 18:21-35 (238)', null),
-    ('2026-03-11'::date, 3, 'Wednesday', 'lenten_weekday', 'Lenten Weekday', 'Lenten Weekday', 'lent'::public.liturgical_season, 3, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '11 Wed Lenten Weekday violet
+    ('2026-03-11'::date, 3, 'Wednesday', 'lenten_weekday', 'Lenten Weekday', 'Wednesday of the Third Week of Lent', 'lent'::public.liturgical_season, 3, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '11 Wed Lenten Weekday violet
 Dt 4:1, 5-9/Mt 5:17-19 (239)', null),
-    ('2026-03-12'::date, 4, 'Thursday', 'lenten_weekday', 'Lenten Weekday', 'Lenten Weekday', 'lent'::public.liturgical_season, 3, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '12 Thu Lenten Weekday violet
+    ('2026-03-12'::date, 4, 'Thursday', 'lenten_weekday', 'Lenten Weekday', 'Thursday of the Third Week of Lent', 'lent'::public.liturgical_season, 3, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '12 Thu Lenten Weekday violet
 Jer 7:23-28/Lk 11:14-23 (240)', null),
-    ('2026-03-13'::date, 5, 'Friday', 'lenten_weekday', 'Lenten Weekday', 'Lenten Weekday', 'lent'::public.liturgical_season, 3, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '13 Fri Lenten Weekday violet
+    ('2026-03-13'::date, 5, 'Friday', 'lenten_weekday', 'Lenten Weekday', 'Friday of the Third Week of Lent', 'lent'::public.liturgical_season, 3, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '13 Fri Lenten Weekday violet
 Hos 14:2-10/Mk 12:28-34 (241)', null),
-    ('2026-03-14'::date, 6, 'Saturday', 'lenten_weekday', 'Lenten Weekday', 'Lenten Weekday', 'lent'::public.liturgical_season, 3, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '14 Sat Lenten Weekday violet
+    ('2026-03-14'::date, 6, 'Saturday', 'lenten_weekday', 'Lenten Weekday', 'Saturday of the Third Week of Lent', 'lent'::public.liturgical_season, 3, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '14 Sat Lenten Weekday violet
 Hos 6:1-6/Lk 18:9-14 (242)', null),
     ('2026-03-15'::date, 0, 'Sunday', 'fourth_sunday_of_lent', 'FOURTH SUNDAY OF LENT', 'FOURTH SUNDAY OF LENT', 'lent'::public.liturgical_season, 4, 4, 'sunday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'sunday'::public.obligation_status, '15 SUN FOURTH SUNDAY OF LENT violet or rose
 1 Sm 16:1b, 6-7, 10-13a/Eph 5:8-14/Jn 9:1-41 or 9:1, 6-9, 13-17, 34-38 (31) Pss IV', 'Rose may be used.'),
-    ('2026-03-16'::date, 1, 'Monday', 'lenten_weekday', 'Lenten Weekday', 'Lenten Weekday', 'lent'::public.liturgical_season, 4, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '16 Mon Lenten Weekday6 violet
+    ('2026-03-16'::date, 1, 'Monday', 'lenten_weekday', 'Lenten Weekday', 'Monday of the Fourth Week of Lent', 'lent'::public.liturgical_season, 4, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '16 Mon Lenten Weekday6 violet
 Is 65:17-21/Jn 4:43-54 (244)', null),
-    ('2026-03-17'::date, 2, 'Tuesday', 'lenten_weekday', 'Lenten Weekday', 'Lenten Weekday', 'lent'::public.liturgical_season, 4, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '17 Tue Lenten Weekday violet
+    ('2026-03-17'::date, 2, 'Tuesday', 'lenten_weekday', 'Lenten Weekday', 'Tuesday of the Fourth Week of Lent', 'lent'::public.liturgical_season, 4, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '17 Tue Lenten Weekday violet
 [Saint Patrick, Bishop]
 Ez 47:1-9, 12/Jn 5:1-16 (245)', null),
-    ('2026-03-18'::date, 3, 'Wednesday', 'lenten_weekday', 'Lenten Weekday', 'Lenten Weekday', 'lent'::public.liturgical_season, 4, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '18 Wed Lenten Weekday violet
+    ('2026-03-18'::date, 3, 'Wednesday', 'lenten_weekday', 'Lenten Weekday', 'Wednesday of the Fourth Week of Lent', 'lent'::public.liturgical_season, 4, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '18 Wed Lenten Weekday violet
 [Saint Cyril of Jerusalem, Bishop and Doctor of the Church]
 Is 49:8-15/Jn 5:17-30 (246)
 Man Born Blind is not read on the Fourth Sunday of Lent: Mi 7:7-9/Jn 9:1-41 (243).', null),
@@ -1488,25 +1488,25 @@ Man Born Blind is not read on the Fourth Sunday of Lent: Mi 7:7-9/Jn 9:1-41 (243
 Solemnity
 2 Sm 7:4-5a, 12-14a, 16/Rom 4:13, 16-18, 22/Mt 1:16, 18-21, 24a or Lk 2:41-51a (543)
 Pss Prop', null),
-    ('2026-03-20'::date, 5, 'Friday', 'lenten_weekday', 'Lenten Weekday', 'Lenten Weekday', 'lent'::public.liturgical_season, 4, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '20 Fri Lenten Weekday violet
+    ('2026-03-20'::date, 5, 'Friday', 'lenten_weekday', 'Lenten Weekday', 'Friday of the Fourth Week of Lent', 'lent'::public.liturgical_season, 4, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '20 Fri Lenten Weekday violet
 Wis 2:1a, 12-22/Jn 7:1-2, 10, 25-30 (248)', null),
-    ('2026-03-21'::date, 6, 'Saturday', 'lenten_weekday', 'Lenten Weekday', 'Lenten Weekday', 'lent'::public.liturgical_season, 4, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '21 Sat Lenten Weekday violet
+    ('2026-03-21'::date, 6, 'Saturday', 'lenten_weekday', 'Lenten Weekday', 'Saturday of the Fourth Week of Lent', 'lent'::public.liturgical_season, 4, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '21 Sat Lenten Weekday violet
 Jer 11:18-20/Jn 7:40-53 (249)', null),
     ('2026-03-22'::date, 0, 'Sunday', 'fifth_sunday_of_lent', 'FIFTH SUNDAY OF LENT', 'FIFTH SUNDAY OF LENT', 'lent'::public.liturgical_season, 5, 1, 'sunday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'sunday'::public.obligation_status, '22 SUN FIFTH SUNDAY OF LENT violet
 Ez 37:12-14/Rom 8:8-11/Jn 11:1-45 or 11:3-7, 17, 20-27, 33b-45 (34) Pss I', null),
-    ('2026-03-23'::date, 1, 'Monday', 'lenten_weekday', 'Lenten Weekday', 'Lenten Weekday', 'lent'::public.liturgical_season, 5, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '23 Mon Lenten Weekday7 violet
+    ('2026-03-23'::date, 1, 'Monday', 'lenten_weekday', 'Lenten Weekday', 'Monday of the Fifth Week of Lent', 'lent'::public.liturgical_season, 5, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '23 Mon Lenten Weekday7 violet
 [Saint Turibius of Mogrovejo, Bishop]
 Dn 13:1-9, 15-17, 19-30, 33-62 or 13:41c-62/Jn 8:1-11 (251)', null),
-    ('2026-03-24'::date, 2, 'Tuesday', 'lenten_weekday', 'Lenten Weekday', 'Lenten Weekday', 'lent'::public.liturgical_season, 5, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '24 Tue Lenten Weekday violet
+    ('2026-03-24'::date, 2, 'Tuesday', 'lenten_weekday', 'Lenten Weekday', 'Tuesday of the Fifth Week of Lent', 'lent'::public.liturgical_season, 5, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '24 Tue Lenten Weekday violet
 Nm 21:4-9/Jn 8:21-30 (252)', null),
     ('2026-03-25'::date, 3, 'Wednesday', 'annunciation_of_the_lord', 'THE ANNUNCIATION OF THE LORD', 'THE ANNUNCIATION OF THE LORD', 'lent'::public.liturgical_season, 5, null, 'solemnity'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '25 Wed THE ANNUNCIATION OF THE LORD white
 Solemnity
 Is 7:10-14; 8:10/Heb 10:4-10/Lk 1:26-38 (545) Pss Prop', null),
-    ('2026-03-26'::date, 4, 'Thursday', 'lenten_weekday', 'Lenten Weekday', 'Lenten Weekday', 'lent'::public.liturgical_season, 5, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '26 Thu Lenten Weekday violet
+    ('2026-03-26'::date, 4, 'Thursday', 'lenten_weekday', 'Lenten Weekday', 'Thursday of the Fifth Week of Lent', 'lent'::public.liturgical_season, 5, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '26 Thu Lenten Weekday violet
 Gn 17:3-9/Jn 8:51-59 (254)', null),
-    ('2026-03-27'::date, 5, 'Friday', 'lenten_weekday', 'Lenten Weekday', 'Lenten Weekday', 'lent'::public.liturgical_season, 5, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '27 Fri Lenten Weekday violet
+    ('2026-03-27'::date, 5, 'Friday', 'lenten_weekday', 'Lenten Weekday', 'Friday of the Fifth Week of Lent', 'lent'::public.liturgical_season, 5, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '27 Fri Lenten Weekday violet
 Jer 20:10-13/Jn 10:31-42 (255)', null),
-    ('2026-03-28'::date, 6, 'Saturday', 'lenten_weekday', 'Lenten Weekday', 'Lenten Weekday', 'lent'::public.liturgical_season, 5, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '28 Sat Lenten Weekday violet
+    ('2026-03-28'::date, 6, 'Saturday', 'lenten_weekday', 'Lenten Weekday', 'Saturday of the Fifth Week of Lent', 'lent'::public.liturgical_season, 5, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '28 Sat Lenten Weekday violet
 Ez 37:21-28/Jn 11:45-56 (256)', null),
     ('2026-03-29'::date, 0, 'Sunday', 'palm_sunday_of_the_passion_of_the_lord', 'PALM SUNDAY OF THE PASSION OF THE LORD', 'PALM SUNDAY OF THE PASSION OF THE LORD', 'lent'::public.liturgical_season, 6, 2, 'sunday'::public.liturgical_rank, 'red'::public.liturgical_color, 'US'::public.country_scope, 'sunday'::public.obligation_status, '29 SUN PALM SUNDAY OF THE PASSION OF THE LORD red
 Mt 21:1-11 (37)/Is 50:4-7/Phil 2:6-11/Mt 26:14—27:66 or 27:11-54 (38) Pss II', null),
@@ -1552,32 +1552,32 @@ Acts 4:13-21/Mk 16:9-15 (266) Pss Prop', null),
     ('2026-04-12'::date, 0, 'Sunday', 'second_sunday_of_easter', 'SECOND SUNDAY OF EASTER (OR SUNDAY OF DIVINE MERCY)', 'SECOND SUNDAY OF EASTER (OR SUNDAY OF DIVINE MERCY)', 'easter'::public.liturgical_season, 2, null, 'sunday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'sunday'::public.obligation_status, '12 SUN SECOND SUNDAY OF EASTER white
 (OR SUNDAY OF DIVINE MERCY)
 Acts 2:42-47/1 Pt 1:3-9/Jn 20:19-31 (43) Pss Prop', null),
-    ('2026-04-13'::date, 1, 'Monday', 'easter_weekday', 'Easter Weekday', 'Easter Weekday', 'easter'::public.liturgical_season, 2, 2, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '13 Mon Easter Weekday white/red
+    ('2026-04-13'::date, 1, 'Monday', 'easter_weekday', 'Easter Weekday', 'Monday of the Second Week of Easter', 'easter'::public.liturgical_season, 2, 2, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '13 Mon Easter Weekday white/red
 [Saint Martin I, Pope and Martyr]
 Acts 4:23-31/Jn 3:1-8 (267) Pss II', null),
-    ('2026-04-14'::date, 2, 'Tuesday', 'easter_weekday', 'Easter Weekday', 'Easter Weekday', 'easter'::public.liturgical_season, 2, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '14 Tue Easter Weekday white
+    ('2026-04-14'::date, 2, 'Tuesday', 'easter_weekday', 'Easter Weekday', 'Tuesday of the Second Week of Easter', 'easter'::public.liturgical_season, 2, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '14 Tue Easter Weekday white
 Acts 4:32-37/Jn 3:7b-15 (268)', null),
-    ('2026-04-15'::date, 3, 'Wednesday', 'easter_weekday', 'Easter Weekday', 'Easter Weekday', 'easter'::public.liturgical_season, 2, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '15 Wed Easter Weekday white
+    ('2026-04-15'::date, 3, 'Wednesday', 'easter_weekday', 'Easter Weekday', 'Wednesday of the Second Week of Easter', 'easter'::public.liturgical_season, 2, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '15 Wed Easter Weekday white
 Acts 5:17-26/Jn 3:16-21 (269)', null),
-    ('2026-04-16'::date, 4, 'Thursday', 'easter_weekday', 'Easter Weekday', 'Easter Weekday', 'easter'::public.liturgical_season, 2, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '16 Thu Easter Weekday white
+    ('2026-04-16'::date, 4, 'Thursday', 'easter_weekday', 'Easter Weekday', 'Thursday of the Second Week of Easter', 'easter'::public.liturgical_season, 2, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '16 Thu Easter Weekday white
 Acts 5:27-33/Jn 3:31-36 (270)', null),
-    ('2026-04-17'::date, 5, 'Friday', 'easter_weekday', 'Easter Weekday', 'Easter Weekday', 'easter'::public.liturgical_season, 2, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '17 Fri Easter Weekday white
+    ('2026-04-17'::date, 5, 'Friday', 'easter_weekday', 'Easter Weekday', 'Friday of the Second Week of Easter', 'easter'::public.liturgical_season, 2, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '17 Fri Easter Weekday white
 Acts 5:34-42/Jn 6:1-15 (271)', null),
-    ('2026-04-18'::date, 6, 'Saturday', 'easter_weekday', 'Easter Weekday', 'Easter Weekday', 'easter'::public.liturgical_season, 2, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '18 Sat Easter Weekday white
+    ('2026-04-18'::date, 6, 'Saturday', 'easter_weekday', 'Easter Weekday', 'Saturday of the Second Week of Easter', 'easter'::public.liturgical_season, 2, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '18 Sat Easter Weekday white
 Acts 6:1-7/Jn 6:16-21 (272)', null),
     ('2026-04-19'::date, 0, 'Sunday', 'third_sunday_of_easter', 'THIRD SUNDAY OF EASTER', 'THIRD SUNDAY OF EASTER', 'easter'::public.liturgical_season, 3, 3, 'sunday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'sunday'::public.obligation_status, '19 SUN THIRD SUNDAY OF EASTER white
 Acts 2:14, 22-33/1 Pt 1:17-21/Lk 24:13-35 (46) Pss III', null),
-    ('2026-04-20'::date, 1, 'Monday', 'easter_weekday', 'Easter Weekday', 'Easter Weekday', 'easter'::public.liturgical_season, 3, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '20 Mon Easter Weekday white
+    ('2026-04-20'::date, 1, 'Monday', 'easter_weekday', 'Easter Weekday', 'Monday of the Third Week of Easter', 'easter'::public.liturgical_season, 3, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '20 Mon Easter Weekday white
 Acts 6:8-15/Jn 6:22-29 (273)', null),
-    ('2026-04-21'::date, 2, 'Tuesday', 'easter_weekday', 'Easter Weekday', 'Easter Weekday', 'easter'::public.liturgical_season, 3, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '21 Tue Easter Weekday white/white
+    ('2026-04-21'::date, 2, 'Tuesday', 'easter_weekday', 'Easter Weekday', 'Tuesday of the Third Week of Easter', 'easter'::public.liturgical_season, 3, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '21 Tue Easter Weekday white/white
 [Saint Anselm, Bishop and Doctor of the Church]
 Acts 7:51—8:1a/Jn 6:30-35 (274)', null),
-    ('2026-04-22'::date, 3, 'Wednesday', 'easter_weekday', 'Easter Weekday', 'Easter Weekday', 'easter'::public.liturgical_season, 3, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '22 Wed Easter Weekday white
+    ('2026-04-22'::date, 3, 'Wednesday', 'easter_weekday', 'Easter Weekday', 'Wednesday of the Third Week of Easter', 'easter'::public.liturgical_season, 3, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '22 Wed Easter Weekday white
 Acts 8:1b-8/Jn 6:35-40 (275)', null),
-    ('2026-04-23'::date, 4, 'Thursday', 'easter_weekday', 'Easter Weekday', 'Easter Weekday', 'easter'::public.liturgical_season, 3, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '23 Thu Easter Weekday white/red/red
+    ('2026-04-23'::date, 4, 'Thursday', 'easter_weekday', 'Easter Weekday', 'Thursday of the Third Week of Easter', 'easter'::public.liturgical_season, 3, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '23 Thu Easter Weekday white/red/red
 [Saint George, Martyr; Saint Adalbert, Bishop and Martyr]
 Acts 8:26-40/Jn 6:44-51 (276)', null),
-    ('2026-04-24'::date, 5, 'Friday', 'easter_weekday', 'Easter Weekday', 'Easter Weekday', 'easter'::public.liturgical_season, 3, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '24 Fri Easter Weekday white/red
+    ('2026-04-24'::date, 5, 'Friday', 'easter_weekday', 'Easter Weekday', 'Friday of the Third Week of Easter', 'easter'::public.liturgical_season, 3, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '24 Fri Easter Weekday white/red
 [Saint Fidelis of Sigmaringen, Priest and Martyr]
 Acts 9:1-20/Jn 6:52-59 (277)', null),
     ('2026-04-25'::date, 6, 'Saturday', 'st_mark', 'Saint Mark, Evangelist', 'Saint Mark, Evangelist', 'easter'::public.liturgical_season, 3, null, 'feast'::public.liturgical_rank, 'red'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '25 Sat Saint Mark, Evangelist red
@@ -1585,18 +1585,18 @@ Feast
 1 Pt 5:5b-14/Mk 16:15-20 (555) Pss Prop', null),
     ('2026-04-26'::date, 0, 'Sunday', 'fourth_sunday_of_easter', 'FOURTH SUNDAY OF EASTER', 'FOURTH SUNDAY OF EASTER', 'easter'::public.liturgical_season, 4, 4, 'sunday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'sunday'::public.obligation_status, '26 SUN FOURTH SUNDAY OF EASTER white
 Acts 2:14a, 36-41/1 Pt 2:20b-25/Jn 10:1-10 (49) Pss IV', null),
-    ('2026-04-27'::date, 1, 'Monday', 'easter_weekday', 'Easter Weekday', 'Easter Weekday', 'easter'::public.liturgical_season, 4, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '27 Mon Easter Weekday white
+    ('2026-04-27'::date, 1, 'Monday', 'easter_weekday', 'Easter Weekday', 'Monday of the Fourth Week of Easter', 'easter'::public.liturgical_season, 4, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '27 Mon Easter Weekday white
 Acts 11:1-18/Jn 10:11-18 (second choice) (279)', null),
-    ('2026-04-28'::date, 2, 'Tuesday', 'easter_weekday', 'Easter Weekday', 'Easter Weekday', 'easter'::public.liturgical_season, 4, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '28 Tue Easter Weekday white/red/white
+    ('2026-04-28'::date, 2, 'Tuesday', 'easter_weekday', 'Easter Weekday', 'Tuesday of the Fourth Week of Easter', 'easter'::public.liturgical_season, 4, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '28 Tue Easter Weekday white/red/white
 [Saint Peter Chanel, Priest and Martyr; Saint Louis Grignion de Montfort, Priest]
 Acts 11:19-26/Jn 10:22-30 (280)', null),
     ('2026-04-29'::date, 3, 'Wednesday', 'st_catherine_of_siena', 'Saint Catherine of Siena, Virgin and Doctor of the Church', 'Saint Catherine of Siena, Virgin and Doctor of the Church', 'easter'::public.liturgical_season, 4, null, 'memorial'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '29 Wed Saint Catherine of Siena, Virgin and Doctor of the Church white
 Memorial
 Acts 12:24—13:5a/Jn 12:44-50 (281)', null),
-    ('2026-04-30'::date, 4, 'Thursday', 'easter_weekday', 'Easter Weekday', 'Easter Weekday', 'easter'::public.liturgical_season, 4, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '30 Thu Easter Weekday white/white
+    ('2026-04-30'::date, 4, 'Thursday', 'easter_weekday', 'Easter Weekday', 'Thursday of the Fourth Week of Easter', 'easter'::public.liturgical_season, 4, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '30 Thu Easter Weekday white/white
 [Saint Pius V, Pope]
 Acts 13:13-25/Jn 13:16-20 (282)', null),
-    ('2026-05-01'::date, 5, 'Friday', 'easter_weekday', 'Easter Weekday', 'Easter Weekday', 'easter'::public.liturgical_season, 4, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '1 Fri Easter Weekday white/white
+    ('2026-05-01'::date, 5, 'Friday', 'easter_weekday', 'Easter Weekday', 'Friday of the Fourth Week of Easter', 'easter'::public.liturgical_season, 4, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '1 Fri Easter Weekday white/white
 [Saint Joseph the Worker]
 Acts 13:26-33/Jn 14:1-6 (283)
 or, for the Optional Memorial, Gn 1:26—2:3 or Col 3:14-15, 17, 23-24/Mt 13:54-58 (559)', null),
@@ -1605,17 +1605,17 @@ Memorial
 Acts 13:44-52/Jn 14:7-14 (284)', null),
     ('2026-05-03'::date, 0, 'Sunday', 'fifth_sunday_of_easter', 'FIFTH SUNDAY OF EASTER', 'FIFTH SUNDAY OF EASTER', 'easter'::public.liturgical_season, 5, 1, 'sunday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'sunday'::public.obligation_status, '3 SUN FIFTH SUNDAY OF EASTER white
 Acts 6:1-7/1 Pt 2:4-9/Jn 14:1-12 (52) Pss I', null),
-    ('2026-05-04'::date, 1, 'Monday', 'easter_weekday', 'Easter Weekday', 'Easter Weekday', 'easter'::public.liturgical_season, 5, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '4 Mon Easter Weekday white
+    ('2026-05-04'::date, 1, 'Monday', 'easter_weekday', 'Easter Weekday', 'Monday of the Fifth Week of Easter', 'easter'::public.liturgical_season, 5, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '4 Mon Easter Weekday white
 Acts 14:5-18/Jn 14:21-26 (285)', null),
-    ('2026-05-05'::date, 2, 'Tuesday', 'easter_weekday', 'Easter Weekday', 'Easter Weekday', 'easter'::public.liturgical_season, 5, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '5 Tue Easter Weekday white
+    ('2026-05-05'::date, 2, 'Tuesday', 'easter_weekday', 'Easter Weekday', 'Tuesday of the Fifth Week of Easter', 'easter'::public.liturgical_season, 5, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '5 Tue Easter Weekday white
 Acts 14:19-28/Jn 14:27-31a (286)', null),
-    ('2026-05-06'::date, 3, 'Wednesday', 'easter_weekday', 'Easter Weekday', 'Easter Weekday', 'easter'::public.liturgical_season, 5, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '6 Wed Easter Weekday white
+    ('2026-05-06'::date, 3, 'Wednesday', 'easter_weekday', 'Easter Weekday', 'Wednesday of the Fifth Week of Easter', 'easter'::public.liturgical_season, 5, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '6 Wed Easter Weekday white
 Acts 15:1-6/Jn 15:1-8 (287)', null),
-    ('2026-05-07'::date, 4, 'Thursday', 'easter_weekday', 'Easter Weekday', 'Easter Weekday', 'easter'::public.liturgical_season, 5, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '7 Thu Easter Weekday white
+    ('2026-05-07'::date, 4, 'Thursday', 'easter_weekday', 'Easter Weekday', 'Thursday of the Fifth Week of Easter', 'easter'::public.liturgical_season, 5, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '7 Thu Easter Weekday white
 Acts 15:7-21/Jn 15:9-11 (288)', null),
-    ('2026-05-08'::date, 5, 'Friday', 'easter_weekday', 'Easter Weekday', 'Easter Weekday', 'easter'::public.liturgical_season, 5, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '8 Fri Easter Weekday white
+    ('2026-05-08'::date, 5, 'Friday', 'easter_weekday', 'Easter Weekday', 'Friday of the Fifth Week of Easter', 'easter'::public.liturgical_season, 5, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '8 Fri Easter Weekday white
 Acts 15:22-31/Jn 15:12-17 (289)', null),
-    ('2026-05-09'::date, 6, 'Saturday', 'easter_weekday', 'Easter Weekday', 'Easter Weekday', 'easter'::public.liturgical_season, 5, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '9 Sat Easter Weekday white
+    ('2026-05-09'::date, 6, 'Saturday', 'easter_weekday', 'Easter Weekday', 'Saturday of the Fifth Week of Easter', 'easter'::public.liturgical_season, 5, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '9 Sat Easter Weekday white
 Acts 16:1-10/Jn 15:18-21 (290)', null),
     ('2026-05-10'::date, 0, 'Sunday', 'sixth_sunday_of_easter', 'SIXTH SUNDAY OF EASTER', 'SIXTH SUNDAY OF EASTER', 'easter'::public.liturgical_season, 6, 2, 'sunday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'sunday'::public.obligation_status, '10 SUN SIXTH SUNDAY OF EASTER11 white
 Acts 8:5-8, 14-17/1 Pt 3:15-18/Jn 14:15-21 (55) Pss II', null),
@@ -1623,7 +1623,7 @@ Acts 8:5-8, 14-17/1 Pt 3:15-18/Jn 14:15-21 (55) Pss II', null),
 Acts 16:11-15/Jn 15:26—16:4a (291)
 When the Ascension of the Lord is celebrated on the following Sunday, the Second Reading and Gospel from the
 Seventh Sunday of Easter (see no. 59) may be read on the Sixth Sunday of Easter.', null),
-    ('2026-05-12'::date, 2, 'Tuesday', 'easter_weekday', 'Easter Weekday', 'Easter Weekday', 'easter'::public.liturgical_season, 6, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '12 Tue Easter Weekday white/red/red
+    ('2026-05-12'::date, 2, 'Tuesday', 'easter_weekday', 'Easter Weekday', 'Tuesday of the Sixth Week of Easter', 'easter'::public.liturgical_season, 6, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '12 Tue Easter Weekday white/red/red
 [Saints Nereus and Achilleus, Martyrs; Saint Pancras, Martyr]
 Acts 16:22-34/Jn 16:5-11 (292)', null),
     ('2026-05-13'::date, 3, 'Wednesday', 'easter_weekday_ecclesiastical_provinces_of_boston_hartford_new_york_omaha_philadelphia', 'Easter Weekday Ecclesiastical Provinces of Boston, Hartford, New York, Omaha, Philadelphia:', 'Easter Weekday Ecclesiastical Provinces of Boston, Hartford, New York, Omaha, Philadelphia:', 'easter'::public.liturgical_season, 6, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '13 Wed Easter Weekday white/white
@@ -1633,7 +1633,7 @@ Ecclesiastical Provinces of Boston, Hartford, New York, Omaha, Philadelphia:', n
     ('2026-05-14'::date, 4, 'Thursday', 'st_matthias', 'Saint Matthias, Apostle', 'Saint Matthias, Apostle', 'easter'::public.liturgical_season, 6, null, 'feast'::public.liturgical_rank, 'red'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '14 Thu Saint Matthias, Apostle red
 Feast
 Acts 1:15-17, 20-26/Jn 15:9-17 (564) Pss Prop', null),
-    ('2026-05-15'::date, 5, 'Friday', 'easter_weekday', 'Easter Weekday', 'Easter Weekday', 'easter'::public.liturgical_season, 6, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '15 Fri Easter Weekday white/white
+    ('2026-05-15'::date, 5, 'Friday', 'easter_weekday', 'Easter Weekday', 'Friday of the Sixth Week of Easter', 'easter'::public.liturgical_season, 6, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '15 Fri Easter Weekday white/white
 [USA: Saint Isidore]
 Acts 18:9-18/Jn 16:20-23 (295)', null),
     ('2026-05-16'::date, 6, 'Saturday', 'easter_weekday_ecclesiastical_provinces_of_boston_hartford_new_york_omaha_philadelphia', 'Easter Weekday Ecclesiastical Provinces of Boston, Hartford, New York, Omaha, Philadelphia:', 'Easter Weekday Ecclesiastical Provinces of Boston, Hartford, New York, Omaha, Philadelphia:', 'easter'::public.liturgical_season, 6, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '16 Sat Easter Weekday white
@@ -1642,21 +1642,21 @@ Ecclesiastical Provinces of Boston, Hartford, New York, Omaha, Philadelphia:', n
     ('2026-05-17'::date, 0, 'Sunday', 'ascension_of_the_lord', 'THE ASCENSION OF THE LORD', 'THE ASCENSION OF THE LORD', 'easter'::public.liturgical_season, 7, null, 'solemnity'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '17 SUN THE ASCENSION OF THE LORD white
 Solemnity
 Acts 1:1-11/Eph 1:17-23/Mt 28:16-20 (58) Pss Prop', null),
-    ('2026-05-18'::date, 1, 'Monday', 'easter_weekday', 'Easter Weekday', 'Easter Weekday', 'easter'::public.liturgical_season, 7, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '18 Mon Easter Weekday white/red
+    ('2026-05-18'::date, 1, 'Monday', 'easter_weekday', 'Easter Weekday', 'Monday of the Seventh Week of Easter', 'easter'::public.liturgical_season, 7, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '18 Mon Easter Weekday white/red
 [Saint John I, Pope and Martyr]
 Acts 19:1-8/Jn 16:29-33 (297)', null),
-    ('2026-05-19'::date, 2, 'Tuesday', 'easter_weekday', 'Easter Weekday', 'Easter Weekday', 'easter'::public.liturgical_season, 7, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '19 Tue Easter Weekday white
+    ('2026-05-19'::date, 2, 'Tuesday', 'easter_weekday', 'Easter Weekday', 'Tuesday of the Seventh Week of Easter', 'easter'::public.liturgical_season, 7, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '19 Tue Easter Weekday white
 Acts 20:17-27/Jn 17:1-11a (298)', null),
-    ('2026-05-20'::date, 3, 'Wednesday', 'easter_weekday', 'Easter Weekday', 'Easter Weekday', 'easter'::public.liturgical_season, 7, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '20 Wed Easter Weekday white/white
+    ('2026-05-20'::date, 3, 'Wednesday', 'easter_weekday', 'Easter Weekday', 'Wednesday of the Seventh Week of Easter', 'easter'::public.liturgical_season, 7, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '20 Wed Easter Weekday white/white
 [Saint Bernardine of Siena, Priest]
 Acts 20:28-38/Jn 17:11b-19 (299)', null),
-    ('2026-05-21'::date, 4, 'Thursday', 'easter_weekday', 'Easter Weekday', 'Easter Weekday', 'easter'::public.liturgical_season, 7, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '21 Thu Easter Weekday white/red
+    ('2026-05-21'::date, 4, 'Thursday', 'easter_weekday', 'Easter Weekday', 'Thursday of the Seventh Week of Easter', 'easter'::public.liturgical_season, 7, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '21 Thu Easter Weekday white/red
 [Saint Christopher Magallanes, Priest, and Companions, Martyrs]
 Acts 22:30; 23:6-11/Jn 17:20-26 (300)', null),
-    ('2026-05-22'::date, 5, 'Friday', 'easter_weekday', 'Easter Weekday', 'Easter Weekday', 'easter'::public.liturgical_season, 7, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '22 Fri Easter Weekday white/white
+    ('2026-05-22'::date, 5, 'Friday', 'easter_weekday', 'Easter Weekday', 'Friday of the Seventh Week of Easter', 'easter'::public.liturgical_season, 7, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '22 Fri Easter Weekday white/white
 [Saint Rita of Cascia, Religious]
 Acts 25:13b-21/Jn 21:15-19 (301)', null),
-    ('2026-05-23'::date, 6, 'Saturday', 'easter_weekday', 'Easter Weekday', 'Easter Weekday', 'easter'::public.liturgical_season, 7, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '23 Sat Easter Weekday white', null),
+    ('2026-05-23'::date, 6, 'Saturday', 'easter_weekday', 'Easter Weekday', 'Saturday of the Seventh Week of Easter', 'easter'::public.liturgical_season, 7, null, 'weekday'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '23 Sat Easter Weekday white', null),
     ('2026-05-24'::date, 0, 'Sunday', 'pentecost_sunday', 'PENTECOST SUNDAY', 'PENTECOST SUNDAY', 'easter'::public.liturgical_season, 8, null, 'solemnity'::public.liturgical_rank, 'red'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '24 SUN PENTECOST SUNDAY red
 Solemnity
 Vigil: Gn 11:1-9 or Ex 19:3-8a, 16-20b or Ez 37:1-14 or Jl 3:1-5/Rom 8:22-27/Jn 7:37-39 (62)
@@ -1670,15 +1670,15 @@ Gn 3:9-15, 20 or Acts 1:12-14/Jn 19:25-34 (572A, see USCCB.org/motherofthechurch
     ('2026-05-26'::date, 2, 'Tuesday', 'st_philip_neri', 'Saint Philip Neri, Priest', 'Saint Philip Neri, Priest', 'ordinary_time'::public.liturgical_season, 8, null, 'memorial'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '26 Tue Saint Philip Neri, Priest white
 Memorial
 1 Pt 1:10-16/Mk 10:28-31 (348)', null),
-    ('2026-05-27'::date, 3, 'Wednesday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 8, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '27 Wed Weekday green/white
+    ('2026-05-27'::date, 3, 'Wednesday', 'weekday', 'Weekday', 'Wednesday of the Eighth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 8, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '27 Wed Weekday green/white
 [Saint Augustine of Canterbury, Bishop]
 1 Pt 1:18-25/Mk 10:32-45 (349)', null),
-    ('2026-05-28'::date, 4, 'Thursday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 8, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '28 Thu Weekday green
+    ('2026-05-28'::date, 4, 'Thursday', 'weekday', 'Weekday', 'Thursday of the Eighth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 8, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '28 Thu Weekday green
 1 Pt 2:2-5, 9-12/Mk 10:46-52 (350)', null),
-    ('2026-05-29'::date, 5, 'Friday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 8, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '29 Fri Weekday green/white
+    ('2026-05-29'::date, 5, 'Friday', 'weekday', 'Weekday', 'Friday of the Eighth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 8, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '29 Fri Weekday green/white
 [Saint Paul VI, Pope]
 1 Pt 4:7-13/Mk 11:11-26 (351)', null),
-    ('2026-05-30'::date, 6, 'Saturday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 8, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '30 Sat Weekday green/white
+    ('2026-05-30'::date, 6, 'Saturday', 'weekday', 'Weekday', 'Saturday of the Eighth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 8, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '30 Sat Weekday green/white
 [BVM]
 Jude 17, 20b-25/Mk 11:27-33 (352)', null),
     ('2026-05-31'::date, 0, 'Sunday', 'most_holy_trinity', 'THE MOST HOLY TRINITY', 'THE MOST HOLY TRINITY', 'ordinary_time'::public.liturgical_season, 8, null, 'solemnity'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '31 SUN THE MOST HOLY TRINITY white
@@ -1687,30 +1687,30 @@ Ex 34:4b-6, 8-9/2 Cor 13:11-13/Jn 3:16-18 (164) Pss Prop', null),
     ('2026-06-01'::date, 1, 'Monday', 'st_justin', 'Saint Justin, Martyr', 'Saint Justin, Martyr', 'ordinary_time'::public.liturgical_season, 9, 1, 'memorial'::public.liturgical_rank, 'red'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '1 Mon Saint Justin, Martyr (Ninth Week in Ordinary Time) red
 Memorial
 2 Pt 1:2-7/Mk 12:1-12 (353) Pss I', null),
-    ('2026-06-02'::date, 2, 'Tuesday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 9, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '2 Tue Weekday green/red
+    ('2026-06-02'::date, 2, 'Tuesday', 'weekday', 'Weekday', 'Tuesday of the Ninth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 9, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '2 Tue Weekday green/red
 [Saints Marcellinus and Peter, Martyrs]
 2 Pt 3:12-15a, 17-18/Mk 12:13-17 (354)', null),
     ('2026-06-03'::date, 3, 'Wednesday', 'st_charles_lwanga_and_companions', 'Saint Charles Lwanga and Companions, Martyrs', 'Saint Charles Lwanga and Companions, Martyrs', 'ordinary_time'::public.liturgical_season, 9, null, 'memorial'::public.liturgical_rank, 'red'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '3 Wed Saint Charles Lwanga and Companions, Martyrs red
 Memorial
 2 Tm 1:1-3, 6-12/Mk 12:18-27 (355)', null),
-    ('2026-06-04'::date, 4, 'Thursday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 9, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '4 Thu Weekday green
+    ('2026-06-04'::date, 4, 'Thursday', 'weekday', 'Weekday', 'Thursday of the Ninth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 9, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '4 Thu Weekday green
 2 Tm 2:8-15/Mk 12:28-34 (356)', null),
     ('2026-06-05'::date, 5, 'Friday', 'st_boniface', 'Saint Boniface, Bishop and Martyr', 'Saint Boniface, Bishop and Martyr', 'ordinary_time'::public.liturgical_season, 9, null, 'memorial'::public.liturgical_rank, 'red'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '5 Fri Saint Boniface, Bishop and Martyr red
 Memorial
 2 Tm 3:10-17/Mk 12:35-37 (357)', null),
-    ('2026-06-06'::date, 6, 'Saturday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 9, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '6 Sat Weekday green/white/white
+    ('2026-06-06'::date, 6, 'Saturday', 'weekday', 'Weekday', 'Saturday of the Ninth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 9, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '6 Sat Weekday green/white/white
 [Saint Norbert, Bishop; BVM]
 2 Tm 4:1-8/Mk 12:38-44 (358)', null),
     ('2026-06-07'::date, 0, 'Sunday', 'most_holy_body_and_blood_of_christ', 'THE MOST HOLY BODY AND BLOOD OF CHRIST (Corpus Christi)', 'THE MOST HOLY BODY AND BLOOD OF CHRIST (Corpus Christi)', 'ordinary_time'::public.liturgical_season, 9, null, 'solemnity'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '7 SUN USA: THE MOST HOLY BODY AND BLOOD OF CHRIST white
 (Corpus Christi)
 Solemnity
 Dt 8:2-3, 14b-16a/1 Cor 10:16-17/Jn 6:51-58 (167) Pss Prop', null),
-    ('2026-06-08'::date, 1, 'Monday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 10, 2, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '8 Mon Weekday (Tenth Week in Ordinary Time) green
+    ('2026-06-08'::date, 1, 'Monday', 'weekday', 'Weekday', 'Monday of the Tenth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 10, 2, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '8 Mon Weekday (Tenth Week in Ordinary Time) green
 1 Kgs 17:1-6/Mt 5:1-12 (359) Pss II', null),
-    ('2026-06-09'::date, 2, 'Tuesday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 10, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '9 Tue Weekday green/white
+    ('2026-06-09'::date, 2, 'Tuesday', 'weekday', 'Weekday', 'Tuesday of the Tenth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 10, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '9 Tue Weekday green/white
 [Saint Ephrem, Deacon and Doctor of the Church]
 1 Kgs 17:7-16/Mt 5:13-16 (360)', null),
-    ('2026-06-10'::date, 3, 'Wednesday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 10, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '10 Wed Weekday green
+    ('2026-06-10'::date, 3, 'Wednesday', 'weekday', 'Weekday', 'Wednesday of the Tenth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 10, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '10 Wed Weekday green
 1 Kgs 18:20-39/Mt 5:17-19 (361)', null),
     ('2026-06-11'::date, 4, 'Thursday', 'st_barnabas', 'Saint Barnabas, Apostle', 'Saint Barnabas, Apostle', 'ordinary_time'::public.liturgical_season, 10, null, 'memorial'::public.liturgical_rank, 'red'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '11 Thu Saint Barnabas, Apostle red
 Memorial
@@ -1718,44 +1718,44 @@ Acts 11:21b-26; 13:1-3 (580)/Mt 5:20-26 (362)', null),
     ('2026-06-12'::date, 5, 'Friday', 'most_sacred_heart_of_jesus', 'THE MOST SACRED HEART OF JESUS', 'THE MOST SACRED HEART OF JESUS', 'ordinary_time'::public.liturgical_season, 10, null, 'solemnity'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '12 Fri THE MOST SACRED HEART OF JESUS white
 Solemnity
 Dt 7:6-11/1 Jn 4:7-16/Mt 11:25-30 (170) Pss Prop', null),
-    ('2026-06-13'::date, 6, 'Saturday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 10, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '13 Sat Weekday green/white/white/white
+    ('2026-06-13'::date, 6, 'Saturday', 'weekday', 'Weekday', 'Saturday of the Tenth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 10, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '13 Sat Weekday green/white/white/white
 [The Immaculate Heart of the Blessed Virgin Mary;
 Saint Anthony of Padua, Priest and Doctor of the Church; BVM]
 1 Kgs 19:19-21/Mt 5:33-37 (364)
 or, for the Optional Memorial of the Immaculate Heart, 1 Kgs 19:19-21 (364)/Lk 2:41-51 (573)', null),
     ('2026-06-14'::date, 0, 'Sunday', 'eleventh_sunday_in_ordinary_time', 'ELEVENTH SUNDAY IN ORDINARY TIME', 'ELEVENTH SUNDAY IN ORDINARY TIME', 'ordinary_time'::public.liturgical_season, 11, 3, 'sunday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'sunday'::public.obligation_status, '14 SUN ELEVENTH SUNDAY IN ORDINARY TIME green
 Ex 19:2-6a/Rom 5:6-11/Mt 9:36—10:8 (91) Pss III', null),
-    ('2026-06-15'::date, 1, 'Monday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 11, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '15 Mon Weekday green
+    ('2026-06-15'::date, 1, 'Monday', 'weekday', 'Weekday', 'Monday of the Eleventh Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 11, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '15 Mon Weekday green
 1 Kgs 21:1-16/Mt 5:38-42 (365)', null),
-    ('2026-06-16'::date, 2, 'Tuesday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 11, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '16 Tue Weekday green
+    ('2026-06-16'::date, 2, 'Tuesday', 'weekday', 'Weekday', 'Tuesday of the Eleventh Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 11, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '16 Tue Weekday green
 1 Kgs 21:17-29/Mt 5:43-48 (366)', null),
-    ('2026-06-17'::date, 3, 'Wednesday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 11, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '17 Wed Weekday green
+    ('2026-06-17'::date, 3, 'Wednesday', 'weekday', 'Weekday', 'Wednesday of the Eleventh Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 11, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '17 Wed Weekday green
 2 Kgs 2:1, 6-14/Mt 6:1-6, 16-18 (367)', null),
-    ('2026-06-18'::date, 4, 'Thursday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 11, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '18 Thu Weekday green
+    ('2026-06-18'::date, 4, 'Thursday', 'weekday', 'Weekday', 'Thursday of the Eleventh Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 11, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '18 Thu Weekday green
 Sir 48:1-14/Mt 6:7-15 (368)', null),
-    ('2026-06-19'::date, 5, 'Friday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 11, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '19 Fri Weekday green/white
+    ('2026-06-19'::date, 5, 'Friday', 'weekday', 'Weekday', 'Friday of the Eleventh Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 11, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '19 Fri Weekday green/white
 [Saint Romuald, Abbot]
 2 Kgs 11:1-4, 9-18, 20/Mt 6:19-23 (369)', null),
-    ('2026-06-20'::date, 6, 'Saturday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 11, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '20 Sat Weekday green/white
+    ('2026-06-20'::date, 6, 'Saturday', 'weekday', 'Weekday', 'Saturday of the Eleventh Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 11, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '20 Sat Weekday green/white
 [BVM]
 2 Chr 24:17-25/Mt 6:24-34 (370)', null),
     ('2026-06-21'::date, 0, 'Sunday', 'twelfth_sunday_in_ordinary_time', 'TWELFTH SUNDAY IN ORDINARY TIME', 'TWELFTH SUNDAY IN ORDINARY TIME', 'ordinary_time'::public.liturgical_season, 12, 4, 'sunday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'sunday'::public.obligation_status, '21 SUN TWELFTH SUNDAY IN ORDINARY TIME green
 Jer 20:10-13/Rom 5:12-15/Mt 10:26-33 (94) Pss IV', null),
-    ('2026-06-22'::date, 1, 'Monday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 12, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '22 Mon Weekday green/white/red
+    ('2026-06-22'::date, 1, 'Monday', 'weekday', 'Weekday', 'Monday of the Twelfth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 12, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '22 Mon Weekday green/white/red
 [Saint Paulinus of Nola, Bishop; Saints John Fisher, Bishop,
 and Thomas More, Martyrs]
 2 Kgs 17:5-8, 13-15a, 18/Mt 7:1-5 (371)', null),
-    ('2026-06-23'::date, 2, 'Tuesday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 12, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '23 Tue Weekday green
+    ('2026-06-23'::date, 2, 'Tuesday', 'weekday', 'Weekday', 'Tuesday of the Twelfth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 12, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '23 Tue Weekday green
 2 Kgs 19:9b-11, 14-21, 31-35a, 36/Mt 7:6, 12-14 (372)', null),
     ('2026-06-24'::date, 3, 'Wednesday', 'nativity_of_st_john_the_baptist', 'THE NATIVITY OF SAINT JOHN THE BAPTIST', 'THE NATIVITY OF SAINT JOHN THE BAPTIST', 'ordinary_time'::public.liturgical_season, 12, null, 'solemnity'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '24 Wed THE NATIVITY OF SAINT JOHN THE BAPTIST white
 Solemnity
 Vigil: Jer 1:4-10/1 Pt 1:8-12/Lk 1:5-17 (586)
 Day: Is 49:1-6/Acts 13:22-26/Lk 1:57-66, 80 (587) Pss Prop', null),
-    ('2026-06-25'::date, 4, 'Thursday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 12, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '25 Thu Weekday green
+    ('2026-06-25'::date, 4, 'Thursday', 'weekday', 'Weekday', 'Thursday of the Twelfth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 12, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '25 Thu Weekday green
 2 Kgs 24:8-17/Mt 7:21-29 (374)', null),
-    ('2026-06-26'::date, 5, 'Friday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 12, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '26 Fri Weekday green
+    ('2026-06-26'::date, 5, 'Friday', 'weekday', 'Weekday', 'Friday of the Twelfth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 12, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '26 Fri Weekday green
 2 Kgs 25:1-12/Mt 8:1-4 (375)', null),
-    ('2026-06-27'::date, 6, 'Saturday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 12, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '27 Sat Weekday green/white/white
+    ('2026-06-27'::date, 6, 'Saturday', 'weekday', 'Weekday', 'Saturday of the Twelfth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 12, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '27 Sat Weekday green/white/white
 [Saint Cyril of Alexandria, Bishop and Doctor of the Church; BVM]
 Lam 2:2, 10-14, 18-19/Mt 8:5-17 (376)', null),
     ('2026-06-28'::date, 0, 'Sunday', 'thirteenth_sunday_in_ordinary_time', 'THIRTEENTH SUNDAY IN ORDINARY TIME', 'THIRTEENTH SUNDAY IN ORDINARY TIME', 'ordinary_time'::public.liturgical_season, 13, 1, 'sunday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'sunday'::public.obligation_status, '28 SUN THIRTEENTH SUNDAY IN ORDINARY TIME green
@@ -1764,42 +1764,42 @@ Lam 2:2, 10-14, 18-19/Mt 8:5-17 (376)', null),
 Solemnity
 Vigil: Acts 3:1-10/Gal 1:11-20/Jn 21:15-19 (590)
 Day: Acts 12:1-11/2 Tm 4:6-8, 17-18/Mt 16:13-19 (591) Pss Prop', null),
-    ('2026-06-30'::date, 2, 'Tuesday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 13, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '30 Tue Weekday green/red
+    ('2026-06-30'::date, 2, 'Tuesday', 'weekday', 'Weekday', 'Tuesday of the Thirteenth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 13, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '30 Tue Weekday green/red
 [The First Martyrs of the Holy Roman Church]
 Am 3:1-8; 4:11-12/Mt 8:23-27 (378)', null),
-    ('2026-07-01'::date, 3, 'Wednesday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 13, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '1 Wed Weekday green/white
+    ('2026-07-01'::date, 3, 'Wednesday', 'weekday', 'Weekday', 'Wednesday of the Thirteenth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 13, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '1 Wed Weekday green/white
 [USA: Saint Junípero Serra, Priest]
 Am 5:14-15, 21-24/Mt 8:28-34 (379)', null),
-    ('2026-07-02'::date, 4, 'Thursday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 13, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '2 Thu Weekday green
+    ('2026-07-02'::date, 4, 'Thursday', 'weekday', 'Weekday', 'Thursday of the Thirteenth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 13, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '2 Thu Weekday green
 Am 7:10-17/Mt 9:1-8 (380)', null),
     ('2026-07-03'::date, 5, 'Friday', 'st_thomas', 'Saint Thomas, Apostle', 'Saint Thomas, Apostle', 'ordinary_time'::public.liturgical_season, 13, null, 'feast'::public.liturgical_rank, 'red'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '3 Fri Saint Thomas, Apostle red
 Feast
 Eph 2:19-22/Jn 20:24-29 (593) Pss Prop', null),
-    ('2026-07-04'::date, 6, 'Saturday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 13, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '4 Sat Weekday green/white/white
+    ('2026-07-04'::date, 6, 'Saturday', 'weekday', 'Weekday', 'Saturday of the Thirteenth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 13, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '4 Sat Weekday green/white/white
 [USA: Independence Day; BVM]
 Am 9:11-15/Mt 9:14-17 (382)
 or, for Independence Day, any readings from the Mass “For the Country
 or a City” (882-886) or the Mass “For Peace and Justice” (887-891)', null),
     ('2026-07-05'::date, 0, 'Sunday', 'fourteenth_sunday_in_ordinary_time', 'FOURTEENTH SUNDAY IN ORDINARY TIME', 'FOURTEENTH SUNDAY IN ORDINARY TIME', 'ordinary_time'::public.liturgical_season, 14, 2, 'sunday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'sunday'::public.obligation_status, '5 SUN FOURTEENTH SUNDAY IN ORDINARY TIME green
 Zec 9:9-10/Rom 8:9, 11-13/Mt 11:25-30 (100) Pss II', null),
-    ('2026-07-06'::date, 1, 'Monday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 14, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '6 Mon Weekday green/red
+    ('2026-07-06'::date, 1, 'Monday', 'weekday', 'Weekday', 'Monday of the Fourteenth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 14, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '6 Mon Weekday green/red
 [Saint Maria Goretti, Virgin and Martyr]
 Hos 2:16, 17c-18, 21-22/Mt 9:18-26 (383)', null),
-    ('2026-07-07'::date, 2, 'Tuesday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 14, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '7 Tue Weekday green
+    ('2026-07-07'::date, 2, 'Tuesday', 'weekday', 'Weekday', 'Tuesday of the Fourteenth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 14, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '7 Tue Weekday green
 Hos 8:4-7, 11-13/Mt 9:32-38 (384)', null),
-    ('2026-07-08'::date, 3, 'Wednesday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 14, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '8 Wed Weekday green
+    ('2026-07-08'::date, 3, 'Wednesday', 'weekday', 'Weekday', 'Wednesday of the Fourteenth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 14, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '8 Wed Weekday green
 Hos 10:1-3, 7-8, 12/Mt 10:1-7 (385)', null),
-    ('2026-07-09'::date, 4, 'Thursday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 14, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '9 Thu Weekday green/red
+    ('2026-07-09'::date, 4, 'Thursday', 'weekday', 'Weekday', 'Thursday of the Fourteenth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 14, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '9 Thu Weekday green/red
 [Saint Augustine Zhao Rong, Priest, and Companions, Martyrs]
 Hos 11:1-4, 8e-9/Mt 10:7-15 (386)', null),
-    ('2026-07-10'::date, 5, 'Friday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 14, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '10 Fri Weekday green
+    ('2026-07-10'::date, 5, 'Friday', 'weekday', 'Weekday', 'Friday of the Fourteenth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 14, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '10 Fri Weekday green
 Hos 14:2-10/Mt 10:16-23 (387)', null),
     ('2026-07-11'::date, 6, 'Saturday', 'st_benedict', 'Saint Benedict, Abbot', 'Saint Benedict, Abbot', 'ordinary_time'::public.liturgical_season, 14, null, 'memorial'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '11 Sat Saint Benedict, Abbot white
 Memorial
 Is 6:1-8/Mt 10:24-33 (388)', null),
     ('2026-07-12'::date, 0, 'Sunday', 'fifteenth_sunday_in_ordinary_time', 'FIFTEENTH SUNDAY IN ORDINARY TIME', 'FIFTEENTH SUNDAY IN ORDINARY TIME', 'ordinary_time'::public.liturgical_season, 15, 3, 'sunday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'sunday'::public.obligation_status, '12 SUN FIFTEENTH SUNDAY IN ORDINARY TIME green
 Is 55:10-11/Rom 8:18-23/Mt 13:1-23 or 13:1-9 (103) Pss III', null),
-    ('2026-07-13'::date, 1, 'Monday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 15, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '13 Mon Weekday green/white
+    ('2026-07-13'::date, 1, 'Monday', 'weekday', 'Weekday', 'Monday of the Fifteenth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 15, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '13 Mon Weekday green/white
 [Saint Henry]
 Is 1:10-17/Mt 10:34—11:1 (389)', null),
     ('2026-07-14'::date, 2, 'Tuesday', 'st_kateri_tekakwitha', 'Saint Kateri Tekakwitha, Virgin', 'Saint Kateri Tekakwitha, Virgin', 'ordinary_time'::public.liturgical_season, 15, null, 'memorial'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '14 Tue USA: Saint Kateri Tekakwitha, Virgin white
@@ -1808,29 +1808,29 @@ Is 7:1-9/Mt 11:20-24 (390)', null),
     ('2026-07-15'::date, 3, 'Wednesday', 'st_bonaventure', 'Saint Bonaventure, Bishop and Doctor of the Church', 'Saint Bonaventure, Bishop and Doctor of the Church', 'ordinary_time'::public.liturgical_season, 15, null, 'memorial'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '15 Wed Saint Bonaventure, Bishop and Doctor of the Church white
 Memorial
 Is 10:5-7, 13b-16/Mt 11:25-27 (391)', null),
-    ('2026-07-16'::date, 4, 'Thursday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 15, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '16 Thu Weekday green/white
+    ('2026-07-16'::date, 4, 'Thursday', 'weekday', 'Weekday', 'Thursday of the Fifteenth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 15, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '16 Thu Weekday green/white
 [Our Lady of Mount Carmel]
 Is 26:7-9, 12, 16-19/Mt 11:28-30 (392)', null),
-    ('2026-07-17'::date, 5, 'Friday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 15, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '17 Fri Weekday green
+    ('2026-07-17'::date, 5, 'Friday', 'weekday', 'Weekday', 'Friday of the Fifteenth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 15, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '17 Fri Weekday green
 Is 38:1-6, 21-22, 7-8/Mt 12:1-8 (393)', null),
-    ('2026-07-18'::date, 6, 'Saturday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 15, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '18 Sat Weekday green/white/white
+    ('2026-07-18'::date, 6, 'Saturday', 'weekday', 'Weekday', 'Saturday of the Fifteenth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 15, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '18 Sat Weekday green/white/white
 [USA: Saint Camillus de Lellis, Priest; BVM]
 Mi 2:1-5/Mt 12:14-21 (394)', null),
     ('2026-07-19'::date, 0, 'Sunday', 'sixteenth_sunday_in_ordinary_time', 'SIXTEENTH SUNDAY IN ORDINARY TIME', 'SIXTEENTH SUNDAY IN ORDINARY TIME', 'ordinary_time'::public.liturgical_season, 16, 4, 'sunday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'sunday'::public.obligation_status, '19 SUN SIXTEENTH SUNDAY IN ORDINARY TIME green
 Wis 12:13, 16-19/Rom 8:26-27/Mt 13:24-43 or 13:24-30 (106) Pss IV', null),
-    ('2026-07-20'::date, 1, 'Monday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 16, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '20 Mon Weekday green/red
+    ('2026-07-20'::date, 1, 'Monday', 'weekday', 'Weekday', 'Monday of the Sixteenth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 16, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '20 Mon Weekday green/red
 [Saint Apollinaris, Bishop and Martyr]
 Mi 6:1-4, 6-8/Mt 12:38-42 (395)', null),
-    ('2026-07-21'::date, 2, 'Tuesday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 16, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '21 Tue Weekday green/white
+    ('2026-07-21'::date, 2, 'Tuesday', 'weekday', 'Weekday', 'Tuesday of the Sixteenth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 16, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '21 Tue Weekday green/white
 [Saint Lawrence of Brindisi, Priest and Doctor of the Church]
 Mi 7:14-15, 18-20/Mt 12:46-50 (396)', null),
     ('2026-07-22'::date, 3, 'Wednesday', 'st_mary_magdalene', 'Saint Mary Magdalene', 'Saint Mary Magdalene', 'ordinary_time'::public.liturgical_season, 16, null, 'feast'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '22 Wed Saint Mary Magdalene white
 Feast
 Sg 3:1-4b or 2 Cor 5:14-17/Jn 20:1-2, 11-18 (603) Pss Prop', null),
-    ('2026-07-23'::date, 4, 'Thursday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 16, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '23 Thu Weekday green/white
+    ('2026-07-23'::date, 4, 'Thursday', 'weekday', 'Weekday', 'Thursday of the Sixteenth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 16, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '23 Thu Weekday green/white
 [Saint Bridget, Religious]
 Jer 2:1-3, 7-8, 12-13/Mt 13:10-17 (398)', null),
-    ('2026-07-24'::date, 5, 'Friday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 16, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '24 Fri Weekday green/white
+    ('2026-07-24'::date, 5, 'Friday', 'weekday', 'Weekday', 'Friday of the Sixteenth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 16, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '24 Fri Weekday green/white
 [Saint Sharbel Makhlūf, Priest]
 Jer 3:14-17/Mt 13:18-23 (399)', null),
     ('2026-07-25'::date, 6, 'Saturday', 'st_james', 'Saint James, Apostle', 'Saint James, Apostle', 'ordinary_time'::public.liturgical_season, 16, null, 'feast'::public.liturgical_rank, 'red'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '25 Sat Saint James, Apostle red
@@ -1838,14 +1838,14 @@ Feast
 2 Cor 4:7-15/Mt 20:20-28 (605) Pss Prop', null),
     ('2026-07-26'::date, 0, 'Sunday', 'seventeenth_sunday_in_ordinary_time', 'SEVENTEENTH SUNDAY IN ORDINARY TIME', 'SEVENTEENTH SUNDAY IN ORDINARY TIME', 'ordinary_time'::public.liturgical_season, 17, 1, 'sunday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'sunday'::public.obligation_status, '26 SUN SEVENTEENTH SUNDAY IN ORDINARY TIME green
 1 Kgs 3:5, 7-12/Rom 8:28-30/Mt 13:44-52 or 13:44-46 (109) Pss I', null),
-    ('2026-07-27'::date, 1, 'Monday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 17, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '27 Mon Weekday green
+    ('2026-07-27'::date, 1, 'Monday', 'weekday', 'Weekday', 'Monday of the Seventeenth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 17, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '27 Mon Weekday green
 Jer 13:1-11/Mt 13:31-35 (401)', null),
-    ('2026-07-28'::date, 2, 'Tuesday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 17, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '28 Tue Weekday green
+    ('2026-07-28'::date, 2, 'Tuesday', 'weekday', 'Weekday', 'Tuesday of the Seventeenth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 17, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '28 Tue Weekday green
 Jer 14:17-22/Mt 13:36-43 (402)', null),
     ('2026-07-29'::date, 3, 'Wednesday', 'sts_martha_mary_and_lazarus', 'Saints Martha, Mary, and Lazarus', 'Saints Martha, Mary, and Lazarus', 'ordinary_time'::public.liturgical_season, 17, null, 'memorial'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '29 Wed Saints Martha, Mary, and Lazarus white
 Memorial
 Jer 15:10, 16-21 (403)/Jn 11:19-27 or Lk 10:38-42 (607)', null),
-    ('2026-07-30'::date, 4, 'Thursday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 17, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '30 Thu Weekday green/white
+    ('2026-07-30'::date, 4, 'Thursday', 'weekday', 'Weekday', 'Thursday of the Seventeenth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 17, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '30 Thu Weekday green/white
 [Saint Peter Chrysologus, Bishop and Doctor of the Church]
 Jer 18:1-6/Mt 13:47-53 (404)', null),
     ('2026-07-31'::date, 5, 'Friday', 'st_ignatius_of_loyola', 'Saint Ignatius of Loyola, Priest', 'Saint Ignatius of Loyola, Priest', 'ordinary_time'::public.liturgical_season, 17, null, 'memorial'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '31 Fri Saint Ignatius of Loyola, Priest white
@@ -1856,18 +1856,18 @@ Memorial
 Jer 26:11-16, 24/Mt 14:1-12 (406)', null),
     ('2026-08-02'::date, 0, 'Sunday', 'eighteenth_sunday_in_ordinary_time', 'EIGHTEENTH SUNDAY IN ORDINARY TIME', 'EIGHTEENTH SUNDAY IN ORDINARY TIME', 'ordinary_time'::public.liturgical_season, 18, 2, 'sunday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'sunday'::public.obligation_status, '2 SUN EIGHTEENTH SUNDAY IN ORDINARY TIME green
 Is 55:1-3/Rom 8:35, 37-39/Mt 14:13-21 (112) Pss II', null),
-    ('2026-08-03'::date, 1, 'Monday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 18, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '3 Mon Weekday green
+    ('2026-08-03'::date, 1, 'Monday', 'weekday', 'Weekday', 'Monday of the Eighteenth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 18, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '3 Mon Weekday green
 Jer 28:1-17 (407)/Mt 14:22-36 (408)', null),
     ('2026-08-04'::date, 2, 'Tuesday', 'st_john_vianney', 'Saint John Vianney, Priest', 'Saint John Vianney, Priest', 'ordinary_time'::public.liturgical_season, 18, null, 'memorial'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '4 Tue Saint John Vianney, Priest white
 Memorial
 Jer 30:1-2, 12-15, 18-22/Mt 14:22-36 or Mt 15:1-2, 10-14 (408)', null),
-    ('2026-08-05'::date, 3, 'Wednesday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 18, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '5 Wed Weekday green/white
+    ('2026-08-05'::date, 3, 'Wednesday', 'weekday', 'Weekday', 'Wednesday of the Eighteenth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 18, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '5 Wed Weekday green/white
 [The Dedication of the Basilica of Saint Mary Major]
 Jer 31:1-7/Mt 15:21-28 (409)', null),
     ('2026-08-06'::date, 4, 'Thursday', 'transfiguration_of_the_lord', 'The Transfiguration of the Lord', 'The Transfiguration of the Lord', 'ordinary_time'::public.liturgical_season, 18, null, 'feast'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '6 Thu The Transfiguration of the Lord white
 Feast
 Dn 7:9-10, 13-14/2 Pt 1:16-19/Mt 17:1-9 (614) Pss Prop', null),
-    ('2026-08-07'::date, 5, 'Friday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 18, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '7 Fri Weekday green/red/white
+    ('2026-08-07'::date, 5, 'Friday', 'weekday', 'Weekday', 'Friday of the Eighteenth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 18, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '7 Fri Weekday green/red/white
 [Saint Sixtus II, Pope, and Companions, Martyrs; Saint Cajetan, Priest]
 Na 2:1, 3; 3:1-3, 6-7/Mt 16:24-28 (411)', null),
     ('2026-08-08'::date, 6, 'Saturday', 'st_dominic', 'Saint Dominic, Priest', 'Saint Dominic, Priest', 'ordinary_time'::public.liturgical_season, 18, null, 'memorial'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '8 Sat Saint Dominic, Priest white
@@ -1881,10 +1881,10 @@ Feast
     ('2026-08-11'::date, 2, 'Tuesday', 'st_clare', 'Saint Clare, Virgin', 'Saint Clare, Virgin', 'ordinary_time'::public.liturgical_season, 19, null, 'memorial'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '11 Tue Saint Clare, Virgin white
 Memorial
 Ez 2:8—3:4/Mt 18:1-5, 10, 12-14 (414)', null),
-    ('2026-08-12'::date, 3, 'Wednesday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 19, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '12 Wed Weekday green/white
+    ('2026-08-12'::date, 3, 'Wednesday', 'weekday', 'Weekday', 'Wednesday of the Nineteenth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 19, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '12 Wed Weekday green/white
 [Saint Jane Frances de Chantal, Religious]
 Ez 9:1-7; 10:18-22/Mt 18:15-20 (415)', null),
-    ('2026-08-13'::date, 4, 'Thursday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 19, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '13 Thu Weekday green/red
+    ('2026-08-13'::date, 4, 'Thursday', 'weekday', 'Weekday', 'Thursday of the Nineteenth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 19, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '13 Thu Weekday green/red
 [Saints Pontian, Pope, and Hippolytus, Priest, Martyrs]
 Ez 12:1-12/Mt 18:21—19:1 (416)', null),
     ('2026-08-14'::date, 5, 'Friday', 'st_maximilian_kolbe', 'Saint Maximilian Kolbe, Priest and Martyr', 'Saint Maximilian Kolbe, Priest and Martyr', 'ordinary_time'::public.liturgical_season, 19, null, 'memorial'::public.liturgical_rank, 'red'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '14 Fri Saint Maximilian Kolbe, Priest and Martyr red
@@ -1896,11 +1896,11 @@ Vigil: 1 Chr 15:3-4, 15-16; 16:1-2/1 Cor 15:54b-57/Lk 11:27-28 (621)
 Day: Rv 11:19a; 12:1-6a, 10ab/1 Cor 15:20-27/Lk 1:39-56 (622) Pss Prop', null),
     ('2026-08-16'::date, 0, 'Sunday', 'twentieth_sunday_in_ordinary_time', 'TWENTIETH SUNDAY IN ORDINARY TIME', 'TWENTIETH SUNDAY IN ORDINARY TIME', 'ordinary_time'::public.liturgical_season, 20, 4, 'sunday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'sunday'::public.obligation_status, '16 SUN TWENTIETH SUNDAY IN ORDINARY TIME green
 Is 56:1, 6-7/Rom 11:13-15, 29-32/Mt 15:21-28 (118) Pss IV', null),
-    ('2026-08-17'::date, 1, 'Monday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 20, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '17 Mon Weekday green
+    ('2026-08-17'::date, 1, 'Monday', 'weekday', 'Weekday', 'Monday of the Twentieth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 20, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '17 Mon Weekday green
 Ez 24:15-23/Mt 19:16-22 (419)', null),
-    ('2026-08-18'::date, 2, 'Tuesday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 20, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '18 Tue Weekday green
+    ('2026-08-18'::date, 2, 'Tuesday', 'weekday', 'Weekday', 'Tuesday of the Twentieth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 20, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '18 Tue Weekday green
 Ez 28:1-10/Mt 19:23-30 (420)', null),
-    ('2026-08-19'::date, 3, 'Wednesday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 20, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '19 Wed Weekday green/white
+    ('2026-08-19'::date, 3, 'Wednesday', 'weekday', 'Weekday', 'Wednesday of the Twentieth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 20, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '19 Wed Weekday green/white
 [Saint John Eudes, Priest]
 Ez 34:1-11/Mt 20:1-16 (421)', null),
     ('2026-08-20'::date, 4, 'Thursday', 'st_bernard', 'Saint Bernard, Abbot and Doctor of the Church', 'Saint Bernard, Abbot and Doctor of the Church', 'ordinary_time'::public.liturgical_season, 20, null, 'memorial'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '20 Thu Saint Bernard, Abbot and Doctor of the Church white
@@ -1917,10 +1917,10 @@ Is 22:19-23/Rom 11:33-36/Mt 16:13-20 (121) Pss I', null),
     ('2026-08-24'::date, 1, 'Monday', 'st_bartholomew', 'Saint Bartholomew, Apostle', 'Saint Bartholomew, Apostle', 'ordinary_time'::public.liturgical_season, 21, null, 'feast'::public.liturgical_rank, 'red'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '24 Mon Saint Bartholomew, Apostle red
 Feast
 Rv 21:9b-14/Jn 1:45-51 (629) Pss Prop', null),
-    ('2026-08-25'::date, 2, 'Tuesday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 21, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '25 Tue Weekday green/white/white
+    ('2026-08-25'::date, 2, 'Tuesday', 'weekday', 'Weekday', 'Tuesday of the Twenty-First Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 21, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '25 Tue Weekday green/white/white
 [Saint Louis; Saint Joseph Calasanz, Priest]
 2 Thes 2:1-3a, 14-17/Mt 23:23-26 (426)', null),
-    ('2026-08-26'::date, 3, 'Wednesday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 21, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '26 Wed Weekday green
+    ('2026-08-26'::date, 3, 'Wednesday', 'weekday', 'Weekday', 'Wednesday of the Twenty-First Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 21, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '26 Wed Weekday green
 2 Thes 3:6-10, 16-18/Mt 23:27-32 (427)', null),
     ('2026-08-27'::date, 4, 'Thursday', 'st_monica', 'Saint Monica', 'Saint Monica', 'ordinary_time'::public.liturgical_season, 21, null, 'memorial'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '27 Thu Saint Monica white
 Memorial
@@ -1933,23 +1933,23 @@ Memorial
 1 Cor 1:26-31 (430)/Mk 6:17-29 (634) Pss Prop', null),
     ('2026-08-30'::date, 0, 'Sunday', 'twenty_second_sunday_in_ordinary_time', 'TWENTY-SECOND SUNDAY IN ORDINARY TIME', 'TWENTY-SECOND SUNDAY IN ORDINARY TIME', 'ordinary_time'::public.liturgical_season, 22, 2, 'sunday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'sunday'::public.obligation_status, '30 SUN TWENTY-SECOND SUNDAY IN ORDINARY TIME green
 Jer 20:7-9/Rom 12:1-2/Mt 16:21-27 (124) Pss II', null),
-    ('2026-08-31'::date, 1, 'Monday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 22, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '31 Mon Weekday green
+    ('2026-08-31'::date, 1, 'Monday', 'weekday', 'Weekday', 'Monday of the Twenty-Second Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 22, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '31 Mon Weekday green
 1 Cor 2:1-5/Lk 4:16-30 (431)', null),
-    ('2026-09-01'::date, 2, 'Tuesday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 22, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '1 Tue Weekday green
+    ('2026-09-01'::date, 2, 'Tuesday', 'weekday', 'Weekday', 'Tuesday of the Twenty-Second Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 22, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '1 Tue Weekday green
 1 Cor 2:10b-16/Lk 4:31-37 (432)', null),
-    ('2026-09-02'::date, 3, 'Wednesday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 22, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '2 Wed Weekday green
+    ('2026-09-02'::date, 3, 'Wednesday', 'weekday', 'Weekday', 'Wednesday of the Twenty-Second Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 22, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '2 Wed Weekday green
 1 Cor 3:1-9/Lk 4:38-44 (433)', null),
     ('2026-09-03'::date, 4, 'Thursday', 'st_gregory_the_great', 'Saint Gregory the Great, Pope and Doctor of the Church', 'Saint Gregory the Great, Pope and Doctor of the Church', 'ordinary_time'::public.liturgical_season, 22, null, 'memorial'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '3 Thu Saint Gregory the Great, Pope and Doctor of the Church white
 Memorial
 1 Cor 3:18-23/Lk 5:1-11 (434)', null),
-    ('2026-09-04'::date, 5, 'Friday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 22, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '4 Fri Weekday green
+    ('2026-09-04'::date, 5, 'Friday', 'weekday', 'Weekday', 'Friday of the Twenty-Second Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 22, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '4 Fri Weekday green
 1 Cor 4:1-5/Lk 5:33-39 (435)', null),
-    ('2026-09-05'::date, 6, 'Saturday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 22, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '5 Sat Weekday green/white/white
+    ('2026-09-05'::date, 6, 'Saturday', 'weekday', 'Weekday', 'Saturday of the Twenty-Second Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 22, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '5 Sat Weekday green/white/white
 [Saint Teresa of Calcutta, Virgin; BVM]
 1 Cor 4:6b-15/Lk 6:1-5 (436)', null),
     ('2026-09-06'::date, 0, 'Sunday', 'twenty_third_sunday_in_ordinary_time', 'TWENTY-THIRD SUNDAY IN ORDINARY TIME', 'TWENTY-THIRD SUNDAY IN ORDINARY TIME', 'ordinary_time'::public.liturgical_season, 23, 3, 'sunday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'sunday'::public.obligation_status, '6 SUN TWENTY-THIRD SUNDAY IN ORDINARY TIME green
 Ez 33:7-9/Rom 13:8-10/Mt 18:15-20 (127) Pss III', null),
-    ('2026-09-07'::date, 1, 'Monday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 23, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '7 Mon Weekday green
+    ('2026-09-07'::date, 1, 'Monday', 'weekday', 'Weekday', 'Monday of the Twenty-Third Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 23, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '7 Mon Weekday green
 1 Cor 5:1-8/Lk 6:6-11 (437)', null),
     ('2026-09-08'::date, 2, 'Tuesday', 'nativity_of_the_blessed_virgin_mary', 'The Nativity of the Blessed Virgin Mary', 'The Nativity of the Blessed Virgin Mary', 'ordinary_time'::public.liturgical_season, 23, null, 'feast'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '8 Tue The Nativity of the Blessed Virgin Mary white
 Feast
@@ -1957,11 +1957,11 @@ Mi 5:1-4a or Rom 8:28-30/Mt 1:1-16, 18-23 or 1:18-23 (636) Pss Prop', null),
     ('2026-09-09'::date, 3, 'Wednesday', 'st_peter_claver', 'Saint Peter Claver, Priest', 'Saint Peter Claver, Priest', 'ordinary_time'::public.liturgical_season, 23, null, 'memorial'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '9 Wed USA: Saint Peter Claver, Priest white
 Memorial
 1 Cor 7:25-31/Lk 6:20-26 (439)', null),
-    ('2026-09-10'::date, 4, 'Thursday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 23, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '10 Thu Weekday green
+    ('2026-09-10'::date, 4, 'Thursday', 'weekday', 'Weekday', 'Thursday of the Twenty-Third Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 23, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '10 Thu Weekday green
 1 Cor 8:1b-7, 11-13/Lk 6:27-38 (440)', null),
-    ('2026-09-11'::date, 5, 'Friday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 23, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '11 Fri Weekday green
+    ('2026-09-11'::date, 5, 'Friday', 'weekday', 'Weekday', 'Friday of the Twenty-Third Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 23, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '11 Fri Weekday green
 1 Cor 9:16-19, 22b-27/Lk 6:39-42 (441)', null),
-    ('2026-09-12'::date, 6, 'Saturday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 23, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '12 Sat Weekday green/white/white
+    ('2026-09-12'::date, 6, 'Saturday', 'weekday', 'Weekday', 'Saturday of the Twenty-Third Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 23, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '12 Sat Weekday green/white/white
 [The Most Holy Name of Mary; BVM]
 1 Cor 10:14-22/Lk 6:43-49 (442)', null),
     ('2026-09-13'::date, 0, 'Sunday', 'twenty_fourth_sunday_in_ordinary_time', 'TWENTY-FOURTH SUNDAY IN ORDINARY TIME', 'TWENTY-FOURTH SUNDAY IN ORDINARY TIME', 'ordinary_time'::public.liturgical_season, 24, 4, 'sunday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'sunday'::public.obligation_status, '13 SUN TWENTY-FOURTH SUNDAY IN ORDINARY TIME green
@@ -1975,13 +1975,13 @@ Memorial
     ('2026-09-16'::date, 3, 'Wednesday', 'sts_cornelius_pope_and_cyprian_bishop_martyrs', 'Saints Cornelius, Pope, and Cyprian, Bishop, Martyrs', 'Saints Cornelius, Pope, and Cyprian, Bishop, Martyrs', 'ordinary_time'::public.liturgical_season, 24, null, 'memorial'::public.liturgical_rank, 'red'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '16 Wed Saints Cornelius, Pope, and Cyprian, Bishop, Martyrs red
 Memorial
 1 Cor 12:31—13:13/Lk 7:31-35 (445)', null),
-    ('2026-09-17'::date, 4, 'Thursday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 24, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '17 Thu Weekday green/white/white
+    ('2026-09-17'::date, 4, 'Thursday', 'weekday', 'Weekday', 'Thursday of the Twenty-Fourth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 24, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '17 Thu Weekday green/white/white
 [Saint Robert Bellarmine, Bishop and Doctor of the Church;
 Saint Hildegard of Bingen, Virgin and Doctor of the Church]
 1 Cor 15:1-11/Lk 7:36-50 (446)', null),
-    ('2026-09-18'::date, 5, 'Friday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 24, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '18 Fri Weekday green
+    ('2026-09-18'::date, 5, 'Friday', 'weekday', 'Weekday', 'Friday of the Twenty-Fourth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 24, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '18 Fri Weekday green
 1 Cor 15:12-20/Lk 8:1-3 (447)', null),
-    ('2026-09-19'::date, 6, 'Saturday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 24, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '19 Sat Weekday green/red/white
+    ('2026-09-19'::date, 6, 'Saturday', 'weekday', 'Weekday', 'Saturday of the Twenty-Fourth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 24, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '19 Sat Weekday green/red/white
 [Saint Januarius, Bishop and Martyr; BVM]
 1 Cor 15:35-37, 42-49/Lk 8:4-15 (448)', null),
     ('2026-09-20'::date, 0, 'Sunday', 'twenty_fifth_sunday_in_ordinary_time', 'TWENTY-FIFTH SUNDAY IN ORDINARY TIME', 'TWENTY-FIFTH SUNDAY IN ORDINARY TIME', 'ordinary_time'::public.liturgical_season, 25, 1, 'sunday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'sunday'::public.obligation_status, '20 SUN TWENTY-FIFTH SUNDAY IN ORDINARY TIME green
@@ -1989,21 +1989,21 @@ Is 55:6-9/Phil 1:20c-24, 27a/Mt 20:1-16a (133) Pss I', null),
     ('2026-09-21'::date, 1, 'Monday', 'st_matthew', 'Saint Matthew, Apostle and Evangelist', 'Saint Matthew, Apostle and Evangelist', 'ordinary_time'::public.liturgical_season, 25, null, 'feast'::public.liturgical_rank, 'red'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '21 Mon Saint Matthew, Apostle and Evangelist red
 Feast
 Eph 4:1-7, 11-13/Mt 9:9-13 (643) Pss Prop', null),
-    ('2026-09-22'::date, 2, 'Tuesday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 25, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '22 Tue Weekday green
+    ('2026-09-22'::date, 2, 'Tuesday', 'weekday', 'Weekday', 'Tuesday of the Twenty-Fifth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 25, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '22 Tue Weekday green
 Prv 21:1-6, 10-13/Lk 8:19-21 (450)', null),
     ('2026-09-23'::date, 3, 'Wednesday', 'st_pius_of_pietrelcina', 'Saint Pius of Pietrelcina, Priest', 'Saint Pius of Pietrelcina, Priest', 'ordinary_time'::public.liturgical_season, 25, null, 'memorial'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '23 Wed Saint Pius of Pietrelcina, Priest white
 Memorial
 Prv 30:5-9/Lk 9:1-6 (451)', null),
-    ('2026-09-24'::date, 4, 'Thursday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 25, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '24 Thu Weekday green
+    ('2026-09-24'::date, 4, 'Thursday', 'weekday', 'Weekday', 'Thursday of the Twenty-Fifth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 25, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '24 Thu Weekday green
 Eccl 1:2-11/Lk 9:7-9 (452)', null),
-    ('2026-09-25'::date, 5, 'Friday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 25, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '25 Fri Weekday green
+    ('2026-09-25'::date, 5, 'Friday', 'weekday', 'Weekday', 'Friday of the Twenty-Fifth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 25, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '25 Fri Weekday green
 Eccl 3:1-11/Lk 9:18-22 (453)', null),
-    ('2026-09-26'::date, 6, 'Saturday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 25, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '26 Sat Weekday green/red/white
+    ('2026-09-26'::date, 6, 'Saturday', 'weekday', 'Weekday', 'Saturday of the Twenty-Fifth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 25, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '26 Sat Weekday green/red/white
 [Saints Cosmas and Damian, Martyrs; BVM]
 Eccl 11:9—12:8/Lk 9:43b-45 (454)', null),
     ('2026-09-27'::date, 0, 'Sunday', 'twenty_sixth_sunday_in_ordinary_time', 'TWENTY-SIXTH SUNDAY IN ORDINARY TIME', 'TWENTY-SIXTH SUNDAY IN ORDINARY TIME', 'ordinary_time'::public.liturgical_season, 26, 2, 'sunday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'sunday'::public.obligation_status, '27 SUN TWENTY-SIXTH SUNDAY IN ORDINARY TIME green
 Ez 18:25-28/Phil 2:1-11 or 2:1-5/Mt 21:28-32 (136) Pss II', null),
-    ('2026-09-28'::date, 1, 'Monday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 26, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '28 Mon Weekday green/red/red
+    ('2026-09-28'::date, 1, 'Monday', 'weekday', 'Weekday', 'Monday of the Twenty-Sixth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 26, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '28 Mon Weekday green/red/red
 [Saint Wenceslaus, Martyr; Saint Lawrence Ruiz and Companions, Martyrs]
 Jb 1:6-22/Lk 9:46-50 (455)', null),
     ('2026-09-29'::date, 2, 'Tuesday', 'sts_michael_gabriel_and_raphael_archangels', 'Saints Michael, Gabriel and Raphael, Archangels', 'Saints Michael, Gabriel and Raphael, Archangels', 'ordinary_time'::public.liturgical_season, 26, null, 'feast'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '29 Tue Saints Michael, Gabriel and Raphael, Archangels white
@@ -2018,43 +2018,43 @@ Jb 19:21-27/Lk 10:1-12 (458)', null),
     ('2026-10-02'::date, 5, 'Friday', 'holy_guardian_angels', 'The Holy Guardian Angels', 'The Holy Guardian Angels', 'ordinary_time'::public.liturgical_season, 26, null, 'memorial'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '2 Fri The Holy Guardian Angels white
 Memorial
 Jb 38:1, 12-21; 40:3-5 (459)/Mt 18:1-5, 10 (650) Pss Prop', null),
-    ('2026-10-03'::date, 6, 'Saturday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 26, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '3 Sat Weekday green/white
+    ('2026-10-03'::date, 6, 'Saturday', 'weekday', 'Weekday', 'Saturday of the Twenty-Sixth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 26, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '3 Sat Weekday green/white
 [BVM]
 Jb 42:1-3, 5-6, 12-17/Lk 10:17-24 (460)', null),
     ('2026-10-04'::date, 0, 'Sunday', 'twenty_seventh_sunday_in_ordinary_time', 'TWENTY-SEVENTH SUNDAY IN ORDINARY TIME', 'TWENTY-SEVENTH SUNDAY IN ORDINARY TIME', 'ordinary_time'::public.liturgical_season, 27, 3, 'sunday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'sunday'::public.obligation_status, '4 SUN TWENTY-SEVENTH SUNDAY IN ORDINARY TIME green
 Is 5:1-7/Phil 4:6-9/Mt 21:33-43 (139) Pss III', null),
-    ('2026-10-05'::date, 1, 'Monday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 27, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '5 Mon Weekday green/white/white
+    ('2026-10-05'::date, 1, 'Monday', 'weekday', 'Weekday', 'Monday of the Twenty-Seventh Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 27, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '5 Mon Weekday green/white/white
 [Saint Faustina Kowalska, Virgin;
 USA: Blessed Francis Xavier Seelos, Priest]
 Gal 1:6-12/Lk 10:25-37 (461)', null),
-    ('2026-10-06'::date, 2, 'Tuesday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 27, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '6 Tue Weekday green/white/white
+    ('2026-10-06'::date, 2, 'Tuesday', 'weekday', 'Weekday', 'Tuesday of the Twenty-Seventh Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 27, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '6 Tue Weekday green/white/white
 [Saint Bruno, Priest; USA: Blessed Marie Rose Durocher, Virgin]
 Gal 1:13-24/Lk 10:38-42 (462)', null),
     ('2026-10-07'::date, 3, 'Wednesday', 'our_lady_of_the_rosary', 'Our Lady of the Rosary', 'Our Lady of the Rosary', 'ordinary_time'::public.liturgical_season, 27, null, 'memorial'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '7 Wed Our Lady of the Rosary white
 Memorial
 Gal 2:1-2, 7-14/Lk 11:1-4 (463) Pss Prop', null),
-    ('2026-10-08'::date, 4, 'Thursday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 27, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '8 Thu Weekday green
+    ('2026-10-08'::date, 4, 'Thursday', 'weekday', 'Weekday', 'Thursday of the Twenty-Seventh Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 27, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '8 Thu Weekday green
 Gal 3:1-5/Lk 11:5-13 (464)', null),
-    ('2026-10-09'::date, 5, 'Friday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 27, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '9 Fri Weekday green/red/white/white
+    ('2026-10-09'::date, 5, 'Friday', 'weekday', 'Weekday', 'Friday of the Twenty-Seventh Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 27, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '9 Fri Weekday green/red/white/white
 [Saint Denis, Bishop, and Companions, Martyrs; Saint John Leonardi, Priest;
 Saint John Henry Newman, Priest and Doctor of the Church]
 Gal 3:7-14/Lk 11:15-26 (465)', null),
-    ('2026-10-10'::date, 6, 'Saturday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 27, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '10 Sat Weekday green/white
+    ('2026-10-10'::date, 6, 'Saturday', 'weekday', 'Weekday', 'Saturday of the Twenty-Seventh Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 27, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '10 Sat Weekday green/white
 [BVM]
 Gal 3:22-29/Lk 11:27-28 (466)', null),
     ('2026-10-11'::date, 0, 'Sunday', 'twenty_eighth_sunday_in_ordinary_time', 'TWENTY-EIGHTH SUNDAY IN ORDINARY TIME', 'TWENTY-EIGHTH SUNDAY IN ORDINARY TIME', 'ordinary_time'::public.liturgical_season, 28, 4, 'sunday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'sunday'::public.obligation_status, '11 SUN TWENTY-EIGHTH SUNDAY IN ORDINARY TIME green
 Is 25:6-10a/Phil 4:12-14, 19-20/Mt 22:1-14 or 22:1-10 (142) Pss IV', null),
-    ('2026-10-12'::date, 1, 'Monday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 28, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '12 Mon Weekday green
+    ('2026-10-12'::date, 1, 'Monday', 'weekday', 'Weekday', 'Monday of the Twenty-Eighth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 28, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '12 Mon Weekday green
 Gal 4:22-24, 26-27, 31—5:1/Lk 11:29-32 (467)', null),
-    ('2026-10-13'::date, 2, 'Tuesday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 28, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '13 Tue Weekday green
+    ('2026-10-13'::date, 2, 'Tuesday', 'weekday', 'Weekday', 'Tuesday of the Twenty-Eighth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 28, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '13 Tue Weekday green
 Gal 5:1-6/Lk 11:37-41 (468)', null),
-    ('2026-10-14'::date, 3, 'Wednesday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 28, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '14 Wed Weekday green/red
+    ('2026-10-14'::date, 3, 'Wednesday', 'weekday', 'Weekday', 'Wednesday of the Twenty-Eighth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 28, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '14 Wed Weekday green/red
 [Saint Callistus I, Pope and Martyr]
 Gal 5:18-25/Lk 11:42-46 (469)', null),
     ('2026-10-15'::date, 4, 'Thursday', 'st_teresa_of_jesus', 'Saint Teresa of Jesus, Virgin and Doctor of the Church', 'Saint Teresa of Jesus, Virgin and Doctor of the Church', 'ordinary_time'::public.liturgical_season, 28, null, 'memorial'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '15 Thu Saint Teresa of Jesus, Virgin and Doctor of the Church white
 Memorial
 Eph 1:1-10/Lk 11:47-54 (470)', null),
-    ('2026-10-16'::date, 5, 'Friday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 28, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '16 Fri Weekday green/white/white
+    ('2026-10-16'::date, 5, 'Friday', 'weekday', 'Weekday', 'Friday of the Twenty-Eighth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 28, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '16 Fri Weekday green/white/white
 [Saint Hedwig, Religious; Saint Margaret Mary Alacoque, Virgin]
 Eph 1:11-14/Lk 12:1-7 (471)', null),
     ('2026-10-17'::date, 6, 'Saturday', 'st_ignatius_of_antioch', 'Saint Ignatius of Antioch, Bishop and Martyr', 'Saint Ignatius of Antioch, Bishop and Martyr', 'ordinary_time'::public.liturgical_season, 28, null, 'memorial'::public.liturgical_rank, 'red'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '17 Sat Saint Ignatius of Antioch, Bishop and Martyr red
@@ -2066,34 +2066,34 @@ Is 45:1, 4-6/1 Thes 1:1-5b/Mt 22:15-21 (145) Pss I', null),
 and Companions, Martyrs
 Memorial
 Eph 2:1-10/Lk 12:13-21 (473)', null),
-    ('2026-10-20'::date, 2, 'Tuesday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 29, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '20 Tue Weekday green/white
+    ('2026-10-20'::date, 2, 'Tuesday', 'weekday', 'Weekday', 'Tuesday of the Twenty-Ninth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 29, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '20 Tue Weekday green/white
 [USA: Saint Paul of the Cross, Priest]
 Eph 2:12-22/Lk 12:35-38 (474)', null),
-    ('2026-10-21'::date, 3, 'Wednesday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 29, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '21 Wed Weekday green
+    ('2026-10-21'::date, 3, 'Wednesday', 'weekday', 'Weekday', 'Wednesday of the Twenty-Ninth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 29, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '21 Wed Weekday green
 Eph 3:2-12/Lk 12:39-48 (475)', null),
-    ('2026-10-22'::date, 4, 'Thursday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 29, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '22 Thu Weekday green/white
+    ('2026-10-22'::date, 4, 'Thursday', 'weekday', 'Weekday', 'Thursday of the Twenty-Ninth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 29, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '22 Thu Weekday green/white
 [Saint John Paul II, Pope]
 Eph 3:14-21/Lk 12:49-53 (476)', null),
-    ('2026-10-23'::date, 5, 'Friday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 29, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '23 Fri Weekday green/white
+    ('2026-10-23'::date, 5, 'Friday', 'weekday', 'Weekday', 'Friday of the Twenty-Ninth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 29, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '23 Fri Weekday green/white
 [Saint John of Capistrano, Priest]
 Eph 4:1-6/Lk 12:54-59 (477)', null),
-    ('2026-10-24'::date, 6, 'Saturday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 29, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '24 Sat Weekday green/white/white
+    ('2026-10-24'::date, 6, 'Saturday', 'weekday', 'Weekday', 'Saturday of the Twenty-Ninth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 29, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '24 Sat Weekday green/white/white
 [Saint Anthony Mary Claret, Bishop; BVM]
 Eph 4:7-16/Lk 13:1-9 (478)', null),
     ('2026-10-25'::date, 0, 'Sunday', 'thirtieth_sunday_in_ordinary_time', 'THIRTIETH SUNDAY IN ORDINARY TIME', 'THIRTIETH SUNDAY IN ORDINARY TIME', 'ordinary_time'::public.liturgical_season, 30, 2, 'sunday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'sunday'::public.obligation_status, '25 SUN THIRTIETH SUNDAY IN ORDINARY TIME green
 Ex 22:20-26/1 Thes 1:5c-10/Mt 22:34-40 (148) Pss II', null),
-    ('2026-10-26'::date, 1, 'Monday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 30, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '26 Mon Weekday green
+    ('2026-10-26'::date, 1, 'Monday', 'weekday', 'Weekday', 'Monday of the Thirtieth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 30, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '26 Mon Weekday green
 Eph 4:32—5:8/Lk 13:10-17 (479)', null),
-    ('2026-10-27'::date, 2, 'Tuesday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 30, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '27 Tue Weekday green
+    ('2026-10-27'::date, 2, 'Tuesday', 'weekday', 'Weekday', 'Tuesday of the Thirtieth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 30, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '27 Tue Weekday green
 Eph 5:21-33/Lk 13:18-21 (480)', null),
     ('2026-10-28'::date, 3, 'Wednesday', 'sts_simon_and_jude_apostles', 'Saints Simon and Jude, Apostles', 'Saints Simon and Jude, Apostles', 'ordinary_time'::public.liturgical_season, 30, null, 'feast'::public.liturgical_rank, 'red'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '28 Wed Saints Simon and Jude, Apostles red
 Feast
 Eph 2:19-22/Lk 6:12-16 (666) Pss Prop', null),
-    ('2026-10-29'::date, 4, 'Thursday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 30, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '29 Thu Weekday green
+    ('2026-10-29'::date, 4, 'Thursday', 'weekday', 'Weekday', 'Thursday of the Thirtieth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 30, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '29 Thu Weekday green
 Eph 6:10-20/Lk 13:31-35 (482)', null),
-    ('2026-10-30'::date, 5, 'Friday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 30, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '30 Fri Weekday green
+    ('2026-10-30'::date, 5, 'Friday', 'weekday', 'Weekday', 'Friday of the Thirtieth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 30, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '30 Fri Weekday green
 Phil 1:1-11/Lk 14:1-6 (483)', null),
-    ('2026-10-31'::date, 6, 'Saturday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 30, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '31 Sat Weekday green/white
+    ('2026-10-31'::date, 6, 'Saturday', 'weekday', 'Weekday', 'Saturday of the Thirtieth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 30, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '31 Sat Weekday green/white
 [BVM]
 Phil 1:18b-26/Lk 14:1, 7-11 (484)', null),
     ('2026-11-01'::date, 0, 'Sunday', 'all_sts', 'ALL SAINTS', 'ALL SAINTS', 'ordinary_time'::public.liturgical_season, 30, null, 'solemnity'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '1 SUN ALL SAINTS white
@@ -2102,17 +2102,17 @@ Rv 7:2-4, 9-14/1 Jn 3:1-3/Mt 5:1-12a (667) Pss Prop', null),
     ('2026-11-02'::date, 1, 'Monday', 'commemoration_of_all_the_faithful_departed', 'The Commemoration of All the Faithful Departed (All Souls’ Day)', 'The Commemoration of All the Faithful Departed (All Souls’ Day)', 'ordinary_time'::public.liturgical_season, 31, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '2 Mon The Commemoration of All the Faithful Departed violet or white or black
 (All Souls’ Day)
 Any readings from no. 668 or from the Masses for the Dead (1011-1016) Pss Prop', 'White or Black may be used.'),
-    ('2026-11-03'::date, 2, 'Tuesday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 31, 3, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '3 Tue Weekday (Thirty-First Week in Ordinary Time) green/white
+    ('2026-11-03'::date, 2, 'Tuesday', 'weekday', 'Weekday', 'Tuesday of the Thirty-First Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 31, 3, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '3 Tue Weekday (Thirty-First Week in Ordinary Time) green/white
 [Saint Martin de Porres, Religious]
 Phil 2:5-11/Lk 14:15-24 (486) Pss III', null),
     ('2026-11-04'::date, 3, 'Wednesday', 'st_charles_borromeo', 'Saint Charles Borromeo, Bishop', 'Saint Charles Borromeo, Bishop', 'ordinary_time'::public.liturgical_season, 31, null, 'memorial'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '4 Wed Saint Charles Borromeo, Bishop white
 Memorial
 Phil 2:12-18/Lk 14:25-33 (487)', null),
-    ('2026-11-05'::date, 4, 'Thursday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 31, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '5 Thu Weekday green
+    ('2026-11-05'::date, 4, 'Thursday', 'weekday', 'Weekday', 'Thursday of the Thirty-First Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 31, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '5 Thu Weekday green
 Phil 3:3-8a/Lk 15:1-10 (488)', null),
-    ('2026-11-06'::date, 5, 'Friday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 31, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '6 Fri Weekday green
+    ('2026-11-06'::date, 5, 'Friday', 'weekday', 'Weekday', 'Friday of the Thirty-First Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 31, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '6 Fri Weekday green
 Phil 3:17—4:1/Lk 16:1-8 (489)', null),
-    ('2026-11-07'::date, 6, 'Saturday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 31, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '7 Sat Weekday green/white
+    ('2026-11-07'::date, 6, 'Saturday', 'weekday', 'Weekday', 'Saturday of the Thirty-First Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 31, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '7 Sat Weekday green/white
 [BVM]
 Phil 4:10-19/Lk 16:9-15 (490)', null),
     ('2026-11-08'::date, 0, 'Sunday', 'thirty_second_sunday_in_ordinary_time', 'THIRTY-SECOND SUNDAY IN ORDINARY TIME', 'THIRTY-SECOND SUNDAY IN ORDINARY TIME', 'ordinary_time'::public.liturgical_season, 32, 4, 'sunday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'sunday'::public.obligation_status, '8 SUN THIRTY-SECOND SUNDAY IN ORDINARY TIME green
@@ -2132,25 +2132,25 @@ Phlm 7-20/Lk 17:20-25 (494)', null),
     ('2026-11-13'::date, 5, 'Friday', 'st_frances_xavier_cabrini', 'Saint Frances Xavier Cabrini, Virgin', 'Saint Frances Xavier Cabrini, Virgin', 'ordinary_time'::public.liturgical_season, 32, null, 'memorial'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '13 Fri USA: Saint Frances Xavier Cabrini, Virgin white
 Memorial
 2 Jn 4-9/Lk 17:26-37 (495)', null),
-    ('2026-11-14'::date, 6, 'Saturday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 32, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '14 Sat Weekday green/white
+    ('2026-11-14'::date, 6, 'Saturday', 'weekday', 'Weekday', 'Saturday of the Thirty-Second Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 32, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '14 Sat Weekday green/white
 [BVM]
 3 Jn 5-8/Lk 18:1-8 (496)', null),
     ('2026-11-15'::date, 0, 'Sunday', 'thirty_third_sunday_in_ordinary_time', 'THIRTY-THIRD SUNDAY IN ORDINARY TIME', 'THIRTY-THIRD SUNDAY IN ORDINARY TIME', 'ordinary_time'::public.liturgical_season, 33, 1, 'sunday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'sunday'::public.obligation_status, '15 SUN THIRTY-THIRD SUNDAY IN ORDINARY TIME green
 Prv 31:10-13, 19-20, 30-31/1 Thes 5:1-6/Mt 25:14-30 or 25:14-15, 19-21 (157) Pss I', null),
-    ('2026-11-16'::date, 1, 'Monday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 33, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '16 Mon Weekday green/white/white
+    ('2026-11-16'::date, 1, 'Monday', 'weekday', 'Weekday', 'Monday of the Thirty-Third Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 33, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '16 Mon Weekday green/white/white
 [Saint Margaret of Scotland; Saint Gertrude, Virgin]
 Rv 1:1-4; 2:1-5/Lk 18:35-43 (497)', null),
     ('2026-11-17'::date, 2, 'Tuesday', 'st_elizabeth_of_hungary', 'Saint Elizabeth of Hungary, Religious', 'Saint Elizabeth of Hungary, Religious', 'ordinary_time'::public.liturgical_season, 33, null, 'memorial'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '17 Tue Saint Elizabeth of Hungary, Religious white
 Memorial
 Rv 3:1-6, 14-22/Lk 19:1-10 (498)', null),
-    ('2026-11-18'::date, 3, 'Wednesday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 33, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '18 Wed Weekday green/white/white
+    ('2026-11-18'::date, 3, 'Wednesday', 'weekday', 'Weekday', 'Wednesday of the Thirty-Third Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 33, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '18 Wed Weekday green/white/white
 [The Dedication of the Basilicas of Saints Peter and Paul, Apostles;
 USA: Saint Rose Philippine Duchesne, Virgin]
 Rv 4:1-11/Lk 19:11-28 (499)
 or, for the Optional Memorial of the Dedication, Acts 28:11-16, 30-31/Mt 14:22-33 (679)', null),
-    ('2026-11-19'::date, 4, 'Thursday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 33, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '19 Thu Weekday green
+    ('2026-11-19'::date, 4, 'Thursday', 'weekday', 'Weekday', 'Thursday of the Thirty-Third Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 33, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '19 Thu Weekday green
 Rv 5:1-10/Lk 19:41-44 (500)', null),
-    ('2026-11-20'::date, 5, 'Friday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 33, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '20 Fri Weekday green
+    ('2026-11-20'::date, 5, 'Friday', 'weekday', 'Weekday', 'Friday of the Thirty-Third Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 33, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '20 Fri Weekday green
 Rv 10:8-11/Lk 19:45-48 (501)', null),
     ('2026-11-21'::date, 6, 'Saturday', 'presentation_of_the_blessed_virgin_mary', 'The Presentation of the Blessed Virgin Mary', 'The Presentation of the Blessed Virgin Mary', 'ordinary_time'::public.liturgical_season, 33, null, 'memorial'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '21 Sat The Presentation of the Blessed Virgin Mary white
 Memorial
@@ -2165,14 +2165,14 @@ Rv 14:1-3, 4b-5/Lk 21:1-4 (503) Pss II', null),
     ('2026-11-24'::date, 2, 'Tuesday', 'st_andrew_dung_lac', 'Saint Andrew Dũng-Lạc, Priest, and Companions, Martyrs', 'Saint Andrew Dũng-Lạc, Priest, and Companions, Martyrs', 'ordinary_time'::public.liturgical_season, 34, null, 'memorial'::public.liturgical_rank, 'red'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '24 Tue Saint Andrew Dũng-Lạc, Priest, and Companions, Martyrs red
 Memorial
 Rv 14:14-19/Lk 21:5-11 (504)', null),
-    ('2026-11-25'::date, 3, 'Wednesday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 34, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '25 Wed Weekday green/red
+    ('2026-11-25'::date, 3, 'Wednesday', 'weekday', 'Weekday', 'Wednesday of the Thirty-Fourth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 34, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '25 Wed Weekday green/red
 [Saint Catherine of Alexandria, Virgin and Martyr]
 Rv 15:1-4/Lk 21:12-19 (505)', null),
-    ('2026-11-26'::date, 4, 'Thursday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 34, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '26 Thu Weekday green/white
+    ('2026-11-26'::date, 4, 'Thursday', 'weekday', 'Weekday', 'Thursday of the Thirty-Fourth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 34, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '26 Thu Weekday green/white
 [USA: Thanksgiving Day]
 Rv 18:1-2, 21-23; 19:1-3, 9a/Lk 21:20-28 (506)
 or, for Thanksgiving Day, any readings from the Mass “In Thanksgiving to God” (943-947)', null),
-    ('2026-11-27'::date, 5, 'Friday', 'weekday', 'Weekday', 'Weekday', 'ordinary_time'::public.liturgical_season, 34, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '27 Fri Weekday green
+    ('2026-11-27'::date, 5, 'Friday', 'weekday', 'Weekday', 'Friday of the Thirty-Fourth Week in Ordinary Time', 'ordinary_time'::public.liturgical_season, 34, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '27 Fri Weekday green
 Rv 20:1-4, 11—21:2/Lk 21:29-33 (507)', null),
     ('2026-11-28'::date, 6, 'Saturday', 'weekday_year_b_weekdays_i', 'Weekday YEAR B – WEEKDAYS I', 'Weekday YEAR B – WEEKDAYS I', 'ordinary_time'::public.liturgical_season, 34, null, 'weekday'::public.liturgical_rank, 'green'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '28 Sat Weekday green/white
 [BVM]
@@ -2183,17 +2183,17 @@ Is 63:16b-17, 19b; 64:2-7/1 Cor 1:3-9/Mk 13:33-37 (2) Pss I', null),
     ('2026-11-30'::date, 1, 'Monday', 'st_andrew', 'Saint Andrew, Apostle', 'Saint Andrew, Apostle', 'advent'::public.liturgical_season, 1, null, 'feast'::public.liturgical_rank, 'red'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '30 Mon Saint Andrew, Apostle red
 Feast
 Rom 10:9-18/Mt 4:18-22 (684) Pss Prop', null),
-    ('2026-12-01'::date, 2, 'Tuesday', 'advent_weekday', 'Advent Weekday', 'Advent Weekday', 'advent'::public.liturgical_season, 1, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '1 Tue Advent Weekday violet
+    ('2026-12-01'::date, 2, 'Tuesday', 'advent_weekday', 'Advent Weekday', 'Tuesday of the First Week of Advent', 'advent'::public.liturgical_season, 1, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '1 Tue Advent Weekday violet
 Is 11:1-10/Lk 10:21-24 (176)', null),
-    ('2026-12-02'::date, 3, 'Wednesday', 'advent_weekday', 'Advent Weekday', 'Advent Weekday', 'advent'::public.liturgical_season, 1, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '2 Wed Advent Weekday violet
+    ('2026-12-02'::date, 3, 'Wednesday', 'advent_weekday', 'Advent Weekday', 'Wednesday of the First Week of Advent', 'advent'::public.liturgical_season, 1, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '2 Wed Advent Weekday violet
 Is 25:6-10a/Mt 15:29-37 (177)', null),
     ('2026-12-03'::date, 4, 'Thursday', 'st_francis_xavier', 'Saint Francis Xavier, Priest', 'Saint Francis Xavier, Priest', 'advent'::public.liturgical_season, 1, null, 'memorial'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '3 Thu Saint Francis Xavier, Priest white
 Memorial
 Is 26:1-6/Mt 7:21, 24-27 (178)', null),
-    ('2026-12-04'::date, 5, 'Friday', 'advent_weekday', 'Advent Weekday', 'Advent Weekday', 'advent'::public.liturgical_season, 1, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '4 Fri Advent Weekday violet/white
+    ('2026-12-04'::date, 5, 'Friday', 'advent_weekday', 'Advent Weekday', 'Friday of the First Week of Advent', 'advent'::public.liturgical_season, 1, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '4 Fri Advent Weekday violet/white
 [Saint John Damascene, Priest and Doctor of the Church]
 Is 29:17-24/Mt 9:27-31 (179)', null),
-    ('2026-12-05'::date, 6, 'Saturday', 'advent_weekday', 'Advent Weekday', 'Advent Weekday', 'advent'::public.liturgical_season, 1, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '5 Sat Advent Weekday violet
+    ('2026-12-05'::date, 6, 'Saturday', 'advent_weekday', 'Advent Weekday', 'Saturday of the First Week of Advent', 'advent'::public.liturgical_season, 1, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '5 Sat Advent Weekday violet
 Is 30:19-21, 23-26/Mt 9:35—10:1, 5a, 6-8 (180)', null),
     ('2026-12-06'::date, 0, 'Sunday', 'second_sunday_of_advent', 'SECOND SUNDAY OF ADVENT', 'SECOND SUNDAY OF ADVENT', 'advent'::public.liturgical_season, 2, 2, 'sunday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'sunday'::public.obligation_status, '6 SUN SECOND SUNDAY OF ADVENT violet
 Is 40:1-5, 9-11/2 Pt 3:8-14/Mk 1:1-8 (5) Pss II', null),
@@ -2205,13 +2205,13 @@ BLESSED VIRGIN MARY
 (Patronal Feastday of the United States of America)
 Solemnity [Holyday of Obligation]
 Gn 3:9-15, 20/Eph 1:3-6, 11-12/Lk 1:26-38 (689) Pss Prop', null),
-    ('2026-12-09'::date, 3, 'Wednesday', 'advent_weekday', 'Advent Weekday', 'Advent Weekday', 'advent'::public.liturgical_season, 2, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '9 Wed Advent Weekday violet/white
+    ('2026-12-09'::date, 3, 'Wednesday', 'advent_weekday', 'Advent Weekday', 'Wednesday of the Second Week of Advent', 'advent'::public.liturgical_season, 2, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '9 Wed Advent Weekday violet/white
 [Saint Juan Diego Cuauhtlatoatzin]
 Is 40:25-31/Mt 11:28-30 (183)', null),
-    ('2026-12-10'::date, 4, 'Thursday', 'advent_weekday', 'Advent Weekday', 'Advent Weekday', 'advent'::public.liturgical_season, 2, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '10 Thu Advent Weekday violet/white
+    ('2026-12-10'::date, 4, 'Thursday', 'advent_weekday', 'Advent Weekday', 'Thursday of the Second Week of Advent', 'advent'::public.liturgical_season, 2, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '10 Thu Advent Weekday violet/white
 [Our Lady of Loreto]
 Is 41:13-20/Mt 11:11-15 (184)', null),
-    ('2026-12-11'::date, 5, 'Friday', 'advent_weekday', 'Advent Weekday', 'Advent Weekday', 'advent'::public.liturgical_season, 2, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '11 Fri Advent Weekday violet/white
+    ('2026-12-11'::date, 5, 'Friday', 'advent_weekday', 'Advent Weekday', 'Friday of the Second Week of Advent', 'advent'::public.liturgical_season, 2, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '11 Fri Advent Weekday violet/white
 [Saint Damasus I, Pope]
 Is 48:17-19/Mt 11:16-19 (185)', null),
     ('2026-12-12'::date, 6, 'Saturday', 'our_lady_of_guadalupe', 'Our Lady of Guadalupe', 'Our Lady of Guadalupe', 'advent'::public.liturgical_season, 2, null, 'feast'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '12 Sat USA: Our Lady of Guadalupe white
@@ -2223,27 +2223,27 @@ Is 61:1-2a, 10-11/1 Thes 5:16-24/Jn 1:6-8, 19-28 (8) Pss III', 'Rose may be used
     ('2026-12-14'::date, 1, 'Monday', 'st_john_of_the_cross', 'Saint John of the Cross, Priest and Doctor of the Church', 'Saint John of the Cross, Priest and Doctor of the Church', 'advent'::public.liturgical_season, 3, null, 'memorial'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '14 Mon Saint John of the Cross, Priest and Doctor of the Church white
 Memorial
 Nm 24:2-7, 15-17a/Mt 21:23-27 (187)', null),
-    ('2026-12-15'::date, 2, 'Tuesday', 'advent_weekday', 'Advent Weekday', 'Advent Weekday', 'advent'::public.liturgical_season, 3, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '15 Tue Advent Weekday violet
+    ('2026-12-15'::date, 2, 'Tuesday', 'advent_weekday', 'Advent Weekday', 'Tuesday of the Third Week of Advent', 'advent'::public.liturgical_season, 3, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '15 Tue Advent Weekday violet
 Zep 3:1-2, 9-13/Mt 21:28-32 (188)', null),
-    ('2026-12-16'::date, 3, 'Wednesday', 'advent_weekday', 'Advent Weekday', 'Advent Weekday', 'advent'::public.liturgical_season, 3, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '16 Wed Advent Weekday violet
+    ('2026-12-16'::date, 3, 'Wednesday', 'advent_weekday', 'Advent Weekday', 'Wednesday of the Third Week of Advent', 'advent'::public.liturgical_season, 3, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '16 Wed Advent Weekday violet
 Is 45:6c-8, 18, 21c-25/Lk 7:18b-23 (189)', null),
-    ('2026-12-17'::date, 4, 'Thursday', 'advent_weekday', 'Advent Weekday', 'Advent Weekday', 'advent'::public.liturgical_season, 3, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '17 Thu Advent Weekday violet
+    ('2026-12-17'::date, 4, 'Thursday', 'advent_weekday', 'Advent Weekday', 'Thursday of the Third Week of Advent', 'advent'::public.liturgical_season, 3, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '17 Thu Advent Weekday violet
 Gn 49:2, 8-10/Mt 1:1-17 (193)', null),
-    ('2026-12-18'::date, 5, 'Friday', 'advent_weekday', 'Advent Weekday', 'Advent Weekday', 'advent'::public.liturgical_season, 3, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '18 Fri Advent Weekday violet
+    ('2026-12-18'::date, 5, 'Friday', 'advent_weekday', 'Advent Weekday', 'Friday of the Third Week of Advent', 'advent'::public.liturgical_season, 3, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '18 Fri Advent Weekday violet
 Jer 23:5-8/Mt 1:18-25 (194)', null),
-    ('2026-12-19'::date, 6, 'Saturday', 'advent_weekday', 'Advent Weekday', 'Advent Weekday', 'advent'::public.liturgical_season, 3, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '19 Sat Advent Weekday violet
+    ('2026-12-19'::date, 6, 'Saturday', 'advent_weekday', 'Advent Weekday', 'Saturday of the Third Week of Advent', 'advent'::public.liturgical_season, 3, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '19 Sat Advent Weekday violet
 Jgs 13:2-7, 24-25a/Lk 1:5-25 (195)', null),
     ('2026-12-20'::date, 0, 'Sunday', 'fourth_sunday_of_advent', 'FOURTH SUNDAY OF ADVENT', 'FOURTH SUNDAY OF ADVENT', 'advent'::public.liturgical_season, 4, 4, 'sunday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'sunday'::public.obligation_status, '20 SUN FOURTH SUNDAY OF ADVENT violet
 2 Sm 7:1-5, 8b-12, 14a, 16/Rom 16:25-27/Lk 1:26-38 (11) Pss IV', null),
-    ('2026-12-21'::date, 1, 'Monday', 'advent_weekday', 'Advent Weekday', 'Advent Weekday', 'advent'::public.liturgical_season, 4, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '21 Mon Advent Weekday violet
+    ('2026-12-21'::date, 1, 'Monday', 'advent_weekday', 'Advent Weekday', 'Monday of the Fourth Week of Advent', 'advent'::public.liturgical_season, 4, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '21 Mon Advent Weekday violet
 [Saint Peter Canisius, Priest and Doctor of the Church]
 Sg 2:8-14 or Zep 3:14-18a/Lk 1:39-45 (197)', null),
-    ('2026-12-22'::date, 2, 'Tuesday', 'advent_weekday', 'Advent Weekday', 'Advent Weekday', 'advent'::public.liturgical_season, 4, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '22 Tue Advent Weekday violet
+    ('2026-12-22'::date, 2, 'Tuesday', 'advent_weekday', 'Advent Weekday', 'Tuesday of the Fourth Week of Advent', 'advent'::public.liturgical_season, 4, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '22 Tue Advent Weekday violet
 1 Sm 1:24-28/Lk 1:46-56 (198)', null),
-    ('2026-12-23'::date, 3, 'Wednesday', 'advent_weekday', 'Advent Weekday', 'Advent Weekday', 'advent'::public.liturgical_season, 4, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '23 Wed Advent Weekday violet
+    ('2026-12-23'::date, 3, 'Wednesday', 'advent_weekday', 'Advent Weekday', 'Wednesday of the Fourth Week of Advent', 'advent'::public.liturgical_season, 4, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '23 Wed Advent Weekday violet
 [Saint John of Kanty, Priest]
 Mal 3:1-4, 23-24/Lk 1:57-66 (199)', null),
-    ('2026-12-24'::date, 4, 'Thursday', 'advent_weekday', 'Advent Weekday', 'Advent Weekday', 'advent'::public.liturgical_season, 4, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '24 Thu Advent Weekday violet', null),
+    ('2026-12-24'::date, 4, 'Thursday', 'advent_weekday', 'Advent Weekday', 'Thursday of the Fourth Week of Advent', 'advent'::public.liturgical_season, 4, null, 'weekday'::public.liturgical_rank, 'violet'::public.liturgical_color, 'US'::public.country_scope, 'none'::public.obligation_status, '24 Thu Advent Weekday violet', null),
     ('2026-12-25'::date, 5, 'Friday', 'nativity_of_the_lord', 'THE NATIVITY OF THE LORD (Christmas)', 'THE NATIVITY OF THE LORD (Christmas)', 'christmas'::public.liturgical_season, null, null, 'solemnity'::public.liturgical_rank, 'white'::public.liturgical_color, 'US'::public.country_scope, 'holy_day'::public.obligation_status, '25 Fri THE NATIVITY OF THE LORD (Christmas) white
 Solemnity [Holyday of Obligation]
 Vigil: Is 62:1-5/Acts 13:16-17, 22-25/Mt 1:1-25 or 1:18-25 (13)

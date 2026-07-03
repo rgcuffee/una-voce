@@ -6,6 +6,7 @@ import {
   type ViewKey,
   viewForPath,
 } from '../navigation';
+import { getLiturgicalDayWithHours } from '../lib/liturgicalCalendar';
 import { AboutPage } from '../pages/AboutPage';
 import { CommunityPage } from '../pages/CommunityPage';
 import { DiscoverPage } from '../pages/DiscoverPage';
@@ -1326,8 +1327,9 @@ const OPTION_IMAGES: Record<'audio' | 'video' | 'live', string[]> = {
 
 const NAV_ITEMS = PRIMARY_NAV;
 
-const DATE_LABEL = 'Monday, June 22 · Twelfth Week in Ordinary Time';
+const FALLBACK_DATE_LABEL = 'Monday, June 22 · Twelfth Week in Ordinary Time';
 const MOCK_YOUTUBE_VIDEO_ID = 'M7lc1UVf-VE';
+const DEFAULT_CALENDAR_ID = 'us';
 
 function titleCase(format: FormatKey) {
   const labels: Record<FormatKey, string> = {
@@ -1343,6 +1345,40 @@ function titleCase(format: FormatKey) {
 function optionImageFor(format: 'audio' | 'video' | 'live', index: number) {
   const images = OPTION_IMAGES[format];
   return images[index % images.length];
+}
+
+function localDateString(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+}
+
+function selectedDateFromSearch(search: string) {
+  const date = new URLSearchParams(search).get('date');
+
+  return date && /^\d{4}-\d{2}-\d{2}$/.test(date)
+    ? date
+    : localDateString();
+}
+
+function formatCivilDate(date: string) {
+  return new Intl.DateTimeFormat('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+  }).format(new Date(`${date}T12:00:00`));
+}
+
+function formatLiturgicalDateLabel(
+  day: Awaited<ReturnType<typeof getLiturgicalDayWithHours>>,
+) {
+  if (!day) {
+    return FALLBACK_DATE_LABEL;
+  }
+
+  return `${formatCivilDate(day.date)} · ${day.display_title}`;
 }
 
 function sourceNameFromTitle(title: string) {
@@ -1443,6 +1479,7 @@ function renderPage(view: ViewKey, onNavigate: (view: ViewKey) => void) {
 export function PrayerOfficeMockup() {
   const location = useLocation();
   const routerNavigate = useNavigate();
+  const selectedDate = selectedDateFromSearch(location.search);
   const isDesktopRef = useRef<boolean>(false);
   const [isDesktopLayout, setIsDesktopLayout] = useState(() => {
     if (typeof window === 'undefined') {
@@ -1480,6 +1517,7 @@ export function PrayerOfficeMockup() {
   });
   const [prayerPlayerSession, setPrayerPlayerSession] =
     useState<PrayerPlayerSession | null>(null);
+  const [dateLabel, setDateLabel] = useState(FALLBACK_DATE_LABEL);
 
   const navigateTo = (view: ViewKey) => {
     const targetPath = pathForView(view);
@@ -1551,6 +1589,29 @@ export function PrayerOfficeMockup() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  useEffect(() => {
+    let isActive = true;
+
+    getLiturgicalDayWithHours(DEFAULT_CALENDAR_ID, selectedDate)
+      .then((day) => {
+        if (!isActive || !day) {
+          return;
+        }
+
+        setDateLabel(formatLiturgicalDateLabel(day));
+      })
+      .catch((error) => {
+        console.warn('Unable to load liturgical calendar date.', error);
+        if (isActive) {
+          setDateLabel(FALLBACK_DATE_LABEL);
+        }
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [selectedDate]);
+
   const setFormat = (segmentId: string, format: FormatKey) => {
     setSelectedFormats((current) => ({ ...current, [segmentId]: format }));
   };
@@ -1619,7 +1680,7 @@ export function PrayerOfficeMockup() {
           </nav>
           <div className='header-icon'>☩</div>
         </div>
-        <div className='date-line'>{DATE_LABEL}</div>
+        <div className='date-line'>{dateLabel}</div>
       </header>
 
       {activeView === 'today' ? (

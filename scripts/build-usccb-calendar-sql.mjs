@@ -65,6 +65,43 @@ const PSALTER_WEEKS = new Map([
   ['III', 3],
   ['IV', 4],
 ]);
+const ORDINAL_WORDS = [
+  null,
+  'First',
+  'Second',
+  'Third',
+  'Fourth',
+  'Fifth',
+  'Sixth',
+  'Seventh',
+  'Eighth',
+  'Ninth',
+  'Tenth',
+  'Eleventh',
+  'Twelfth',
+  'Thirteenth',
+  'Fourteenth',
+  'Fifteenth',
+  'Sixteenth',
+  'Seventeenth',
+  'Eighteenth',
+  'Nineteenth',
+  'Twentieth',
+  'Twenty-First',
+  'Twenty-Second',
+  'Twenty-Third',
+  'Twenty-Fourth',
+  'Twenty-Fifth',
+  'Twenty-Sixth',
+  'Twenty-Seventh',
+  'Twenty-Eighth',
+  'Twenty-Ninth',
+  'Thirtieth',
+  'Thirty-First',
+  'Thirty-Second',
+  'Thirty-Third',
+  'Thirty-Fourth',
+];
 
 async function downloadFile(url, destination) {
   mkdirSync(dirname(destination), { recursive: true });
@@ -525,6 +562,35 @@ function psalterWeek(psalterNote) {
   return match ? PSALTER_WEEKS.get(match[1]) : null;
 }
 
+function weekdaySeasonPhrase(season) {
+  const names = {
+    advent: 'of Advent',
+    christmas: 'of Christmas',
+    ordinary_time: 'in Ordinary Time',
+    lent: 'of Lent',
+    triduum: 'of the Sacred Paschal Triduum',
+    easter: 'of Easter',
+  };
+
+  return names[season] ?? season;
+}
+
+function weekdayDisplayTitle(day) {
+  if (day.principal.rank !== 'weekday') {
+    return day.principal.display_title;
+  }
+
+  if (!['Weekday', 'Advent Weekday', 'Lenten Weekday', 'Christmas Weekday', 'Easter Weekday'].includes(day.principal.title)) {
+    return day.principal.display_title;
+  }
+
+  if (!day.season_week || !ORDINAL_WORDS[day.season_week]) {
+    return day.principal.display_title;
+  }
+
+  return `${day.weekday_name} of the ${ORDINAL_WORDS[day.season_week]} Week ${weekdaySeasonPhrase(day.season)}`;
+}
+
 function normalizeBlock(block, parserWarnings = []) {
   const header = parseHeaderParts(block.raw_lines[0]);
   const rawSourceText = block.raw_lines.join('\n');
@@ -644,6 +710,7 @@ function normalizeBlock(block, parserWarnings = []) {
   };
 
   normalized.season_week = seasonWeek(normalized);
+  normalized.principal.display_title = weekdayDisplayTitle(normalized);
   return normalized;
 }
 
