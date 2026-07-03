@@ -52,6 +52,46 @@ export default defineConfig({
                         }
                     },
                 )
+                server.middlewares.use(
+                    '/.netlify/functions/worth-abbey-videos',
+                    async (request, response) => {
+                        try {
+                            const requestPath =
+                                (request as { url?: string }).url ?? ''
+                            const date =
+                                requestPath.match(/[?&]date=([^&]+)/)?.[1]
+                            const functionModulePath = `file://${process.cwd()}/netlify/functions/lib/worth-abbey-videos.mjs`
+                            const { worthAbbeyVideosResponse } = await import(
+                                functionModulePath
+                            )
+                            const body = await worthAbbeyVideosResponse(
+                                date ? decodeURIComponent(date) : null,
+                            )
+
+                            response.statusCode = 200
+                            response.setHeader(
+                                'content-type',
+                                'application/json',
+                            )
+                            response.end(JSON.stringify(body))
+                        } catch (error) {
+                            response.statusCode = 502
+                            response.setHeader(
+                                'content-type',
+                                'application/json',
+                            )
+                            response.end(
+                                JSON.stringify({
+                                    ok: false,
+                                    error:
+                                        error instanceof Error
+                                            ? error.message
+                                            : 'Unable to load Worth Abbey videos',
+                                }),
+                            )
+                        }
+                    },
+                )
             },
         },
         VitePWA({

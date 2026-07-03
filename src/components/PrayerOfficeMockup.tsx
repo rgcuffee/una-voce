@@ -53,6 +53,9 @@ type OptionItem = {
   imageUrl?: string;
   videoId?: string;
   sourceUrl?: string;
+  liveStartAt?: string | null;
+  liveEndAt?: string | null;
+  isLiveNow?: boolean;
 };
 
 type CathoholicVideo = {
@@ -68,6 +71,31 @@ type CathoholicVideo = {
   embedUrl: string;
   publishedAt: string;
   scheduledStartAt: string | null;
+};
+
+type WorthAbbeyPrayerType =
+  | 'office_of_readings'
+  | 'lauds'
+  | 'midday_prayer'
+  | 'vespers'
+  | 'compline';
+
+type WorthAbbeyVideo = {
+  partnerName: string;
+  prayerType: WorthAbbeyPrayerType | null;
+  prayerDate: string | null;
+  title: string;
+  displayTitle: string;
+  description: string | null;
+  youtubeVideoId: string;
+  thumbnailUrl: string;
+  canonicalUrl: string;
+  embedUrl: string;
+  publishedAt: string;
+  scheduledStartAt: string | null;
+  liveStartAt: string | null;
+  liveEndAt: string | null;
+  isLiveNow: boolean;
 };
 
 type Segment = {
@@ -282,18 +310,6 @@ const SEGMENTS: Segment[] = [
             description:
               'Interactive live session with opening hymn and guided pace.',
             time: '6:30 AM',
-          },
-        ],
-      },
-      {
-        title: 'Previous Streams',
-        items: [
-          {
-            meta: 'Archived Live',
-            title: 'Benedictine Sisters - Lauds Replay',
-            description:
-              'Replay of full live stream with psalm responses and intercessions.',
-            time: 'Earlier today, 6:00 AM',
           },
         ],
       },
@@ -906,17 +922,6 @@ const SEGMENTS: Segment[] = [
           },
         ],
       },
-      {
-        title: 'Previous Streams',
-        items: [
-          {
-            meta: 'Archived Live',
-            title: 'Clear Creek Monastery - Vespers Replay',
-            description: 'Replay archive of the full evening stream liturgy.',
-            time: 'Earlier today, 6:00 PM',
-          },
-        ],
-      },
     ],
   },
   {
@@ -1237,18 +1242,6 @@ const SEGMENTS: Segment[] = [
           },
         ],
       },
-      {
-        title: 'Previous Streams',
-        items: [
-          {
-            meta: 'Archived Live',
-            title: 'Clear Creek Monastery - Readings Replay',
-            description:
-              'Replay archive of the complete Office of Readings livestream.',
-            time: 'Earlier today, 5:30 AM',
-          },
-        ],
-      },
     ],
   },
 ];
@@ -1448,6 +1441,187 @@ function videoOptionsForSegment(segment: Segment, videos: CathoholicVideo[]) {
   return cathoholicVideo ? [cathoholicVideo, ...segment.video] : segment.video;
 }
 
+const WORTH_ABBEY_PRAYER_META: Record<
+  WorthAbbeyPrayerType,
+  {
+    segmentId: string;
+    label: string;
+    description: string;
+  }
+> = {
+  office_of_readings: {
+    segmentId: 'segment-office',
+    label: 'Office of Readings',
+    description: 'Join Worth Abbey for the day’s monastic office of readings.',
+  },
+  lauds: {
+    segmentId: 'segment-morning',
+    label: 'Lauds',
+    description:
+      'Join Worth Abbey for morning prayer from the monastery church.',
+  },
+  midday_prayer: {
+    segmentId: 'segment-midday',
+    label: 'Sext',
+    description: 'Join Worth Abbey for midday prayer at the sixth hour.',
+  },
+  vespers: {
+    segmentId: 'segment-evening',
+    label: 'Vespers',
+    description: 'Join Worth Abbey for evening prayer with the community.',
+  },
+  compline: {
+    segmentId: 'segment-night',
+    label: 'Compline',
+    description: 'Join Worth Abbey for night prayer at the close of the day.',
+  },
+};
+
+const WORTH_ABBEY_PREVIOUS_STREAM_BUFFER_MINUTES = 45;
+
+function worthAbbeyLiveOptionsForSegment(
+  segment: Segment,
+  videos: WorthAbbeyVideo[],
+) {
+  const worthAbbeyItems = videos
+    .filter((video) => {
+      if (!video.prayerType) {
+        return false;
+      }
+
+      return WORTH_ABBEY_PRAYER_META[video.prayerType].segmentId === segment.id;
+    })
+    .map((video): OptionItem => {
+      const meta =
+        WORTH_ABBEY_PRAYER_META[video.prayerType as WorthAbbeyPrayerType];
+
+      return {
+        meta: `Worth Abbey (UK) · ${meta.label}`,
+        title: video.displayTitle,
+        description: meta.description,
+        time: formatWorthAbbeyLiveTime(video),
+        source: 'partner',
+        imageUrl: video.thumbnailUrl,
+        videoId: video.youtubeVideoId,
+        sourceUrl: video.canonicalUrl,
+        liveStartAt: video.liveStartAt,
+        liveEndAt: video.liveEndAt,
+        isLiveNow: video.isLiveNow,
+      };
+    });
+
+  if (worthAbbeyItems.length === 0) {
+    return segment.live;
+  }
+
+  const upcomingWorthAbbeyItems = worthAbbeyItems.filter((item) =>
+    isWorthAbbeyUpcomingOrCurrent(item),
+  );
+  const previousWorthAbbeyItems = worthAbbeyItems.filter(
+    (item) => !isWorthAbbeyUpcomingOrCurrent(item),
+  );
+  const groups = [...segment.live];
+
+  if (upcomingWorthAbbeyItems.length > 0) {
+    groups.unshift({
+      title: 'Worth Abbey',
+      items: upcomingWorthAbbeyItems,
+    });
+  }
+
+  if (previousWorthAbbeyItems.length > 0) {
+    const previousGroupIndex = groups.findIndex(
+      (group) => group.title === 'Previous Streams',
+    );
+
+    if (previousGroupIndex >= 0) {
+      groups[previousGroupIndex] = {
+        ...groups[previousGroupIndex],
+        items: [
+          ...previousWorthAbbeyItems,
+          ...groups[previousGroupIndex].items,
+        ],
+      };
+    } else {
+      groups.push({
+        title: 'Previous Streams',
+        items: previousWorthAbbeyItems,
+      });
+    }
+  }
+
+  return groups;
+}
+
+function isWorthAbbeyUpcomingOrCurrent(item: OptionItem) {
+  const liveStartAt = item.liveStartAt ? Date.parse(item.liveStartAt) : NaN;
+
+  if (Number.isNaN(liveStartAt)) {
+    return true;
+  }
+
+  const previousThreshold =
+    liveStartAt + WORTH_ABBEY_PREVIOUS_STREAM_BUFFER_MINUTES * 60 * 1000;
+
+  return Date.now() < previousThreshold;
+}
+
+function formatWorthAbbeyLiveTime(video: WorthAbbeyVideo) {
+  if (!video.liveStartAt) {
+    return undefined;
+  }
+
+  const time = Date.parse(video.liveStartAt);
+
+  if (Number.isNaN(time)) {
+    return undefined;
+  }
+
+  const localTime = new Intl.DateTimeFormat(undefined, {
+    hour: 'numeric',
+    minute: '2-digit',
+  }).format(new Date(time));
+  const previousThreshold =
+    time + WORTH_ABBEY_PREVIOUS_STREAM_BUFFER_MINUTES * 60 * 1000;
+
+  return Date.now() >= previousThreshold
+    ? `${relativeLocalDateLabel(new Date(time), true)}, ${localTime}`
+    : `${relativeLocalDateLabel(new Date(time), false)}${localTime}`;
+}
+
+function relativeLocalDateLabel(date: Date, isPrevious: boolean) {
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
+
+  if (localDateKey(date) === localDateKey(today)) {
+    return isPrevious ? 'Earlier today' : '';
+  }
+
+  if (localDateKey(date) === localDateKey(yesterday)) {
+    return 'Yesterday';
+  }
+
+  if (localDateKey(date) === localDateKey(tomorrow)) {
+    return 'Tomorrow, ';
+  }
+
+  return `${new Intl.DateTimeFormat(undefined, {
+    month: 'short',
+    day: 'numeric',
+  }).format(date)}, `;
+}
+
+function localDateKey(date: Date) {
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, '0'),
+    String(date.getDate()).padStart(2, '0'),
+  ].join('-');
+}
+
 function analyticsSlug(value: string) {
   return value
     .toLowerCase()
@@ -1486,17 +1660,23 @@ function createPrayerPlayerSession({
         ? item.title.replace(`${sourceName} - `, '')
         : segment.title,
     statusLabel:
-      sourceType === 'live'
-        ? item.time
-          ? `Live at ${item.time}`
-          : 'Live now'
-        : 'Recorded prayer',
+      sourceType === 'live' ? liveStatusLabel(item) : 'Recorded prayer',
     devotionalLine: 'You are joining the Church at prayer.',
     pageContext,
     sourceUrl:
       item.sourceUrl ??
       `https://www.youtube.com/watch?v=${item.videoId ?? MOCK_YOUTUBE_VIDEO_ID}`,
   };
+}
+
+function liveStatusLabel(item: OptionItem) {
+  if (!item.time) {
+    return 'Live now';
+  }
+
+  return item.time.startsWith('Earlier today')
+    ? item.time
+    : `Live at ${item.time}`;
 }
 
 function blockClassName(variant: LiturgyBlock['variant']) {
@@ -1584,6 +1764,9 @@ export function PrayerOfficeMockup() {
     useState<PrayerPlayerSession | null>(null);
   const [dateLabel, setDateLabel] = useState(FALLBACK_DATE_LABEL);
   const [cathoholicVideos, setCathoholicVideos] = useState<CathoholicVideo[]>(
+    [],
+  );
+  const [worthAbbeyVideos, setWorthAbbeyVideos] = useState<WorthAbbeyVideo[]>(
     [],
   );
 
@@ -1709,6 +1892,39 @@ export function PrayerOfficeMockup() {
     }
 
     void loadCathoholicVideos();
+
+    return () => controller.abort();
+  }, [selectedDate]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadWorthAbbeyVideos() {
+      try {
+        const response = await fetch(
+          `/.netlify/functions/worth-abbey-videos?date=${encodeURIComponent(selectedDate)}`,
+          { signal: controller.signal },
+        );
+
+        if (!response.ok) {
+          throw new Error(`Worth Abbey videos returned ${response.status}`);
+        }
+
+        const body = (await response.json()) as {
+          videos?: WorthAbbeyVideo[];
+        };
+        setWorthAbbeyVideos(body.videos ?? []);
+      } catch (error) {
+        if (controller.signal.aborted) {
+          return;
+        }
+
+        console.warn('Unable to load Worth Abbey videos.', error);
+        setWorthAbbeyVideos([]);
+      }
+    }
+
+    void loadWorthAbbeyVideos();
 
     return () => controller.abort();
   }, [selectedDate]);
@@ -1865,6 +2081,10 @@ export function PrayerOfficeMockup() {
               const videoOptions = videoOptionsForSegment(
                 segment,
                 cathoholicVideos,
+              );
+              const liveGroups = worthAbbeyLiveOptionsForSegment(
+                segment,
+                worthAbbeyVideos,
               );
 
               return (
@@ -2023,7 +2243,7 @@ export function PrayerOfficeMockup() {
                       className={`format-output${selectedFormat === 'live' ? '' : ' hidden'}`}
                     >
                       <h4>Live</h4>
-                      {segment.live.map((group, groupIndex) => (
+                      {liveGroups.map((group, groupIndex) => (
                         <div key={group.title} className="stream-group">
                           <div className="stream-group-title">
                             {group.title}
@@ -2035,7 +2255,7 @@ export function PrayerOfficeMockup() {
                                 type="button"
                                 className="format-option format-option-media"
                                 style={{
-                                  backgroundImage: `linear-gradient(165deg, rgba(16, 13, 12, 0.26), rgba(16, 13, 12, 0.82)), url(${optionImageFor('live', groupIndex * 8 + itemIndex)})`,
+                                  backgroundImage: `linear-gradient(165deg, rgba(16, 13, 12, 0.26), rgba(16, 13, 12, 0.82)), url(${item.imageUrl ?? optionImageFor('live', groupIndex * 8 + itemIndex)})`,
                                 }}
                                 onClick={() =>
                                   openPrayerPlayer(
@@ -2049,6 +2269,9 @@ export function PrayerOfficeMockup() {
                                 }
                               >
                                 <div className="option-meta">{item.meta}</div>
+                                {item.source === 'partner' ? (
+                                  <div className="option-source">Partner</div>
+                                ) : null}
                                 <div className="option-title">{item.title}</div>
                                 <p className="option-desc">
                                   {item.description}
