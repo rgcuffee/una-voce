@@ -1290,21 +1290,23 @@ const SIDEBAR_ITEMS: SidebarEntry[] = [
   {
     title: 'Daytime Prayer',
     children: [
-      {
-        title: 'Midmorning',
-        subtitle: 'Terce',
-        segmentId: 'segment-midmorning',
-      },
+      // Temporarily hidden from the prayer navigation.
+      // {
+      //   title: 'Midmorning',
+      //   subtitle: 'Terce',
+      //   segmentId: 'segment-midmorning',
+      // },
       {
         title: 'Midday',
         subtitle: 'Sext',
         segmentId: 'segment-midday',
       },
-      {
-        title: 'Midafternoon',
-        subtitle: 'None',
-        segmentId: 'segment-midafternoon',
-      },
+      // Temporarily hidden from the prayer navigation.
+      // {
+      //   title: 'Midafternoon',
+      //   subtitle: 'None',
+      //   segmentId: 'segment-midafternoon',
+      // },
     ],
   },
   {
@@ -1715,9 +1717,17 @@ function liveStatusLabel(item: OptionItem) {
     return 'Live now';
   }
 
-  return item.time.startsWith('Earlier today')
+  return isPastStreamLabel(item.time)
     ? item.time
     : `Live at ${item.time}`;
+}
+
+function isPastStreamLabel(label: string) {
+  return (
+    label.startsWith('Earlier today') ||
+    label.startsWith('Yesterday') ||
+    /^[A-Z][a-z]{2} \d{1,2}, /.test(label)
+  );
 }
 
 const MOCK_COMMUNITY_PRAYER_MATCHES: Record<
@@ -1870,25 +1880,27 @@ function createCommunityPrayerCards({
       worthAbbeyLiveOptionsForSegment(segment, worthAbbeyVideos)
         .flatMap((group) => group.items)
         .filter((item) => item.communitySlug === 'worth-abbey')
-        .map((item) => ({
-          id: `${slug}-${segment.id}-${item.videoId ?? item.title}`,
-          label: item.meta,
-          title: cardTitleFor(item, segment),
-          description: item.description,
-          time: liveStatusLabel(item),
-          actionLabel: item.time?.startsWith('Earlier today')
-            ? 'Play replay'
-            : 'Join prayer',
-          onSelect: () =>
-            onOpenPrayerPlayer(
-              createPrayerPlayerSession({
-                item,
-                segment,
-                sourceType: 'live',
-                pageContext: 'community_profile_today',
-              }),
-            ),
-        })),
+        .map((item) => {
+          const isUpcomingOrCurrent = isWorthAbbeyUpcomingOrCurrent(item);
+
+          return {
+            id: `${slug}-${segment.id}-${item.videoId ?? item.title}`,
+            label: item.meta,
+            title: cardTitleFor(item, segment),
+            description: item.description,
+            time: liveStatusLabel(item),
+            actionLabel: isUpcomingOrCurrent ? 'Join prayer' : 'Play replay',
+            onSelect: () =>
+              onOpenPrayerPlayer(
+                createPrayerPlayerSession({
+                  item,
+                  segment,
+                  sourceType: 'live',
+                  pageContext: 'community_profile_today',
+                }),
+              ),
+          };
+        }),
     ).slice(0, 5);
   }
 
@@ -1912,13 +1924,19 @@ function createCommunityPrayerCards({
         ...item,
         communitySlug: slug as PartnerCommunitySlug,
       };
+      const isLiveCardUpcomingOrCurrent =
+        match.sourceType !== 'live' || isWorthAbbeyUpcomingOrCurrent(item);
       const card: CommunityPrayerCard = {
         id: `${slug}-${segment.id}-${match.titleIncludes}`,
         label: item.meta,
         title: cardTitleFor(item, segment),
         description: item.description,
         actionLabel:
-          match.sourceType === 'live' ? 'Join prayer' : 'Begin prayer',
+          match.sourceType !== 'live'
+            ? 'Begin prayer'
+            : isLiveCardUpcomingOrCurrent
+              ? 'Join prayer'
+              : 'Play replay',
         onSelect: () =>
           onOpenPrayerPlayer(
             createPrayerPlayerSession({

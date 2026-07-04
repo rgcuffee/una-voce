@@ -188,13 +188,6 @@ function CommunityDetail({
                 <b>{item.actionLabel}</b>
               </button>
             ))}
-            {community.featured.slice(0, 1).map((item) => (
-              <article key={item.title} className='community-feature-card'>
-                <span>{item.label}</span>
-                <strong>{item.title}</strong>
-                <p>{item.description}</p>
-              </article>
-            ))}
           </div>
         ) : (
           <div>
