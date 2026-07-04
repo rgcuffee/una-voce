@@ -183,7 +183,10 @@ function MediaGrid({
             <div className='option-title'>{item.title}</div>
             <p className='option-desc'>{item.description}</p>
             {item.communitySlug ? (
-              <span className='option-prayer-action'>View Community</span>
+              <div className='option-card-footer'>
+                <span />
+                <span className='option-prayer-action'>View Community</span>
+              </div>
             ) : null}
           </MediaCardShell>
         );
@@ -217,10 +220,14 @@ function StreamGrid({
             {badgeStatus ? <PartnerBadge status={badgeStatus} /> : null}
             <div className='option-title'>{item.title}</div>
             <p className='option-desc'>{item.description}</p>
-            <div className='stream-time'>{item.time}</div>
-            {item.communitySlug ? (
-              <span className='option-prayer-action'>View Community</span>
-            ) : null}
+            <div className='option-card-footer'>
+              <span className='stream-time'>{item.time}</span>
+              {item.communitySlug ? (
+                <span className='option-prayer-action'>View Community</span>
+              ) : (
+                <span />
+              )}
+            </div>
           </MediaCardShell>
         );
       })}

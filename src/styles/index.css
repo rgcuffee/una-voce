@@ -615,6 +615,7 @@ body {
 .format-option-media .option-source,
 .format-option-media .option-title,
 .format-option-media .option-desc,
+.format-option-media .option-card-footer,
 .format-option-media .stream-time {
     max-width: 100%;
     min-width: 0;
@@ -784,6 +785,19 @@ body {
     -webkit-line-clamp: 2;
 }
 
+.option-card-footer {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+    margin-top: 12px;
+}
+
+.option-card-footer > .option-prayer-action:only-child {
+    margin-left: auto;
+}
+
 .stream-group {
     margin-top: 10px;
 }
@@ -801,7 +815,9 @@ body {
     color: var(--gold);
     font-size: 11px;
     font-weight: 600;
-    margin-top: 6px;
+    line-height: 1.15;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .option-prayer-action {
@@ -809,9 +825,10 @@ body {
     z-index: 1;
     display: inline-flex;
     align-items: center;
-    align-self: flex-start;
+    justify-content: center;
+    align-self: flex-end;
+    flex-shrink: 0;
     max-width: 100%;
-    margin-top: 12px;
     padding: 7px 11px;
     border: 1px solid rgba(255, 255, 255, 0.34);
     border-radius: 999px;
@@ -823,6 +840,88 @@ body {
     text-transform: uppercase;
     backdrop-filter: blur(8px);
     white-space: nowrap;
+}
+
+@media (max-width: 699px) {
+    .format-output {
+        padding: 12px;
+    }
+
+    .format-options {
+        gap: 10px;
+    }
+
+    .format-option-media {
+        aspect-ratio: auto;
+        min-height: 168px;
+        padding: 13px;
+    }
+
+    .format-option-media .partner-badge {
+        top: 10px;
+        right: 10px;
+        max-width: calc(100% - 20px);
+    }
+
+    .format-option-media:has(.partner-badge) .option-meta {
+        max-width: calc(100% - 118px);
+    }
+
+    .format-option-media .option-title {
+        font-size: 15px;
+        -webkit-line-clamp: 2;
+    }
+
+    .format-option-media .option-desc {
+        -webkit-line-clamp: 2;
+    }
+
+    .option-card-footer {
+        gap: 8px;
+        margin-top: 10px;
+    }
+
+    .stream-time {
+        flex: 1 1 auto;
+        overflow-wrap: anywhere;
+    }
+
+    .option-prayer-action {
+        padding: 7px 10px;
+        font-size: 10px;
+        letter-spacing: 0.06em;
+    }
+}
+
+@media (max-width: 379px) {
+    .format-output {
+        padding: 10px;
+    }
+
+    .format-option-media {
+        min-height: 186px;
+        padding: 12px;
+    }
+
+    .format-option-media:has(.partner-badge) .option-meta {
+        max-width: 100%;
+        padding-right: 96px;
+        white-space: normal;
+    }
+
+    .option-card-footer {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+
+    .option-card-footer .stream-time {
+        flex-basis: 100%;
+        text-align: left;
+    }
+
+    .option-card-footer > .option-prayer-action {
+        margin-left: auto;
+    }
 }
 
 .hidden {
@@ -2734,6 +2833,8 @@ body {
 }
 
 .community-prayer-card {
+    display: flex;
+    flex-direction: column;
     cursor: pointer;
     color: inherit;
     font: inherit;
@@ -2765,18 +2866,30 @@ body {
     line-height: 1.45;
 }
 
+.community-prayer-footer {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+    margin-top: auto;
+    padding-top: 12px;
+}
+
 .community-prayer-time {
-    display: block;
-    margin-top: 9px;
+    display: inline-flex;
+    min-width: 0;
     color: var(--gold);
     font-size: 12px;
     font-style: normal;
     font-weight: 700;
+    line-height: 1.15;
 }
 
 .community-prayer-card b {
     display: inline-flex;
-    margin-top: 12px;
+    flex-shrink: 0;
+    justify-content: center;
     border: 1px solid rgba(184, 151, 58, 0.24);
     border-radius: 999px;
     background: rgba(245, 237, 214, 0.55);
@@ -2832,6 +2945,32 @@ body {
 
     .community-profile-title {
         font-size: 38px;
+    }
+
+    .community-prayer-card {
+        min-height: 0;
+    }
+
+    .community-prayer-card b {
+        padding: 8px 10px;
+        font-size: 10px;
+        letter-spacing: 0.06em;
+    }
+}
+
+@media (max-width: 379px) {
+    .community-feature-card {
+        padding: 14px;
+    }
+
+    .community-prayer-footer {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 8px;
+    }
+
+    .community-prayer-time {
+        flex-basis: 100%;
     }
 }
 

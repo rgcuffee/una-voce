@@ -210,10 +210,14 @@ function CommunityDetail({
                 <span>{item.label}</span>
                 <strong>{item.title}</strong>
                 <p>{item.description}</p>
-                {item.time ? (
-                  <em className='community-prayer-time'>{item.time}</em>
-                ) : null}
-                <b>{item.actionLabel}</b>
+                <div className='community-prayer-footer'>
+                  {item.time ? (
+                    <em className='community-prayer-time'>{item.time}</em>
+                  ) : (
+                    <span />
+                  )}
+                  <b>{item.actionLabel}</b>
+                </div>
               </button>
             ))}
           </div>

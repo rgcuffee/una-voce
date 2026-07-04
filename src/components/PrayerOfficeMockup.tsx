@@ -1273,9 +1273,7 @@ const SEGMENT_SUBTITLES: Record<string, string> = {
 const MOBILE_SEGMENT_ORDER = [
   'segment-office',
   'segment-morning',
-  'segment-midmorning',
   'segment-midday',
-  'segment-midafternoon',
   'segment-evening',
   'segment-night',
 ];
@@ -1294,23 +1292,11 @@ const SIDEBAR_ITEMS: SidebarEntry[] = [
   {
     title: 'Daytime Prayer',
     children: [
-      // Temporarily hidden from the prayer navigation.
-      // {
-      //   title: 'Midmorning',
-      //   subtitle: 'Terce',
-      //   segmentId: 'segment-midmorning',
-      // },
       {
         title: 'Midday',
         subtitle: 'Sext',
         segmentId: 'segment-midday',
       },
-      // Temporarily hidden from the prayer navigation.
-      // {
-      //   title: 'Midafternoon',
-      //   subtitle: 'None',
-      //   segmentId: 'segment-midafternoon',
-      // },
     ],
   },
   {
@@ -2850,9 +2836,11 @@ export function PrayerOfficeMockup() {
                             />
                             <div className="option-title">{item.title}</div>
                             <p className="option-desc">{item.description}</p>
-                            <span className="option-prayer-action">
-                              Begin Prayer
-                            </span>
+                            <div className="option-card-footer">
+                              <span className="option-prayer-action">
+                                Begin Prayer
+                              </span>
+                            </div>
                           </button>
                         ))}
                       </div>
@@ -2897,14 +2885,20 @@ export function PrayerOfficeMockup() {
                                 <p className="option-desc">
                                   {item.description}
                                 </p>
-                                {item.time ? (
-                                  <div className="stream-time">{item.time}</div>
-                                ) : null}
-                                <span className="option-prayer-action">
-                                  {group.title === 'Upcoming'
-                                    ? 'Join Live'
-                                    : 'Pray Now'}
-                                </span>
+                                <div className="option-card-footer">
+                                  {item.time ? (
+                                    <span className="stream-time">
+                                      {item.time}
+                                    </span>
+                                  ) : (
+                                    <span />
+                                  )}
+                                  <span className="option-prayer-action">
+                                    {group.title === 'Upcoming'
+                                      ? 'Join Live'
+                                      : 'Pray Now'}
+                                  </span>
+                                </div>
                               </button>
                             ))}
                           </div>
