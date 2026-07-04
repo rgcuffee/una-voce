@@ -17,6 +17,8 @@ export interface PrayerPlayerSession {
   title: string;
   statusLabel?: string;
   devotionalLine?: string;
+  communityName?: string;
+  communityPageUrl?: string;
   pageContext: string;
   sourceUrl: string;
 }
@@ -286,6 +288,16 @@ export function PrayerPlayerPanel({
         <p className='prayer-player-devotional'>
           {session.devotionalLine ?? 'You are joining the Church at prayer.'}
         </p>
+
+        {session.communityPageUrl ? (
+          <div className='prayer-player-community'>
+            <div>
+              <span>Community</span>
+              <strong>{session.communityName ?? session.sourceName}</strong>
+            </div>
+            <a href={session.communityPageUrl}>View page</a>
+          </div>
+        ) : null}
 
         <footer className='prayer-player-actions'>
           <button type='button' onClick={minimizePanel}>

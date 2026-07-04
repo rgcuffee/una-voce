@@ -42,7 +42,7 @@ const COMMUNITY_SPOTLIGHTS = [
   },
   {
     id: 'benedictine',
-    title: 'Benedictine Sisters',
+    title: 'Sisters of Dawnfield',
     detail: 'Measured spoken office with contemplative pauses',
   },
 ];

@@ -17,6 +17,7 @@ export type NavItem = {
 export type IconName =
     | 'today'
     | 'discover'
+    | 'community'
     | 'getting-started'
     | 'about';
 
@@ -24,6 +25,7 @@ export type IconName =
 export const PRIMARY_NAV: NavItem[] = [
     { key: 'today', label: 'Pray', icon: 'today' },
     { key: 'discover', label: 'Discover', icon: 'discover' },
+    { key: 'community', label: 'Community', shortLabel: 'Community', icon: 'community' },
     {
         key: 'getting-started',
         label: 'Getting Started',
@@ -54,6 +56,10 @@ export function viewForPath(pathname: string): ViewKey {
 
     if (normalized === '/' || normalized === '/pray') {
         return 'today';
+    }
+
+    if (normalized === '/community' || normalized.startsWith('/community/')) {
+        return 'community';
     }
 
     const matched = (Object.entries(VIEW_PATHS) as [ViewKey, string][]).find(

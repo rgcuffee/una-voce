@@ -1,4 +1,5 @@
 import { type ReactNode } from 'react';
+import { type PartnerCommunitySlug } from '../data/partnerCommunities';
 import type { ViewNavigator } from '../navigation';
 
 type MediaCard = {
@@ -7,6 +8,7 @@ type MediaCard = {
   description: string;
   image: string;
   href?: string;
+  communitySlug?: PartnerCommunitySlug;
   source: 'mock' | 'partner';
 };
 
@@ -24,11 +26,12 @@ const AUDIO: MediaCard[] = [
   },
   {
     meta: 'Abbey Feed',
-    title: 'Saint Benedict Abbey Audio Office',
+    title: 'Cedarwell Abbey Audio Office',
     description:
       'Monastic-style spoken audio with chapel ambience and structured intercessions.',
     image:
       'https://images.unsplash.com/photo-1478737270239-2f02b77fc618?auto=format&fit=crop&w=1400&q=80',
+    communitySlug: 'cedarwell-abbey',
     source: 'mock',
   },
 ];
@@ -41,6 +44,7 @@ const VIDEO: MediaCard[] = [
       'Partner Morning Prayer and Evening Prayer videos matched to the prayer date.',
     image:
       'https://images.unsplash.com/photo-1731258941332-844ae3f8618d?q=80&w=1887&auto=format&fit=crop',
+    communitySlug: 'cathoholic-music',
     source: 'partner',
   },
   {
@@ -50,28 +54,31 @@ const VIDEO: MediaCard[] = [
       'Guided video office with verse overlays and clear transitions through each section.',
     image:
       'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?auto=format&fit=crop&w=1400&q=80',
+    communitySlug: 'the-little-oratory',
     source: 'mock',
   },
   {
-    meta: 'Monastery',
-    title: 'Clear Creek Monastery Video Office',
+    meta: 'Mock Abbey',
+    title: 'Ridgehaven Priory Video Office',
     description:
       'Chapel-captured Morning Prayer video with natural acoustics and full liturgical flow.',
     image:
       'https://images.unsplash.com/photo-1597839977601-52b29c114af5?q=80&w=2054&auto=format&fit=crop',
+    communitySlug: 'ridgehaven-priory',
     source: 'mock',
   },
 ];
 
 const LIVE_UPCOMING: StreamCard[] = [
   {
-    meta: 'Monastery Live',
-    title: 'Clear Creek Monastery · Vespers',
+    meta: 'Mock Community Live',
+    title: 'Ridgehaven Priory · Vespers',
     description:
       'Live chapel stream of Evening Prayer with shared responses and final blessing.',
     time: 'Today, 5:00 PM',
     image:
       'https://plus.unsplash.com/premium_photo-1679051422153-2ea3c8cfe9ed?q=80&w=2070&auto=format&fit=crop',
+    communitySlug: 'ridgehaven-priory',
     source: 'mock',
   },
   {
@@ -82,6 +89,7 @@ const LIVE_UPCOMING: StreamCard[] = [
     time: 'Today, 9:00 PM',
     image:
       'https://images.unsplash.com/photo-1525874684015-58379d421a52?auto=format&fit=crop&w=1400&q=80',
+    communitySlug: 'the-little-oratory',
     source: 'mock',
   },
 ];
@@ -89,12 +97,13 @@ const LIVE_UPCOMING: StreamCard[] = [
 const LIVE_PREVIOUS: StreamCard[] = [
   {
     meta: 'Archived Live',
-    title: 'Benedictine Sisters · Lauds Replay',
+    title: 'Sisters of Dawnfield · Lauds Replay',
     description:
       'Replay of a full live stream with psalm responses and intercessions.',
     time: 'Earlier today, 6:00 AM',
     image:
       'https://images.unsplash.com/photo-1518895949257-7621c3c786d7?auto=format&fit=crop&w=1400&q=80',
+    communitySlug: 'sisters-of-dawnfield',
     source: 'mock',
   },
 ];
@@ -142,13 +151,20 @@ const TEXT_SOURCES: StreamCard[] = [
   },
 ];
 
-function MediaGrid({ items }: { items: MediaCard[] }) {
+function MediaGrid({
+  items,
+  onOpenCommunity,
+}: {
+  items: MediaCard[];
+  onOpenCommunity?: (slug: string) => void;
+}) {
   return (
     <div className='format-options'>
       {items.map((item) => (
         <MediaCardShell
           key={item.title}
           item={item}
+          onOpenCommunity={onOpenCommunity}
           gradient='linear-gradient(165deg, rgba(12, 11, 9, 0.2), rgba(12, 11, 9, 0.78))'
         >
           <div className='option-meta'>{item.meta}</div>
@@ -157,19 +173,29 @@ function MediaGrid({ items }: { items: MediaCard[] }) {
           )}
           <div className='option-title'>{item.title}</div>
           <p className='option-desc'>{item.description}</p>
+          {item.communitySlug ? (
+            <span className='option-prayer-action'>View Community</span>
+          ) : null}
         </MediaCardShell>
       ))}
     </div>
   );
 }
 
-function StreamGrid({ items }: { items: StreamCard[] }) {
+function StreamGrid({
+  items,
+  onOpenCommunity,
+}: {
+  items: StreamCard[];
+  onOpenCommunity?: (slug: string) => void;
+}) {
   return (
     <div className='format-options'>
       {items.map((item) => (
         <MediaCardShell
           key={item.title}
           item={item}
+          onOpenCommunity={onOpenCommunity}
           gradient='linear-gradient(165deg, rgba(16, 13, 12, 0.26), rgba(16, 13, 12, 0.82))'
         >
           <div className='option-meta'>{item.meta}</div>
@@ -179,6 +205,9 @@ function StreamGrid({ items }: { items: StreamCard[] }) {
           <div className='option-title'>{item.title}</div>
           <p className='option-desc'>{item.description}</p>
           <div className='stream-time'>{item.time}</div>
+          {item.communitySlug ? (
+            <span className='option-prayer-action'>View Community</span>
+          ) : null}
         </MediaCardShell>
       ))}
     </div>
@@ -189,10 +218,12 @@ function MediaCardShell({
   children,
   gradient,
   item,
+  onOpenCommunity,
 }: {
   children: ReactNode;
   gradient: string;
   item: MediaCard;
+  onOpenCommunity?: (slug: string) => void;
 }) {
   const className = [
     'format-option',
@@ -204,6 +235,19 @@ function MediaCardShell({
   const style = {
     backgroundImage: `${gradient}, url(${item.image})`,
   };
+
+  if (item.communitySlug) {
+    return (
+      <button
+        type='button'
+        className={className}
+        style={style}
+        onClick={() => onOpenCommunity?.(item.communitySlug as string)}
+      >
+        {children}
+      </button>
+    );
+  }
 
   if (item.href) {
     return (
@@ -226,7 +270,13 @@ function MediaCardShell({
   );
 }
 
-export function DiscoverPage({ onNavigate }: { onNavigate: ViewNavigator }) {
+export function DiscoverPage({
+  onNavigate,
+  onOpenCommunity,
+}: {
+  onNavigate: ViewNavigator;
+  onOpenCommunity?: (slug: string) => void;
+}) {
   return (
     <article className='page'>
       <header className='page-hero'>
@@ -242,12 +292,12 @@ export function DiscoverPage({ onNavigate }: { onNavigate: ViewNavigator }) {
 
       <section className='page-section'>
         <h2 className='page-section-title'>Listen</h2>
-        <MediaGrid items={AUDIO} />
+        <MediaGrid items={AUDIO} onOpenCommunity={onOpenCommunity} />
       </section>
 
       <section className='page-section'>
         <h2 className='page-section-title'>Watch</h2>
-        <MediaGrid items={VIDEO} />
+        <MediaGrid items={VIDEO} onOpenCommunity={onOpenCommunity} />
       </section>
 
       <section className='page-section'>
@@ -256,12 +306,12 @@ export function DiscoverPage({ onNavigate }: { onNavigate: ViewNavigator }) {
           The Church prays as one body. Join real-time streams from communities
           around the world, or pray today's hours on your own.
         </p>
-        <StreamGrid items={LIVE_UPCOMING} />
+        <StreamGrid items={LIVE_UPCOMING} onOpenCommunity={onOpenCommunity} />
       </section>
 
       <section className='page-section'>
         <h2 className='page-section-title'>Recent streams</h2>
-        <StreamGrid items={LIVE_PREVIOUS} />
+        <StreamGrid items={LIVE_PREVIOUS} onOpenCommunity={onOpenCommunity} />
       </section>
 
       <section className='page-section'>

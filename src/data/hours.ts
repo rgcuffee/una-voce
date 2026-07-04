@@ -24,7 +24,7 @@ export const todayHours: Hour[] = [
         ampm: 'AM',
         name: 'Office of Readings',
         latin: 'Matutinum',
-        partner: 'Benedictine Sisters',
+        partner: 'Sisters of Dawnfield',
         status: 'prayed',
         badge: 'done',
     },

@@ -6,9 +6,18 @@ import {
   type ViewKey,
   viewForPath,
 } from '../navigation';
+import {
+  communityForName,
+  communityPath,
+  getPartnerCommunity,
+  type PartnerCommunitySlug,
+} from '../data/partnerCommunities';
 import { getLiturgicalDayWithHours } from '../lib/liturgicalCalendar';
 import { AboutPage } from '../pages/AboutPage';
-import { CommunityPage } from '../pages/CommunityPage';
+import {
+  CommunityPage,
+  type CommunityPrayerCard,
+} from '../pages/CommunityPage';
 import { DiscoverPage } from '../pages/DiscoverPage';
 import { GettingStartedPage } from '../pages/GettingStartedPage';
 import { MorePage } from '../pages/MorePage';
@@ -53,6 +62,7 @@ type OptionItem = {
   imageUrl?: string;
   videoId?: string;
   sourceUrl?: string;
+  communitySlug?: PartnerCommunitySlug;
   liveStartAt?: string | null;
   liveEndAt?: string | null;
   isLiveNow?: boolean;
@@ -281,14 +291,14 @@ const SEGMENTS: Segment[] = [
           'Chanted Prayer with clear verse cues and responsive pauses for personal reflection.',
       },
       {
-        meta: 'Monastery',
-        title: 'Clear Creek Monastery Video Office',
+        meta: 'Mock Abbey',
+        title: 'Ridgehaven Priory Video Office',
         description:
           'Chapel-captured Morning Prayer video with natural acoustics and full liturgical flow.',
       },
       {
         meta: 'Abbey',
-        title: 'Saint Benedict Abbey Liturgical Video',
+        title: 'Cedarwell Abbey Liturgical Video',
         description:
           'Abbey-hosted prayer video with fixed camera, chant responses, and text callouts.',
       },
@@ -298,8 +308,8 @@ const SEGMENTS: Segment[] = [
         title: 'Upcoming',
         items: [
           {
-            meta: 'Monastery Live',
-            title: 'Clear Creek Monastery - Morning Office',
+            meta: 'Mock Community Live',
+            title: 'Ridgehaven Priory - Morning Office',
             description:
               'Live chapel stream with shared responses and final blessing.',
             time: '6:00 AM',
@@ -399,7 +409,7 @@ const SEGMENTS: Segment[] = [
       },
       {
         meta: 'Abbey Feed',
-        title: 'Saint Benedict Abbey Midmorning Office',
+        title: 'Cedarwell Abbey Midmorning Office',
         description:
           'Abbey-recorded Midmorning prayer with concise psalm pacing.',
       },
@@ -418,14 +428,14 @@ const SEGMENTS: Segment[] = [
           'Midmorning prayer video with psalm captions and guided cue cards.',
       },
       {
-        meta: 'Monastery',
-        title: 'Benedictine Sisters Midmorning Video',
+        meta: 'Mock Abbey',
+        title: 'Sisters of Dawnfield Midmorning Video',
         description:
           'Convent-led Midmorning Prayer video archive with visible response pacing.',
       },
       {
         meta: 'Abbey',
-        title: 'Genesee Abbey Midmorning Video Office',
+        title: 'Riverbend Abbey Midmorning Video Office',
         description:
           'Midmorning liturgical video from abbey choir stalls with clear psalm sequence.',
       },
@@ -435,8 +445,8 @@ const SEGMENTS: Segment[] = [
         title: 'Upcoming',
         items: [
           {
-            meta: 'Monastery Live',
-            title: 'Clear Creek Monastery - Midmorning Office',
+            meta: 'Mock Community Live',
+            title: 'Ridgehaven Priory - Midmorning Office',
             description:
               'Live Midmorning office stream for daytime pause and prayer.',
             time: '9:00 AM',
@@ -455,7 +465,7 @@ const SEGMENTS: Segment[] = [
         items: [
           {
             meta: 'Archived Live',
-            title: 'Saint Benedict Abbey - Midmorning Replay',
+            title: 'Cedarwell Abbey - Midmorning Replay',
             description:
               'Recorded replay of the full Midmorning liturgy stream.',
             time: 'Earlier today, 9:00 AM',
@@ -548,7 +558,7 @@ const SEGMENTS: Segment[] = [
       },
       {
         meta: 'Abbey Feed',
-        title: 'Saint Benedict Abbey Midday Office',
+        title: 'Cedarwell Abbey Midday Office',
         description: 'Abbey-recorded Midday prayer with concise psalm pacing.',
       },
     ],
@@ -566,14 +576,14 @@ const SEGMENTS: Segment[] = [
           'Midday prayer video with psalm captions and guided cue cards.',
       },
       {
-        meta: 'Monastery',
-        title: 'Benedictine Sisters Midday Video',
+        meta: 'Mock Abbey',
+        title: 'Sisters of Dawnfield Midday Video',
         description:
           'Convent-led Midday Prayer video archive with visible response pacing.',
       },
       {
         meta: 'Abbey',
-        title: 'Genesee Abbey Noonday Video Office',
+        title: 'Riverbend Abbey Noonday Video Office',
         description:
           'Noonday liturgical video from abbey choir stalls with clear psalm sequence.',
       },
@@ -583,8 +593,8 @@ const SEGMENTS: Segment[] = [
         title: 'Upcoming',
         items: [
           {
-            meta: 'Monastery Live',
-            title: 'Clear Creek Monastery - Midday Office',
+            meta: 'Mock Community Live',
+            title: 'Ridgehaven Priory - Midday Office',
             description:
               'Live Midday office stream for daytime pause and prayer.',
             time: '12:00 PM',
@@ -603,7 +613,7 @@ const SEGMENTS: Segment[] = [
         items: [
           {
             meta: 'Archived Live',
-            title: 'Saint Benedict Abbey - Midday Replay',
+            title: 'Cedarwell Abbey - Midday Replay',
             description: 'Recorded replay of the full Midday liturgy stream.',
             time: 'Earlier today, 12:00 PM',
           },
@@ -695,7 +705,7 @@ const SEGMENTS: Segment[] = [
       },
       {
         meta: 'Abbey Feed',
-        title: 'Saint Benedict Abbey Midafternoon Office',
+        title: 'Cedarwell Abbey Midafternoon Office',
         description:
           'Abbey-recorded Midafternoon prayer with concise psalm pacing.',
       },
@@ -714,14 +724,14 @@ const SEGMENTS: Segment[] = [
           'Midafternoon prayer video with psalm captions and guided cue cards.',
       },
       {
-        meta: 'Monastery',
-        title: 'Benedictine Sisters Midafternoon Video',
+        meta: 'Mock Abbey',
+        title: 'Sisters of Dawnfield Midafternoon Video',
         description:
           'Convent-led Midafternoon Prayer video archive with visible response pacing.',
       },
       {
         meta: 'Abbey',
-        title: 'Genesee Abbey Midafternoon Video Office',
+        title: 'Riverbend Abbey Midafternoon Video Office',
         description:
           'Midafternoon liturgical video from abbey choir stalls with clear psalm sequence.',
       },
@@ -731,8 +741,8 @@ const SEGMENTS: Segment[] = [
         title: 'Upcoming',
         items: [
           {
-            meta: 'Monastery Live',
-            title: 'Clear Creek Monastery - Midafternoon Office',
+            meta: 'Mock Community Live',
+            title: 'Ridgehaven Priory - Midafternoon Office',
             description:
               'Live Midafternoon office stream for daytime pause and prayer.',
             time: '3:00 PM',
@@ -751,7 +761,7 @@ const SEGMENTS: Segment[] = [
         items: [
           {
             meta: 'Archived Live',
-            title: 'Saint Benedict Abbey - Midafternoon Replay',
+            title: 'Cedarwell Abbey - Midafternoon Replay',
             description:
               'Recorded replay of the full Midafternoon liturgy stream.',
             time: 'Earlier today, 3:00 PM',
@@ -872,7 +882,7 @@ const SEGMENTS: Segment[] = [
       },
       {
         meta: 'Abbey Feed',
-        title: 'Saint Benedict Abbey Vespers Audio',
+        title: 'Cedarwell Abbey Vespers Audio',
         description:
           'Monastic evening audio feed with complete Magnificat sequence.',
       },
@@ -891,8 +901,8 @@ const SEGMENTS: Segment[] = [
           'Vespers video session with chapter markers and psalm subtitles.',
       },
       {
-        meta: 'Monastery',
-        title: 'Clear Creek Monastery Vespers Video',
+        meta: 'Mock Abbey',
+        title: 'Ridgehaven Priory Vespers Video',
         description:
           'Evening Office video capture with full psalm cycle and Magnificat sequence.',
       },
@@ -909,7 +919,7 @@ const SEGMENTS: Segment[] = [
         items: [
           {
             meta: 'Abbey Live',
-            title: 'Saint Benedict Abbey - Vespers',
+            title: 'Cedarwell Abbey - Vespers',
             description:
               'Live evening office with Magnificat and intercessions.',
             time: '6:00 PM',
@@ -1052,7 +1062,7 @@ const SEGMENTS: Segment[] = [
       },
       {
         meta: 'Abbey Feed',
-        title: 'Saint Benedict Abbey Compline Audio',
+        title: 'Cedarwell Abbey Compline Audio',
         description: 'Abbey night office audio with psalm and Marian antiphon.',
       },
     ],
@@ -1070,14 +1080,14 @@ const SEGMENTS: Segment[] = [
           'Compline video session with responsive captions and chapter timestamps.',
       },
       {
-        meta: 'Monastery',
-        title: 'Benedictine Sisters Compline Video',
+        meta: 'Mock Abbey',
+        title: 'Sisters of Dawnfield Compline Video',
         description:
           'Convent chapel Compline video with closing Marian antiphon and silence.',
       },
       {
         meta: 'Abbey',
-        title: 'Genesee Abbey Night Office Video',
+        title: 'Riverbend Abbey Night Office Video',
         description:
           'Night Office video archive with fixed camera and complete prayer structure.',
       },
@@ -1087,8 +1097,8 @@ const SEGMENTS: Segment[] = [
         title: 'Upcoming',
         items: [
           {
-            meta: 'Monastery Live',
-            title: 'Benedictine Sisters - Compline',
+            meta: 'Mock Community Live',
+            title: 'Sisters of Dawnfield - Compline',
             description: 'Live night office stream with final Marian antiphon.',
             time: '9:00 PM',
           },
@@ -1105,7 +1115,7 @@ const SEGMENTS: Segment[] = [
         items: [
           {
             meta: 'Archived Live',
-            title: 'Genesee Abbey - Compline Replay',
+            title: 'Riverbend Abbey - Compline Replay',
             description: "Archive replay of last night's full Compline stream.",
             time: 'Earlier today, 9:00 PM',
           },
@@ -1192,7 +1202,7 @@ const SEGMENTS: Segment[] = [
       },
       {
         meta: 'Abbey Feed',
-        title: 'Saint Benedict Abbey Readings Audio',
+        title: 'Cedarwell Abbey Readings Audio',
         description: 'Abbey lector recording with clearly segmented readings.',
       },
     ],
@@ -1210,14 +1220,14 @@ const SEGMENTS: Segment[] = [
           'Visual readings format with chapter markers and reflection pauses.',
       },
       {
-        meta: 'Monastery',
-        title: 'Clear Creek Monastery Readings Video',
+        meta: 'Mock Abbey',
+        title: 'Ridgehaven Priory Readings Video',
         description:
           'Monastic reading office video with responsory transitions and quiet pacing.',
       },
       {
         meta: 'Abbey',
-        title: 'Saint Benedict Abbey Readings Broadcast',
+        title: 'Cedarwell Abbey Readings Broadcast',
         description:
           'Abbey video session for readings with clear section markers and scripture cues.',
       },
@@ -1228,7 +1238,7 @@ const SEGMENTS: Segment[] = [
         items: [
           {
             meta: 'Abbey Live',
-            title: 'Saint Benedict Abbey - Office of Readings',
+            title: 'Cedarwell Abbey - Office of Readings',
             description:
               'Live reading office stream with responsory transitions.',
             time: '5:30 AM',
@@ -1422,6 +1432,7 @@ function cathoholicVideoForSegment(
       imageUrl: video.thumbnailUrl,
       videoId: video.youtubeVideoId,
       sourceUrl: video.canonicalUrl,
+      communitySlug: 'cathoholic-music',
     };
   }
 
@@ -1439,6 +1450,7 @@ function cathoholicVideoForSegment(
       imageUrl: video.thumbnailUrl,
       videoId: video.youtubeVideoId,
       sourceUrl: video.canonicalUrl,
+      communitySlug: 'cathoholic-music',
     };
   }
 
@@ -1513,6 +1525,7 @@ function worthAbbeyLiveOptionsForSegment(
         imageUrl: video.thumbnailUrl,
         videoId: video.youtubeVideoId,
         sourceUrl: video.canonicalUrl,
+        communitySlug: 'worth-abbey',
         liveStartAt: video.liveStartAt ?? video.scheduledStartAt,
         liveEndAt: video.liveEndAt,
         isLiveNow: video.isLiveNow,
@@ -1666,6 +1679,10 @@ function createPrayerPlayerSession({
   const sourceName = sourceNameFromTitle(item.title);
   const hour = analyticsSlug(segment.title);
   const ministryId = analyticsSlug(sourceName);
+  const community =
+    (item.communitySlug ? getPartnerCommunity(item.communitySlug) : null) ??
+    communityForName(sourceName) ??
+    communityForName(item.meta.split('·')[0]);
 
   return {
     sourceName,
@@ -1684,6 +1701,8 @@ function createPrayerPlayerSession({
     statusLabel:
       sourceType === 'live' ? liveStatusLabel(item) : 'Recorded prayer',
     devotionalLine: 'You are joining the Church at prayer.',
+    communityName: community?.name,
+    communityPageUrl: community ? communityPath(community.slug) : undefined,
     pageContext,
     sourceUrl:
       item.sourceUrl ??
@@ -1699,6 +1718,225 @@ function liveStatusLabel(item: OptionItem) {
   return item.time.startsWith('Earlier today')
     ? item.time
     : `Live at ${item.time}`;
+}
+
+const MOCK_COMMUNITY_PRAYER_MATCHES: Record<
+  string,
+  {
+    segmentId: string;
+    sourceType: PrayerPlayerSourceType;
+    titleIncludes: string;
+  }[]
+> = {
+  'cedarwell-abbey': [
+    {
+      segmentId: 'segment-evening',
+      sourceType: 'live',
+      titleIncludes: 'Cedarwell Abbey - Vespers',
+    },
+    {
+      segmentId: 'segment-morning',
+      sourceType: 'recorded',
+      titleIncludes: 'Cedarwell Abbey Liturgical Video',
+    },
+  ],
+  'ridgehaven-priory': [
+    {
+      segmentId: 'segment-morning',
+      sourceType: 'live',
+      titleIncludes: 'Ridgehaven Priory - Morning Office',
+    },
+    {
+      segmentId: 'segment-evening',
+      sourceType: 'recorded',
+      titleIncludes: 'Ridgehaven Priory Vespers Video',
+    },
+  ],
+  'sisters-of-dawnfield': [
+    {
+      segmentId: 'segment-night',
+      sourceType: 'live',
+      titleIncludes: 'Sisters of Dawnfield - Compline',
+    },
+    {
+      segmentId: 'segment-morning',
+      sourceType: 'recorded',
+      titleIncludes: 'Sisters of Dawnfield',
+    },
+  ],
+  'the-little-oratory': [
+    {
+      segmentId: 'segment-night',
+      sourceType: 'live',
+      titleIncludes: 'The Little Oratory - Compline Together',
+    },
+    {
+      segmentId: 'segment-morning',
+      sourceType: 'recorded',
+      titleIncludes: 'The Little Oratory',
+    },
+  ],
+  'psalm-and-laurel': [
+    {
+      segmentId: 'segment-midday',
+      sourceType: 'live',
+      titleIncludes: 'Psalm and Laurel - Midday Prayer Live',
+    },
+    {
+      segmentId: 'segment-midmorning',
+      sourceType: 'recorded',
+      titleIncludes: 'Psalm and Laurel',
+    },
+  ],
+};
+
+function findSegment(segmentId: string) {
+  return SEGMENTS.find((segment) => segment.id === segmentId) ?? null;
+}
+
+function findMockCommunityOption(
+  segment: Segment,
+  sourceType: PrayerPlayerSourceType,
+  titleIncludes: string,
+) {
+  if (sourceType === 'live') {
+    return (
+      segment.live
+        .flatMap((group) => group.items)
+        .find((item) => item.title.includes(titleIncludes)) ?? null
+    );
+  }
+
+  return (
+    [...segment.video, ...segment.audio].find((item) =>
+      item.title.includes(titleIncludes),
+    ) ?? null
+  );
+}
+
+function cardTitleFor(item: OptionItem, segment: Segment) {
+  const sourceName = sourceNameFromTitle(item.title);
+  const cleanedTitle = item.title.replace(`${sourceName} - `, '');
+
+  return cleanedTitle === item.title ? segment.title : cleanedTitle;
+}
+
+function createCommunityPrayerCards({
+  slug,
+  cathoholicVideos,
+  worthAbbeyVideos,
+  onOpenPrayerPlayer,
+}: {
+  slug: string | null;
+  cathoholicVideos: CathoholicVideo[];
+  worthAbbeyVideos: WorthAbbeyVideo[];
+  onOpenPrayerPlayer: (session: PrayerPlayerSession) => void;
+}): CommunityPrayerCard[] {
+  if (!slug) {
+    return [];
+  }
+
+  if (slug === 'cathoholic-music') {
+    return ['segment-morning', 'segment-evening']
+      .map((segmentId) => findSegment(segmentId))
+      .filter((segment): segment is Segment => Boolean(segment))
+      .map((segment) => {
+        const item = cathoholicVideoForSegment(segment, cathoholicVideos);
+
+        return item
+          ? {
+              id: `${slug}-${segment.id}`,
+              label: item.meta,
+              title: cardTitleFor(item, segment),
+              description: item.description,
+              actionLabel: 'Begin prayer',
+              onSelect: () =>
+                onOpenPrayerPlayer(
+                  createPrayerPlayerSession({
+                    item,
+                    segment,
+                    sourceType: 'recorded',
+                    pageContext: 'community_profile_today',
+                  }),
+                ),
+            }
+          : null;
+      })
+      .filter((item): item is CommunityPrayerCard => Boolean(item));
+  }
+
+  if (slug === 'worth-abbey') {
+    return SEGMENTS.flatMap((segment) =>
+      worthAbbeyLiveOptionsForSegment(segment, worthAbbeyVideos)
+        .flatMap((group) => group.items)
+        .filter((item) => item.communitySlug === 'worth-abbey')
+        .map((item) => ({
+          id: `${slug}-${segment.id}-${item.videoId ?? item.title}`,
+          label: item.meta,
+          title: cardTitleFor(item, segment),
+          description: item.description,
+          time: liveStatusLabel(item),
+          actionLabel: item.time?.startsWith('Earlier today')
+            ? 'Play replay'
+            : 'Join prayer',
+          onSelect: () =>
+            onOpenPrayerPlayer(
+              createPrayerPlayerSession({
+                item,
+                segment,
+                sourceType: 'live',
+                pageContext: 'community_profile_today',
+              }),
+            ),
+        })),
+    ).slice(0, 5);
+  }
+
+  return (MOCK_COMMUNITY_PRAYER_MATCHES[slug] ?? [])
+    .map((match): CommunityPrayerCard | null => {
+      const segment = findSegment(match.segmentId);
+      if (!segment) {
+        return null;
+      }
+
+      const item = findMockCommunityOption(
+        segment,
+        match.sourceType,
+        match.titleIncludes,
+      );
+      if (!item) {
+        return null;
+      }
+
+      const playerItem: OptionItem = {
+        ...item,
+        communitySlug: slug as PartnerCommunitySlug,
+      };
+      const card: CommunityPrayerCard = {
+        id: `${slug}-${segment.id}-${match.titleIncludes}`,
+        label: item.meta,
+        title: cardTitleFor(item, segment),
+        description: item.description,
+        actionLabel:
+          match.sourceType === 'live' ? 'Join prayer' : 'Begin prayer',
+        onSelect: () =>
+          onOpenPrayerPlayer(
+            createPrayerPlayerSession({
+              item: playerItem,
+              segment,
+              sourceType: match.sourceType,
+              pageContext: 'community_profile_today',
+            }),
+          ),
+      };
+
+      if (match.sourceType === 'live') {
+        card.time = liveStatusLabel(item);
+      }
+
+      return card;
+    })
+    .filter((item): item is CommunityPrayerCard => Boolean(item));
 }
 
 function blockClassName(variant: LiturgyBlock['variant']) {
@@ -1726,12 +1964,32 @@ function renderPrayerTemplate(segmentId: string) {
   }
 }
 
-function renderPage(view: ViewKey, onNavigate: (view: ViewKey) => void) {
+function renderPage(
+  view: ViewKey,
+  onNavigate: (view: ViewKey) => void,
+  options: {
+    selectedCommunitySlug?: string | null;
+    onOpenCommunity?: (slug: string) => void;
+    communityPrayerCards?: CommunityPrayerCard[];
+  } = {},
+) {
   switch (view) {
     case 'discover':
-      return <DiscoverPage onNavigate={onNavigate} />;
+      return (
+        <DiscoverPage
+          onNavigate={onNavigate}
+          onOpenCommunity={options.onOpenCommunity}
+        />
+      );
     case 'community':
-      return <CommunityPage onNavigate={onNavigate} />;
+      return (
+        <CommunityPage
+          onNavigate={onNavigate}
+          selectedCommunitySlug={options.selectedCommunitySlug}
+          onOpenCommunity={options.onOpenCommunity}
+          prayerCards={options.communityPrayerCards}
+        />
+      );
     case 'more':
       return <MorePage onNavigate={onNavigate} />;
     case 'about':
@@ -1777,6 +2035,13 @@ export function PrayerOfficeMockup() {
     SEGMENTS[0].id,
   );
   const activeView = viewForPath(location.pathname);
+  const selectedCommunitySlug =
+    activeView === 'community'
+      ? (location.pathname
+          .toLowerCase()
+          .replace(/\/+$/, '')
+          .split('/community/')[1] ?? null)
+      : null;
   const [onrampDismissed, setOnrampDismissed] = useState(() => {
     if (typeof window === 'undefined') {
       return false;
@@ -1799,6 +2064,16 @@ export function PrayerOfficeMockup() {
 
   const navigateTo = (view: ViewKey) => {
     const targetPath = pathForView(view);
+    if (location.pathname !== targetPath) {
+      routerNavigate(targetPath);
+    }
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0 });
+    }
+  };
+
+  const openCommunity = (slug: string) => {
+    const targetPath = slug ? communityPath(slug) : pathForView('community');
     if (location.pathname !== targetPath) {
       routerNavigate(targetPath);
     }
@@ -2038,6 +2313,13 @@ export function PrayerOfficeMockup() {
     setPrayerPlayerSession(session);
   };
 
+  const communityPrayerCards = createCommunityPrayerCards({
+    slug: selectedCommunitySlug,
+    cathoholicVideos,
+    worthAbbeyVideos,
+    onOpenPrayerPlayer: openPrayerPlayer,
+  });
+
   const segmentsToRender = isDesktopLayout
     ? SEGMENTS
     : MOBILE_SEGMENT_ORDER.map((segmentId) =>
@@ -2050,12 +2332,12 @@ export function PrayerOfficeMockup() {
         <div
           className="prototype-banner"
           role="status"
-          aria-label="Preview mode: This site is a mockup for prototyping and review. The official landing page is coming soon."
+          aria-label="Preview mode: This site is a mockup for prototyping and review. The official site is coming soon."
         >
           <span className="prototype-banner-title">Preview mode:</span>
           <span className="prototype-banner-copy">
-            This site is a mockup for prototyping and review. The official
-            landing page is coming soon.
+            This site is a mockup for prototyping and review. The official site
+            is coming soon.
           </span>
         </div>
         <div className="header-top">
@@ -2135,7 +2417,11 @@ export function PrayerOfficeMockup() {
 
       <main className="office-main">
         {activeView !== 'today' ? (
-          renderPage(activeView, navigateTo)
+          renderPage(activeView, navigateTo, {
+            selectedCommunitySlug,
+            onOpenCommunity: openCommunity,
+            communityPrayerCards,
+          })
         ) : (
           <>
             <section
@@ -2147,7 +2433,9 @@ export function PrayerOfficeMockup() {
                 <div className="date-label">
                   {isTodayDate(selectedDate) ? 'Today' : 'Selected date'}
                 </div>
-                <div className="date-value">{formatCivilDate(selectedDate)}</div>
+                <div className="date-value">
+                  {formatCivilDate(selectedDate)}
+                </div>
                 {!isTodayDate(selectedDate) ? (
                   <button
                     type="button"
@@ -2176,10 +2464,7 @@ export function PrayerOfficeMockup() {
                   Change date
                 </button>
                 {isDatePickerOpen ? (
-                  <div
-                    className="date-picker-popover"
-                    id="prayer-date-picker"
-                  >
+                  <div className="date-picker-popover" id="prayer-date-picker">
                     <input
                       ref={dateInputRef}
                       type="date"

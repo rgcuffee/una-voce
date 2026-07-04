@@ -782,6 +782,53 @@ body {
     line-height: 1.2;
 }
 
+.prayer-player-community {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin-top: 14px;
+    padding: 12px 14px;
+    border: 1px solid rgba(184, 151, 58, 0.2);
+    border-radius: 12px;
+    background: rgba(245, 237, 214, 0.38);
+}
+
+.prayer-player-community div {
+    min-width: 0;
+}
+
+.prayer-player-community span {
+    display: block;
+    color: var(--gold);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.prayer-player-community strong {
+    display: block;
+    margin-top: 3px;
+    color: var(--charcoal);
+    font-size: 15px;
+    line-height: 1.2;
+}
+
+.prayer-player-community a {
+    flex-shrink: 0;
+    color: var(--charcoal);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-decoration: none;
+    text-transform: uppercase;
+}
+
+.prayer-player-community a:hover {
+    color: var(--gold);
+}
+
 .prayer-player-actions {
     display: flex;
     align-items: center;
@@ -895,6 +942,11 @@ body {
         width: 100%;
         border-radius: 12px;
         padding: 11px 13px;
+    }
+
+    .prayer-player-community {
+        align-items: flex-start;
+        flex-direction: column;
     }
 
     .prayer-player-shell.minimized {
@@ -2249,6 +2301,302 @@ body {
     color: var(--charcoal-mid);
     line-height: 1.6;
     max-width: 44ch;
+}
+
+.community-empty.compact {
+    margin-top: 12px;
+    padding: 22px;
+}
+
+.community-empty.compact p {
+    font-size: 14px;
+}
+
+.community-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.community-card {
+    display: grid;
+    grid-template-columns: 94px minmax(0, 1fr);
+    min-height: 126px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--white);
+    color: inherit;
+    cursor: pointer;
+    font: inherit;
+    padding: 0;
+    text-align: left;
+    transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease,
+        transform 0.15s ease;
+}
+
+.community-card:hover {
+    border-color: rgba(184, 151, 58, 0.42);
+    box-shadow: 0 10px 24px rgba(28, 28, 30, 0.08);
+    transform: translateY(-1px);
+}
+
+.community-card-image {
+    min-height: 100%;
+    background-position: center;
+    background-size: cover;
+}
+
+.community-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    min-width: 0;
+    padding: 14px;
+}
+
+.community-card-meta {
+    color: var(--gold);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    line-height: 1.25;
+    text-transform: uppercase;
+}
+
+.community-card strong {
+    color: var(--charcoal);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 24px;
+    font-weight: 500;
+    line-height: 1;
+}
+
+.community-card span:last-child {
+    color: var(--charcoal-soft);
+    font-size: 13px;
+    line-height: 1.35;
+}
+
+.community-detail-page {
+    max-width: 780px;
+}
+
+.community-profile-hero {
+    min-height: 330px;
+    display: flex;
+    align-items: flex-end;
+    overflow: hidden;
+    border-radius: 16px;
+    background-position: center;
+    background-size: cover;
+    margin-bottom: 28px;
+}
+
+.community-profile-overlay {
+    width: 100%;
+    padding: 82px 28px 26px;
+    background: linear-gradient(180deg, transparent, rgba(12, 11, 9, 0.78));
+    color: var(--white);
+}
+
+.community-profile-overlay .page-eyebrow {
+    color: var(--gold-light);
+}
+
+.community-profile-title {
+    color: var(--white);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 46px;
+    font-weight: 300;
+    letter-spacing: 0;
+    line-height: 0.98;
+    margin-bottom: 10px;
+}
+
+.community-profile-overlay p {
+    max-width: 42ch;
+    color: rgba(255, 255, 255, 0.88);
+    font-size: 16px;
+    line-height: 1.45;
+}
+
+.community-profile-summary {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(220px, 0.65fr);
+    gap: 22px;
+}
+
+.community-profile-summary p {
+    color: var(--charcoal-mid);
+    font-size: 15px;
+    line-height: 1.65;
+}
+
+.community-facts,
+.community-feature-card {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--white);
+}
+
+.community-facts {
+    display: grid;
+    gap: 1px;
+    overflow: hidden;
+}
+
+.community-facts div {
+    padding: 14px;
+    background: rgba(250, 250, 248, 0.88);
+}
+
+.community-facts span,
+.community-feature-card span {
+    display: block;
+    color: var(--gold);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.community-facts strong {
+    display: block;
+    margin-top: 5px;
+    color: var(--charcoal);
+    font-size: 14px;
+    line-height: 1.35;
+}
+
+.community-pill-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.community-pill-row span {
+    border: 1px solid rgba(184, 151, 58, 0.24);
+    border-radius: 999px;
+    background: rgba(245, 237, 214, 0.55);
+    color: var(--charcoal-mid);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 12px;
+}
+
+.community-feature-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.community-feature-card {
+    padding: 16px;
+}
+
+.community-prayer-card {
+    cursor: pointer;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease,
+        transform 0.15s ease;
+}
+
+.community-prayer-card:hover {
+    border-color: rgba(184, 151, 58, 0.42);
+    box-shadow: 0 10px 24px rgba(28, 28, 30, 0.08);
+    transform: translateY(-1px);
+}
+
+.community-feature-card strong {
+    display: block;
+    margin-top: 8px;
+    color: var(--charcoal);
+    font-size: 16px;
+    line-height: 1.25;
+}
+
+.community-feature-card p {
+    margin-top: 7px;
+    color: var(--charcoal-soft);
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.community-prayer-time {
+    display: block;
+    margin-top: 9px;
+    color: var(--gold);
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 700;
+}
+
+.community-prayer-card b {
+    display: inline-flex;
+    margin-top: 12px;
+    border: 1px solid rgba(184, 151, 58, 0.24);
+    border-radius: 999px;
+    background: rgba(245, 237, 214, 0.55);
+    color: var(--charcoal);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    padding: 8px 11px;
+    text-transform: uppercase;
+}
+
+.community-link-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.community-link-list a {
+    border: 1px solid rgba(184, 151, 58, 0.24);
+    border-radius: 999px;
+    background: var(--white);
+    color: var(--charcoal);
+    font-size: 13px;
+    font-weight: 700;
+    padding: 10px 14px;
+    text-decoration: none;
+}
+
+.community-link-list a:hover {
+    border-color: rgba(184, 151, 58, 0.44);
+    color: var(--gold);
+}
+
+@media (max-width: 760px) {
+    .community-grid,
+    .community-feature-grid,
+    .community-profile-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .community-card {
+        grid-template-columns: 82px minmax(0, 1fr);
+    }
+
+    .community-profile-hero {
+        min-height: 280px;
+        border-radius: 14px;
+    }
+
+    .community-profile-overlay {
+        padding: 72px 20px 22px;
+    }
+
+    .community-profile-title {
+        font-size: 38px;
+    }
 }
 
 .engine-admin {

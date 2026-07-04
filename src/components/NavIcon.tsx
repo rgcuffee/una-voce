@@ -18,6 +18,15 @@ const PATHS: Record<IconName, JSX.Element> = {
       <path d='m15.5 8.5-2 5-5 2 2-5z' />
     </>
   ),
+  // Simple gathered circle: communities and partner profiles.
+  community: (
+    <>
+      <circle cx='8' cy='9' r='3' />
+      <circle cx='16' cy='9' r='3' />
+      <path d='M4 20a4 4 0 0 1 8 0' />
+      <path d='M12 20a4 4 0 0 1 8 0' />
+    </>
+  ),
   // Flag at the start of the path: getting started.
   'getting-started': (
     <>
