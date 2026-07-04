@@ -1,16 +1,19 @@
 import type { ViewNavigator } from '../navigation';
 import {
-  PARTNER_COMMUNITIES,
   communityPath,
   getPartnerCommunity,
+  listPartnerCommunities,
   type PartnerCommunity,
+  type PartnerCommunityStatusOverrides,
 } from '../data/partnerCommunities';
+import { PartnerBadge } from '../components/PartnerBadge';
 
 type CommunityPageProps = {
   onNavigate: ViewNavigator;
   selectedCommunitySlug?: string | null;
   onOpenCommunity?: (slug: string) => void;
   prayerCards?: CommunityPrayerCard[];
+  partnerStatusOverrides?: PartnerCommunityStatusOverrides;
 };
 
 export type CommunityPrayerCard = {
@@ -28,8 +31,13 @@ export function CommunityPage({
   selectedCommunitySlug,
   onOpenCommunity,
   prayerCards = [],
+  partnerStatusOverrides,
 }: CommunityPageProps) {
-  const selectedCommunity = getPartnerCommunity(selectedCommunitySlug);
+  const selectedCommunity = getPartnerCommunity(
+    selectedCommunitySlug,
+    partnerStatusOverrides,
+  );
+  const communities = listPartnerCommunities(partnerStatusOverrides);
 
   if (selectedCommunity) {
     return (
@@ -74,7 +82,7 @@ export function CommunityPage({
 
       <section className='page-section'>
         <div className='community-grid'>
-          {PARTNER_COMMUNITIES.map((community) => (
+          {communities.map((community) => (
             <button
               key={community.slug}
               type='button'
@@ -89,7 +97,12 @@ export function CommunityPage({
                 <span className='community-card-meta'>
                   {community.kind} · {community.location}
                 </span>
-                <strong>{community.name}</strong>
+                <span className='community-card-title-row'>
+                  <strong>{community.name}</strong>
+                  {community.badgeEnabled ? (
+                    <PartnerBadge status={community.relationshipStatus} />
+                  ) : null}
+                </span>
                 <span>{community.tagline}</span>
               </span>
             </button>
@@ -132,7 +145,12 @@ function CommunityDetail({
         style={{ backgroundImage: `url(${community.imageUrl})` }}
       >
         <div className='community-profile-overlay'>
-          <div className='page-eyebrow'>{community.kind}</div>
+          <div className='community-profile-badge-row'>
+            <div className='page-eyebrow'>{community.kind}</div>
+            {community.badgeEnabled ? (
+              <PartnerBadge status={community.relationshipStatus} />
+            ) : null}
+          </div>
           <h1 className='community-profile-title'>{community.name}</h1>
           <p>{community.tagline}</p>
         </div>
@@ -144,6 +162,16 @@ function CommunityDetail({
           <p>{community.description}</p>
         </div>
         <div className='community-facts'>
+          <div>
+            <span>Status</span>
+            <strong>
+              {community.badgeEnabled ? (
+                <PartnerBadge status={community.relationshipStatus} />
+              ) : (
+                'Listed'
+              )}
+            </strong>
+          </div>
           <div>
             <span>Location</span>
             <strong>{community.location}</strong>

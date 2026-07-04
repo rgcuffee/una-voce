@@ -7,7 +7,14 @@ with partner as (
     country,
     timezone,
     active,
-    onboarding_status
+    onboarding_status,
+    relationship_status,
+    verified_at,
+    consent_source,
+    consent_notes,
+    badge_enabled,
+    community_page_enabled,
+    community_page_slug
   )
   values (
     'worth-abbey',
@@ -17,7 +24,14 @@ with partner as (
     'GB',
     'Europe/London',
     true,
-    'active'
+    'active',
+    'verified',
+    current_timestamp,
+    'Seeded from Una Voce partner configuration',
+    'Public badge seed: Verified — ministry has reviewed or claimed its page.',
+    true,
+    true,
+    'worth-abbey'
   )
   on conflict (slug) do update
     set name = excluded.name,
@@ -26,7 +40,19 @@ with partner as (
         country = excluded.country,
         timezone = excluded.timezone,
         active = excluded.active,
-        onboarding_status = excluded.onboarding_status
+        onboarding_status = excluded.onboarding_status,
+        relationship_status = excluded.relationship_status,
+        verified_at = coalesce(public.partners.verified_at, excluded.verified_at),
+        partnered_at = case
+          when excluded.relationship_status = 'partner'
+            then coalesce(public.partners.partnered_at, current_timestamp)
+          else null
+        end,
+        consent_source = excluded.consent_source,
+        consent_notes = excluded.consent_notes,
+        badge_enabled = excluded.badge_enabled,
+        community_page_enabled = excluded.community_page_enabled,
+        community_page_slug = excluded.community_page_slug
   returning id
 ),
 feeds as (

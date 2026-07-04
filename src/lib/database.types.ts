@@ -71,6 +71,7 @@ export type PrayerAnalyticsEventName =
     | 'prayer_session_ended'
     | 'source_opened';
 export type PartnerOnboardingStatus = 'pending' | 'active' | 'archived';
+export type PartnerRelationshipStatus = 'curated' | 'verified' | 'partner';
 export type PartnerYoutubeFeedType = 'channel' | 'playlist';
 export type PartnerYoutubeContentMode =
     | 'live'
@@ -104,6 +105,15 @@ export type Database = {
                     timezone: string;
                     active: boolean;
                     onboarding_status: PartnerOnboardingStatus;
+                    relationship_status: PartnerRelationshipStatus;
+                    relationship_status_updated_at: string;
+                    verified_at: string | null;
+                    partnered_at: string | null;
+                    consent_notes: string | null;
+                    consent_source: string | null;
+                    badge_enabled: boolean;
+                    community_page_enabled: boolean;
+                    community_page_slug: string | null;
                     created_at: string;
                     updated_at: string;
                 };
@@ -118,6 +128,15 @@ export type Database = {
                     timezone?: string;
                     active?: boolean;
                     onboarding_status?: PartnerOnboardingStatus;
+                    relationship_status?: PartnerRelationshipStatus;
+                    relationship_status_updated_at?: string;
+                    verified_at?: string | null;
+                    partnered_at?: string | null;
+                    consent_notes?: string | null;
+                    consent_source?: string | null;
+                    badge_enabled?: boolean;
+                    community_page_enabled?: boolean;
+                    community_page_slug?: string | null;
                     created_at?: string;
                     updated_at?: string;
                 };
@@ -132,6 +151,15 @@ export type Database = {
                     timezone?: string;
                     active?: boolean;
                     onboarding_status?: PartnerOnboardingStatus;
+                    relationship_status?: PartnerRelationshipStatus;
+                    relationship_status_updated_at?: string;
+                    verified_at?: string | null;
+                    partnered_at?: string | null;
+                    consent_notes?: string | null;
+                    consent_source?: string | null;
+                    badge_enabled?: boolean;
+                    community_page_enabled?: boolean;
+                    community_page_slug?: string | null;
                     created_at?: string;
                     updated_at?: string;
                 };
@@ -1146,6 +1174,7 @@ export type Database = {
             calendar_conflict_reason: CalendarConflictReason;
             prayer_analytics_event_name: PrayerAnalyticsEventName;
             partner_onboarding_status: PartnerOnboardingStatus;
+            partner_relationship_status: PartnerRelationshipStatus;
             partner_youtube_feed_type: PartnerYoutubeFeedType;
             partner_youtube_content_mode: PartnerYoutubeContentMode;
             prayer_video_kind: PrayerVideoKind;

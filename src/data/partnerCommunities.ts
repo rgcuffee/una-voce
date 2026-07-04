@@ -7,11 +7,15 @@ export type PartnerCommunitySlug =
   | 'cedarwell-abbey'
   | 'sisters-of-dawnfield';
 
+export type PartnerBadgeStatus = 'curated' | 'verified' | 'partner' | 'mock';
+
 export type PartnerCommunity = {
   slug: PartnerCommunitySlug;
   name: string;
   kind: string;
   location: string;
+  relationshipStatus: PartnerBadgeStatus;
+  badgeEnabled: boolean;
   tagline: string;
   description: string;
   imageUrl: string;
@@ -28,12 +32,26 @@ export type PartnerCommunity = {
   }[];
 };
 
+export type PartnerCommunityStatusOverride = {
+  relationshipStatus: Exclude<PartnerBadgeStatus, 'mock'>;
+  badgeEnabled: boolean;
+  communityPageEnabled: boolean;
+  communityPageSlug: string | null;
+};
+
+export type PartnerCommunityStatusOverrides = Record<
+  string,
+  PartnerCommunityStatusOverride
+>;
+
 export const PARTNER_COMMUNITIES: PartnerCommunity[] = [
   {
     slug: 'worth-abbey',
     name: 'Worth Abbey',
     kind: 'Benedictine monastery',
     location: 'West Sussex, England',
+    relationshipStatus: 'verified',
+    badgeEnabled: true,
     tagline: 'Monastic prayer from the abbey church.',
     description:
       'Worth Abbey shares livestreamed offices and liturgies from a Benedictine community whose daily rhythm is shaped by prayer, work, hospitality, and study.',
@@ -71,6 +89,8 @@ export const PARTNER_COMMUNITIES: PartnerCommunity[] = [
     name: 'Cathoholic Music',
     kind: 'Creator ministry',
     location: 'Online',
+    relationshipStatus: 'verified',
+    badgeEnabled: true,
     tagline: 'Sung Lauds and Vespers with visual prayer guides.',
     description:
       'Cathoholic Music creates chant-forward prayer videos that pair the daily office with clear on-screen structure for people praying at home.',
@@ -104,6 +124,8 @@ export const PARTNER_COMMUNITIES: PartnerCommunity[] = [
     name: 'Ridgehaven Priory',
     kind: 'Mock prayer community',
     location: 'Fictional',
+    relationshipStatus: 'mock',
+    badgeEnabled: true,
     tagline: 'Chapel prayer and monastic offices.',
     description:
       'A prototype partner page for a monastery-style community with live chapel prayer, archived offices, and a steady daily rule.',
@@ -126,6 +148,8 @@ export const PARTNER_COMMUNITIES: PartnerCommunity[] = [
     name: 'The Little Oratory',
     kind: 'Mock lay prayer community',
     location: 'Prototype',
+    relationshipStatus: 'mock',
+    badgeEnabled: true,
     tagline: 'Guided prayer for people learning the Hours.',
     description:
       'A creator/community placeholder focused on gentle pacing, captions, and approachable live prayer gatherings.',
@@ -148,6 +172,8 @@ export const PARTNER_COMMUNITIES: PartnerCommunity[] = [
     name: 'Psalm and Laurel',
     kind: 'Mock audio and video creator',
     location: 'Prototype',
+    relationshipStatus: 'mock',
+    badgeEnabled: true,
     tagline: 'Responsive psalm prayer with clear cues.',
     description:
       'A prototype creator page for spoken and sung offices with pauses, callouts, and short daytime prayer formats.',
@@ -170,6 +196,8 @@ export const PARTNER_COMMUNITIES: PartnerCommunity[] = [
     name: 'Cedarwell Abbey',
     kind: 'Mock abbey archive',
     location: 'Fictional',
+    relationshipStatus: 'mock',
+    badgeEnabled: true,
     tagline: 'Recorded offices from an abbey setting.',
     description:
       'A sample abbey community page for replay cards and recorded offices in the local prototype.',
@@ -192,6 +220,8 @@ export const PARTNER_COMMUNITIES: PartnerCommunity[] = [
     name: 'Sisters of Dawnfield',
     kind: 'Mock religious community',
     location: 'Fictional',
+    relationshipStatus: 'mock',
+    badgeEnabled: true,
     tagline: 'Convent-led prayer and office replays.',
     description:
       'A sample community profile for convent-led prayer videos and recent livestream replays.',
@@ -228,20 +258,79 @@ const COMMUNITY_ALIASES: Record<string, PartnerCommunitySlug> = {
   'sisters of dawnfield': 'sisters-of-dawnfield',
 };
 
+const BADGE_META: Record<
+  PartnerBadgeStatus,
+  { label: string; description: string }
+> = {
+  curated: {
+    label: 'Curated',
+    description: 'Curated — We independently recommend this ministry.',
+  },
+  verified: {
+    label: 'Verified',
+    description: 'Verified — The ministry has reviewed or claimed its page.',
+  },
+  partner: {
+    label: 'Partner',
+    description: "Partner — We're actively collaborating.",
+  },
+  mock: {
+    label: 'Mock',
+    description: 'Mock — Prototype listing for design and testing.',
+  },
+};
+
 export function communityPath(slug: PartnerCommunitySlug | string) {
   return `/community/${slug}`;
 }
 
-export function getPartnerCommunity(slug: string | null | undefined) {
+function applyPartnerCommunityOverride(
+  community: PartnerCommunity,
+  overrides?: PartnerCommunityStatusOverrides,
+) {
+  const override = overrides?.[community.slug];
+
+  if (!override) {
+    return community;
+  }
+
+  return {
+    ...community,
+    relationshipStatus: override.relationshipStatus,
+    badgeEnabled: override.badgeEnabled,
+  };
+}
+
+export function listPartnerCommunities(
+  overrides?: PartnerCommunityStatusOverrides,
+) {
+  return PARTNER_COMMUNITIES.map((community) =>
+    applyPartnerCommunityOverride(community, overrides),
+  );
+}
+
+export function getPartnerCommunity(
+  slug: string | null | undefined,
+  overrides?: PartnerCommunityStatusOverrides,
+) {
   if (!slug) {
     return null;
   }
 
-  return COMMUNITY_BY_SLUG.get(slug as PartnerCommunitySlug) ?? null;
+  const community = COMMUNITY_BY_SLUG.get(slug as PartnerCommunitySlug);
+  return community ? applyPartnerCommunityOverride(community, overrides) : null;
 }
 
-export function communityForName(name: string) {
-  return COMMUNITY_BY_SLUG.get(
+export function communityForName(
+  name: string,
+  overrides?: PartnerCommunityStatusOverrides,
+) {
+  const community = COMMUNITY_BY_SLUG.get(
     COMMUNITY_ALIASES[name.trim().toLowerCase()],
-  ) ?? null;
+  );
+  return community ? applyPartnerCommunityOverride(community, overrides) : null;
+}
+
+export function getPartnerBadgeMeta(status: PartnerBadgeStatus) {
+  return BADGE_META[status];
 }

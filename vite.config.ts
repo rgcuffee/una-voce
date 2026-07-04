@@ -4,6 +4,52 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 declare const process: {
     cwd(): string
+    env: Record<string, string | undefined>
+}
+
+declare const Buffer: {
+    concat(chunks: unknown[]): { toString(encoding: string): string }
+}
+
+declare const URL: {
+    new (url: string, base?: string): {
+        searchParams: { entries(): Iterable<[string, string]> }
+    }
+}
+
+type LocalFunctionEvent = {
+    httpMethod: string
+    headers: Record<string, string>
+    body: string
+    queryStringParameters: Record<string, string>
+}
+
+function readRequestBody(request: {
+    on(event: 'data', callback: (chunk: unknown) => void): void
+    on(event: 'end', callback: () => void): void
+    on(event: 'error', callback: (error: Error) => void): void
+}) {
+    return new Promise<string>((resolve, reject) => {
+        const chunks: unknown[] = []
+        request.on('data', (chunk: unknown) => chunks.push(chunk))
+        request.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')))
+        request.on('error', reject)
+    })
+}
+
+function queryParams(url: string | undefined) {
+    const parsed = new URL(url ?? '/', 'http://localhost')
+    return Object.fromEntries(parsed.searchParams.entries())
+}
+
+function headersFrom(request: { headers?: Record<string, string | string[] | undefined> }) {
+    return Object.fromEntries(
+        Object.entries(request.headers ?? {}).flatMap(([key, value]) => {
+            if (Array.isArray(value)) return [[key, value.join(', ')]]
+            if (value === undefined) return []
+            return [[key, value]]
+        }),
+    )
 }
 
 export default defineConfig({
@@ -12,6 +58,86 @@ export default defineConfig({
         {
             name: 'una-voce-local-functions',
             configureServer(server) {
+                server.middlewares.use(
+                    '/api/admin/partners',
+                    async (request, response) => {
+                        try {
+                            const functionModulePath = `file://${process.cwd()}/netlify/functions/admin-partners.mjs?dev=${Date.now()}`
+                            const { handler } = await import(functionModulePath)
+                            const headers = headersFrom(
+                                request as {
+                                    headers?: Record<
+                                        string,
+                                        string | string[] | undefined
+                                    >
+                                },
+                            )
+                            if (
+                                !headers['x-admin-secret'] &&
+                                process.env.ADMIN_SHARED_SECRET
+                            ) {
+                                headers['x-admin-secret'] =
+                                    process.env.ADMIN_SHARED_SECRET
+                            }
+                            const event: LocalFunctionEvent = {
+                                httpMethod:
+                                    (request as { method?: string }).method ??
+                                    'GET',
+                                headers,
+                                body:
+                                    (request as { method?: string }).method ===
+                                    'POST'
+                                        ? await readRequestBody(
+                                              request as {
+                                                  on(
+                                                      event: 'data',
+                                                      callback: (
+                                                          chunk: unknown,
+                                                      ) => void,
+                                                  ): void
+                                                  on(
+                                                      event: 'end',
+                                                      callback: () => void,
+                                                  ): void
+                                                  on(
+                                                      event: 'error',
+                                                      callback: (
+                                                          error: Error,
+                                                      ) => void,
+                                                  ): void
+                                              },
+                                          )
+                                        : '',
+                                queryStringParameters: queryParams(
+                                    (request as { url?: string }).url,
+                                ),
+                            }
+                            const result = await handler(event)
+
+                            response.statusCode = result.statusCode
+                            for (const [key, value] of Object.entries(
+                                result.headers ?? {},
+                            )) {
+                                response.setHeader(key, value as string)
+                            }
+                            response.end(result.body ?? '')
+                        } catch (error) {
+                            response.statusCode = 500
+                            response.setHeader(
+                                'content-type',
+                                'application/json',
+                            )
+                            response.end(
+                                JSON.stringify({
+                                    error:
+                                        error instanceof Error
+                                            ? error.message
+                                            : 'Unable to load admin data',
+                                }),
+                            )
+                        }
+                    },
+                )
                 server.middlewares.use(
                     '/.netlify/functions/cathoholic-videos',
                     async (request, response) => {

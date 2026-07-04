@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { dispatchPrayerAnalyticsEvent } from '../lib/prayerAnalytics';
+import { PartnerBadge } from './PartnerBadge';
+import type { PartnerBadgeStatus } from '../data/partnerCommunities';
 
 export type PrayerPlayerSourceType = 'live' | 'recorded' | 'external';
 
@@ -19,6 +21,7 @@ export interface PrayerPlayerSession {
   devotionalLine?: string;
   communityName?: string;
   communityPageUrl?: string;
+  communityBadgeStatus?: PartnerBadgeStatus;
   pageContext: string;
   sourceUrl: string;
 }
@@ -293,7 +296,12 @@ export function PrayerPlayerPanel({
           <div className='prayer-player-community'>
             <div>
               <span>Community</span>
-              <strong>{session.communityName ?? session.sourceName}</strong>
+              <strong>
+                {session.communityName ?? session.sourceName}
+                {session.communityBadgeStatus ? (
+                  <PartnerBadge status={session.communityBadgeStatus} />
+                ) : null}
+              </strong>
             </div>
             <a href={session.communityPageUrl}>View page</a>
           </div>

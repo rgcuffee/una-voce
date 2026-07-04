@@ -10,9 +10,12 @@ import {
   communityForName,
   communityPath,
   getPartnerCommunity,
+  type PartnerBadgeStatus,
+  type PartnerCommunityStatusOverrides,
   type PartnerCommunitySlug,
 } from '../data/partnerCommunities';
 import { getLiturgicalDayWithHours } from '../lib/liturgicalCalendar';
+import { supabase } from '../lib/supabase';
 import { AboutPage } from '../pages/AboutPage';
 import {
   CommunityPage,
@@ -22,6 +25,7 @@ import { DiscoverPage } from '../pages/DiscoverPage';
 import { GettingStartedPage } from '../pages/GettingStartedPage';
 import { MorePage } from '../pages/MorePage';
 import { NavIcon } from './NavIcon';
+import { PartnerBadge } from './PartnerBadge';
 import {
   PrayerPlayerPanel,
   type PrayerPlayerSession,
@@ -279,13 +283,13 @@ const SEGMENTS: Segment[] = [
     ],
     video: [
       {
-        meta: 'Guided Video',
+        meta: 'Guided Video · Lauds',
         title: 'The Little Oratory',
         description:
           'Guided video office with verse overlays and clear transitions through each section.',
       },
       {
-        meta: 'Guided Video',
+        meta: 'Guided Video · Lauds',
         title: 'Psalm and Laurel',
         description:
           'Chanted Prayer with clear verse cues and responsive pauses for personal reflection.',
@@ -315,7 +319,7 @@ const SEGMENTS: Segment[] = [
             time: '6:00 AM',
           },
           {
-            meta: 'Community Live',
+            meta: 'Community Live · Lauds',
             title: 'The Little Oratory - Morning Prayer Together',
             description:
               'Interactive live session with opening hymn and guided pace.',
@@ -1321,11 +1325,41 @@ const SIDEBAR_ITEMS: SidebarEntry[] = [
   },
 ];
 
-const FORMATS: { key: FormatKey; label: string; className: string }[] = [
-  { key: 'text', label: 'Read', className: 'text' },
-  { key: 'audio', label: 'Listen', className: 'audio' },
-  { key: 'video', label: 'Watch', className: 'video' },
-  { key: 'live', label: 'Live', className: 'live' },
+const FORMATS: {
+  key: FormatKey;
+  label: string;
+  description: string;
+  icon: string;
+  className: string;
+}[] = [
+  {
+    key: 'text',
+    label: 'Text',
+    description: 'Read the appointed psalms, readings, and prayers.',
+    icon: 'Aa',
+    className: 'text',
+  },
+  {
+    key: 'audio',
+    label: 'Audio',
+    description: 'Listen and pray along wherever the day finds you.',
+    icon: '♪',
+    className: 'audio',
+  },
+  {
+    key: 'video',
+    label: 'Video',
+    description: 'Follow sung and spoken offices from partner communities.',
+    icon: '▶',
+    className: 'video',
+  },
+  {
+    key: 'live',
+    label: 'Community',
+    description: 'Join the Hours as they are prayed in real time.',
+    icon: '✦',
+    className: 'live',
+  },
 ];
 
 const OPTION_IMAGES: Record<'audio' | 'video' | 'live', string[]> = {
@@ -1357,10 +1391,10 @@ const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
 function titleCase(format: FormatKey) {
   const labels: Record<FormatKey, string> = {
-    text: 'READ',
-    audio: 'LISTEN',
-    video: 'WATCH',
-    live: 'LIVE',
+    text: 'Text',
+    audio: 'Audio',
+    video: 'Video',
+    live: 'Community',
   };
 
   return labels[format];
@@ -1427,7 +1461,7 @@ function cathoholicVideoForSegment(
     }
 
     return {
-      meta: 'Cathoholic Music · Lauds',
+      meta: 'Guided Video · Lauds',
       title: `Cathoholic Music - ${video.displayTitle}`,
       description: 'Sing today’s Morning Prayer with visual guides.',
       source: 'partner',
@@ -1445,7 +1479,7 @@ function cathoholicVideoForSegment(
     }
 
     return {
-      meta: 'Cathoholic Music · Vespers',
+      meta: 'Guided Video · Vespers',
       title: `Cathoholic Music - ${video.displayTitle}`,
       description: 'Sing today’s Evening Prayer with visual guides.',
       source: 'partner',
@@ -1519,7 +1553,7 @@ function worthAbbeyLiveOptionsForSegment(
         WORTH_ABBEY_PRAYER_META[video.prayerType as WorthAbbeyPrayerType];
 
       return {
-        meta: `Worth Abbey (UK) · ${meta.label}`,
+        meta: `Community Live · ${meta.label}`,
         title: video.displayTitle,
         description: meta.description,
         time: formatWorthAbbeyLiveTime(video),
@@ -1672,19 +1706,23 @@ function createPrayerPlayerSession({
   segment,
   sourceType,
   pageContext,
+  partnerStatusOverrides,
 }: {
   item: OptionItem;
   segment: Segment;
   sourceType: PrayerPlayerSourceType;
   pageContext: string;
+  partnerStatusOverrides?: PartnerCommunityStatusOverrides;
 }): PrayerPlayerSession {
   const sourceName = sourceNameFromTitle(item.title);
   const hour = analyticsSlug(segment.title);
   const ministryId = analyticsSlug(sourceName);
   const community =
-    (item.communitySlug ? getPartnerCommunity(item.communitySlug) : null) ??
-    communityForName(sourceName) ??
-    communityForName(item.meta.split('·')[0]);
+    (item.communitySlug
+      ? getPartnerCommunity(item.communitySlug, partnerStatusOverrides)
+      : null) ??
+    communityForName(sourceName, partnerStatusOverrides) ??
+    communityForName(item.meta.split('·')[0], partnerStatusOverrides);
 
   return {
     sourceName,
@@ -1705,11 +1743,47 @@ function createPrayerPlayerSession({
     devotionalLine: 'You are joining the Church at prayer.',
     communityName: community?.name,
     communityPageUrl: community ? communityPath(community.slug) : undefined,
+    communityBadgeStatus:
+      community?.badgeEnabled ? community.relationshipStatus : undefined,
     pageContext,
     sourceUrl:
       item.sourceUrl ??
       `https://www.youtube.com/watch?v=${item.videoId ?? MOCK_YOUTUBE_VIDEO_ID}`,
   };
+}
+
+function badgeStatusForOption(
+  item: OptionItem,
+  partnerStatusOverrides?: PartnerCommunityStatusOverrides,
+): PartnerBadgeStatus | null {
+  const community = item.communitySlug
+    ? getPartnerCommunity(item.communitySlug, partnerStatusOverrides)
+    : null;
+
+  if (community?.badgeEnabled) {
+    return community.relationshipStatus;
+  }
+
+  if (item.source === 'mock') {
+    return 'mock';
+  }
+
+  if (item.source === 'partner') {
+    return 'curated';
+  }
+
+  return null;
+}
+
+function OptionPartnerBadge({
+  item,
+  partnerStatusOverrides,
+}: {
+  item: OptionItem;
+  partnerStatusOverrides?: PartnerCommunityStatusOverrides;
+}) {
+  const status = badgeStatusForOption(item, partnerStatusOverrides);
+  return status ? <PartnerBadge status={status} /> : null;
 }
 
 function liveStatusLabel(item: OptionItem) {
@@ -1836,11 +1910,13 @@ function createCommunityPrayerCards({
   cathoholicVideos,
   worthAbbeyVideos,
   onOpenPrayerPlayer,
+  partnerStatusOverrides,
 }: {
   slug: string | null;
   cathoholicVideos: CathoholicVideo[];
   worthAbbeyVideos: WorthAbbeyVideo[];
   onOpenPrayerPlayer: (session: PrayerPlayerSession) => void;
+  partnerStatusOverrides?: PartnerCommunityStatusOverrides;
 }): CommunityPrayerCard[] {
   if (!slug) {
     return [];
@@ -1867,6 +1943,7 @@ function createCommunityPrayerCards({
                     segment,
                     sourceType: 'recorded',
                     pageContext: 'community_profile_today',
+                    partnerStatusOverrides,
                   }),
                 ),
             }
@@ -1897,6 +1974,7 @@ function createCommunityPrayerCards({
                   segment,
                   sourceType: 'live',
                   pageContext: 'community_profile_today',
+                  partnerStatusOverrides,
                 }),
               ),
           };
@@ -1944,6 +2022,7 @@ function createCommunityPrayerCards({
               segment,
               sourceType: match.sourceType,
               pageContext: 'community_profile_today',
+              partnerStatusOverrides,
             }),
           ),
       };
@@ -1989,6 +2068,7 @@ function renderPage(
     selectedCommunitySlug?: string | null;
     onOpenCommunity?: (slug: string) => void;
     communityPrayerCards?: CommunityPrayerCard[];
+    partnerStatusOverrides?: PartnerCommunityStatusOverrides;
   } = {},
 ) {
   switch (view) {
@@ -1997,6 +2077,7 @@ function renderPage(
         <DiscoverPage
           onNavigate={onNavigate}
           onOpenCommunity={options.onOpenCommunity}
+          partnerStatusOverrides={options.partnerStatusOverrides}
         />
       );
     case 'community':
@@ -2006,6 +2087,7 @@ function renderPage(
           selectedCommunitySlug={options.selectedCommunitySlug}
           onOpenCommunity={options.onOpenCommunity}
           prayerCards={options.communityPrayerCards}
+          partnerStatusOverrides={options.partnerStatusOverrides}
         />
       );
     case 'more':
@@ -2079,6 +2161,8 @@ export function PrayerOfficeMockup() {
   const [worthAbbeyVideos, setWorthAbbeyVideos] = useState<WorthAbbeyVideo[]>(
     [],
   );
+  const [partnerStatusOverrides, setPartnerStatusOverrides] =
+    useState<PartnerCommunityStatusOverrides>({});
 
   const navigateTo = (view: ViewKey) => {
     const targetPath = pathForView(view);
@@ -2247,6 +2331,61 @@ export function PrayerOfficeMockup() {
   }, [selectedDate]);
 
   useEffect(() => {
+    if (!supabase) {
+      return;
+    }
+
+    const partnerClient = supabase;
+    let isActive = true;
+
+    async function loadPartnerStatuses() {
+      const { data, error } = await partnerClient
+        .from('partners')
+        .select(
+          'slug,relationship_status,badge_enabled,community_page_enabled,community_page_slug',
+        )
+        .eq('active', true)
+        .eq('onboarding_status', 'active');
+
+      if (!isActive) {
+        return;
+      }
+
+      if (error) {
+        console.warn('Unable to load partner badge statuses.', error);
+        return;
+      }
+
+      setPartnerStatusOverrides(
+        Object.fromEntries(
+          (data ?? [])
+            .filter(
+              (partner) =>
+                partner.relationship_status === 'curated' ||
+                partner.relationship_status === 'verified' ||
+                partner.relationship_status === 'partner',
+            )
+            .map((partner) => [
+              partner.slug,
+              {
+                relationshipStatus: partner.relationship_status,
+                badgeEnabled: partner.badge_enabled,
+                communityPageEnabled: partner.community_page_enabled,
+                communityPageSlug: partner.community_page_slug,
+              },
+            ]),
+        ) as PartnerCommunityStatusOverrides,
+      );
+    }
+
+    void loadPartnerStatuses();
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
+  useEffect(() => {
     const controller = new AbortController();
 
     async function loadCathoholicVideos() {
@@ -2336,6 +2475,7 @@ export function PrayerOfficeMockup() {
     cathoholicVideos,
     worthAbbeyVideos,
     onOpenPrayerPlayer: openPrayerPlayer,
+    partnerStatusOverrides,
   });
 
   const segmentsToRender = isDesktopLayout
@@ -2439,6 +2579,7 @@ export function PrayerOfficeMockup() {
             selectedCommunitySlug,
             onOpenCommunity: openCommunity,
             communityPrayerCards,
+            partnerStatusOverrides,
           })
         ) : (
           <>
@@ -2590,9 +2731,20 @@ export function PrayerOfficeMockup() {
                           key={format.key}
                           type="button"
                           className={`format-card ${format.className}${selectedFormat === format.key ? ' selected' : ''}`}
+                          aria-pressed={selectedFormat === format.key}
                           onClick={() => setFormat(segment.id, format.key)}
                         >
-                          <span>{format.label}</span>
+                          <span className="format-card-icon" aria-hidden="true">
+                            {format.icon}
+                          </span>
+                          <span className="format-card-copy">
+                            <span className="format-card-title">
+                              {format.label}
+                            </span>
+                            <span className="format-card-description">
+                              {format.description}
+                            </span>
+                          </span>
                         </button>
                       ))}
                     </div>
@@ -2686,14 +2838,16 @@ export function PrayerOfficeMockup() {
                                   segment,
                                   sourceType: 'recorded',
                                   pageContext: 'today_watch_card',
+                                  partnerStatusOverrides,
                                 }),
                               )
                             }
                           >
                             <div className="option-meta">{item.meta}</div>
-                            {item.source === 'partner' ? (
-                              <div className="option-source">Partner</div>
-                            ) : null}
+                            <OptionPartnerBadge
+                              item={item}
+                              partnerStatusOverrides={partnerStatusOverrides}
+                            />
                             <div className="option-title">{item.title}</div>
                             <p className="option-desc">{item.description}</p>
                             <span className="option-prayer-action">
@@ -2729,14 +2883,16 @@ export function PrayerOfficeMockup() {
                                       segment,
                                       sourceType: 'live',
                                       pageContext: 'today_live_card',
+                                      partnerStatusOverrides,
                                     }),
                                   )
                                 }
                               >
                                 <div className="option-meta">{item.meta}</div>
-                                {item.source === 'partner' ? (
-                                  <div className="option-source">Partner</div>
-                                ) : null}
+                                <OptionPartnerBadge
+                                  item={item}
+                                  partnerStatusOverrides={partnerStatusOverrides}
+                                />
                                 <div className="option-title">{item.title}</div>
                                 <p className="option-desc">
                                   {item.description}

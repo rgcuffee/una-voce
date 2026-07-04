@@ -7,7 +7,14 @@ with partner as (
     country,
     timezone,
     active,
-    onboarding_status
+    onboarding_status,
+    relationship_status,
+    verified_at,
+    consent_source,
+    consent_notes,
+    badge_enabled,
+    community_page_enabled,
+    community_page_slug
   )
   values (
     'cathaholic-music',
@@ -17,7 +24,14 @@ with partner as (
     'AU',
     'Australia/Sydney',
     true,
-    'active'
+    'active',
+    'verified',
+    current_timestamp,
+    'Seeded from Una Voce partner configuration',
+    'Public badge seed: Verified — ministry has reviewed or claimed its page.',
+    true,
+    true,
+    'cathaholic-music'
   )
   on conflict (slug) do update
     set name = excluded.name,
@@ -26,7 +40,14 @@ with partner as (
         country = excluded.country,
         timezone = excluded.timezone,
         active = excluded.active,
-        onboarding_status = excluded.onboarding_status
+        onboarding_status = excluded.onboarding_status,
+        relationship_status = excluded.relationship_status,
+        verified_at = coalesce(public.partners.verified_at, excluded.verified_at),
+        consent_source = excluded.consent_source,
+        consent_notes = excluded.consent_notes,
+        badge_enabled = excluded.badge_enabled,
+        community_page_enabled = excluded.community_page_enabled,
+        community_page_slug = excluded.community_page_slug
   returning id
 ),
 feed as (

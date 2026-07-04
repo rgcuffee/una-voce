@@ -1,6 +1,12 @@
 import { type ReactNode } from 'react';
-import { type PartnerCommunitySlug } from '../data/partnerCommunities';
+import {
+  getPartnerCommunity,
+  type PartnerBadgeStatus,
+  type PartnerCommunityStatusOverrides,
+  type PartnerCommunitySlug,
+} from '../data/partnerCommunities';
 import type { ViewNavigator } from '../navigation';
+import { PartnerBadge } from '../components/PartnerBadge';
 
 type MediaCard = {
   meta: string;
@@ -154,30 +160,34 @@ const TEXT_SOURCES: StreamCard[] = [
 function MediaGrid({
   items,
   onOpenCommunity,
+  partnerStatusOverrides,
 }: {
   items: MediaCard[];
   onOpenCommunity?: (slug: string) => void;
+  partnerStatusOverrides?: PartnerCommunityStatusOverrides;
 }) {
   return (
     <div className='format-options'>
-      {items.map((item) => (
-        <MediaCardShell
-          key={item.title}
-          item={item}
-          onOpenCommunity={onOpenCommunity}
-          gradient='linear-gradient(165deg, rgba(12, 11, 9, 0.2), rgba(12, 11, 9, 0.78))'
-        >
-          <div className='option-meta'>{item.meta}</div>
-          {item.source === 'partner' && (
-            <div className='option-source'>Partner</div>
-          )}
-          <div className='option-title'>{item.title}</div>
-          <p className='option-desc'>{item.description}</p>
-          {item.communitySlug ? (
-            <span className='option-prayer-action'>View Community</span>
-          ) : null}
-        </MediaCardShell>
-      ))}
+      {items.map((item) => {
+        const badgeStatus = badgeStatusForItem(item, partnerStatusOverrides);
+
+        return (
+          <MediaCardShell
+            key={item.title}
+            item={item}
+            onOpenCommunity={onOpenCommunity}
+            gradient='linear-gradient(165deg, rgba(12, 11, 9, 0.2), rgba(12, 11, 9, 0.78))'
+          >
+            <div className='option-meta'>{item.meta}</div>
+            {badgeStatus ? <PartnerBadge status={badgeStatus} /> : null}
+            <div className='option-title'>{item.title}</div>
+            <p className='option-desc'>{item.description}</p>
+            {item.communitySlug ? (
+              <span className='option-prayer-action'>View Community</span>
+            ) : null}
+          </MediaCardShell>
+        );
+      })}
     </div>
   );
 }
@@ -185,33 +195,60 @@ function MediaGrid({
 function StreamGrid({
   items,
   onOpenCommunity,
+  partnerStatusOverrides,
 }: {
   items: StreamCard[];
   onOpenCommunity?: (slug: string) => void;
+  partnerStatusOverrides?: PartnerCommunityStatusOverrides;
 }) {
   return (
     <div className='format-options'>
-      {items.map((item) => (
-        <MediaCardShell
-          key={item.title}
-          item={item}
-          onOpenCommunity={onOpenCommunity}
-          gradient='linear-gradient(165deg, rgba(16, 13, 12, 0.26), rgba(16, 13, 12, 0.82))'
-        >
-          <div className='option-meta'>{item.meta}</div>
-          {item.source === 'partner' && (
-            <div className='option-source'>Partner</div>
-          )}
-          <div className='option-title'>{item.title}</div>
-          <p className='option-desc'>{item.description}</p>
-          <div className='stream-time'>{item.time}</div>
-          {item.communitySlug ? (
-            <span className='option-prayer-action'>View Community</span>
-          ) : null}
-        </MediaCardShell>
-      ))}
+      {items.map((item) => {
+        const badgeStatus = badgeStatusForItem(item, partnerStatusOverrides);
+
+        return (
+          <MediaCardShell
+            key={item.title}
+            item={item}
+            onOpenCommunity={onOpenCommunity}
+            gradient='linear-gradient(165deg, rgba(16, 13, 12, 0.26), rgba(16, 13, 12, 0.82))'
+          >
+            <div className='option-meta'>{item.meta}</div>
+            {badgeStatus ? <PartnerBadge status={badgeStatus} /> : null}
+            <div className='option-title'>{item.title}</div>
+            <p className='option-desc'>{item.description}</p>
+            <div className='stream-time'>{item.time}</div>
+            {item.communitySlug ? (
+              <span className='option-prayer-action'>View Community</span>
+            ) : null}
+          </MediaCardShell>
+        );
+      })}
     </div>
   );
+}
+
+function badgeStatusForItem(
+  item: MediaCard,
+  partnerStatusOverrides?: PartnerCommunityStatusOverrides,
+): PartnerBadgeStatus | null {
+  const community = item.communitySlug
+    ? getPartnerCommunity(item.communitySlug, partnerStatusOverrides)
+    : null;
+
+  if (community?.badgeEnabled) {
+    return community.relationshipStatus;
+  }
+
+  if (item.source === 'mock') {
+    return 'mock';
+  }
+
+  if (item.source === 'partner') {
+    return 'curated';
+  }
+
+  return null;
 }
 
 function MediaCardShell({
@@ -273,9 +310,11 @@ function MediaCardShell({
 export function DiscoverPage({
   onNavigate,
   onOpenCommunity,
+  partnerStatusOverrides,
 }: {
   onNavigate: ViewNavigator;
   onOpenCommunity?: (slug: string) => void;
+  partnerStatusOverrides?: PartnerCommunityStatusOverrides;
 }) {
   return (
     <article className='page'>
@@ -292,12 +331,20 @@ export function DiscoverPage({
 
       <section className='page-section'>
         <h2 className='page-section-title'>Listen</h2>
-        <MediaGrid items={AUDIO} onOpenCommunity={onOpenCommunity} />
+        <MediaGrid
+          items={AUDIO}
+          onOpenCommunity={onOpenCommunity}
+          partnerStatusOverrides={partnerStatusOverrides}
+        />
       </section>
 
       <section className='page-section'>
         <h2 className='page-section-title'>Watch</h2>
-        <MediaGrid items={VIDEO} onOpenCommunity={onOpenCommunity} />
+        <MediaGrid
+          items={VIDEO}
+          onOpenCommunity={onOpenCommunity}
+          partnerStatusOverrides={partnerStatusOverrides}
+        />
       </section>
 
       <section className='page-section'>
@@ -306,12 +353,20 @@ export function DiscoverPage({
           The Church prays as one body. Join real-time streams from communities
           around the world, or pray today's hours on your own.
         </p>
-        <StreamGrid items={LIVE_UPCOMING} onOpenCommunity={onOpenCommunity} />
+        <StreamGrid
+          items={LIVE_UPCOMING}
+          onOpenCommunity={onOpenCommunity}
+          partnerStatusOverrides={partnerStatusOverrides}
+        />
       </section>
 
       <section className='page-section'>
         <h2 className='page-section-title'>Recent streams</h2>
-        <StreamGrid items={LIVE_PREVIOUS} onOpenCommunity={onOpenCommunity} />
+        <StreamGrid
+          items={LIVE_PREVIOUS}
+          onOpenCommunity={onOpenCommunity}
+          partnerStatusOverrides={partnerStatusOverrides}
+        />
       </section>
 
       <section className='page-section'>
