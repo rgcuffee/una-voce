@@ -15,8 +15,9 @@
 </head>
 
 <body>
-    <form name="contact" method="POST" action="/contact-success/" data-netlify="true" netlify-honeypot="bot-field" data-netlify-honeypot="bot-field" hidden>
+    <form name="contact" method="POST" action="/success.html" data-netlify="true" netlify-honeypot="bot-field" hidden>
         <input type="hidden" name="form-name" value="contact" />
+        <input name="bot-field" />
         <input name="name" type="text" />
         <input name="email" type="email" />
         <select name="reason">
@@ -26,7 +27,6 @@
             <option value="support">Prayer support or access issue</option>
         </select>
         <textarea name="message"></textarea>
-        <input name="bot-field" />
     </form>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
