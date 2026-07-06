@@ -2572,21 +2572,6 @@ body {
     align-self: flex-start;
 }
 
-.contact-submit:disabled {
-    cursor: not-allowed;
-    opacity: 0.68;
-}
-
-.contact-error {
-    border: 1px solid rgba(192, 57, 43, 0.28);
-    border-radius: 10px;
-    background: rgba(192, 57, 43, 0.08);
-    color: var(--live-red);
-    font-size: 13px;
-    line-height: 1.45;
-    padding: 10px 12px;
-}
-
 .contact-note {
     padding: 20px;
 }
