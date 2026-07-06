@@ -787,7 +787,7 @@ body {
 
 .option-card-footer {
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     justify-content: space-between;
     gap: 10px;
     width: 100%;
@@ -812,10 +812,12 @@ body {
 }
 
 .stream-time {
+    flex: 1 1 auto;
     color: var(--gold);
     font-size: 11px;
     font-weight: 600;
     line-height: 1.15;
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
 }
@@ -843,6 +845,16 @@ body {
 }
 
 @media (max-width: 699px) {
+    .segment-body {
+        max-height: none;
+        overflow: visible;
+    }
+
+    .segment.collapsed .segment-body {
+        max-height: 0;
+        overflow: hidden;
+    }
+
     .format-output {
         padding: 12px;
     }
@@ -879,6 +891,7 @@ body {
     .option-card-footer {
         gap: 8px;
         margin-top: 10px;
+        flex-wrap: nowrap;
     }
 
     .stream-time {
@@ -910,17 +923,7 @@ body {
     }
 
     .option-card-footer {
-        flex-wrap: wrap;
-        justify-content: flex-end;
-    }
-
-    .option-card-footer .stream-time {
-        flex-basis: 100%;
-        text-align: left;
-    }
-
-    .option-card-footer > .option-prayer-action {
-        margin-left: auto;
+        justify-content: space-between;
     }
 }
 

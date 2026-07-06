@@ -244,15 +244,15 @@ function badgeStatusForItem(
     : null;
 
   if (community?.badgeEnabled) {
+    if (community.relationshipStatus === 'curated') {
+      return null;
+    }
+
     return community.relationshipStatus;
   }
 
   if (item.source === 'mock') {
     return 'mock';
-  }
-
-  if (item.source === 'partner') {
-    return 'curated';
   }
 
   return null;

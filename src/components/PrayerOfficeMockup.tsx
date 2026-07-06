@@ -1747,15 +1747,15 @@ function badgeStatusForOption(
     : null;
 
   if (community?.badgeEnabled) {
+    if (community.relationshipStatus === 'curated') {
+      return null;
+    }
+
     return community.relationshipStatus;
   }
 
   if (item.source === 'mock') {
     return 'mock';
-  }
-
-  if (item.source === 'partner') {
-    return 'curated';
   }
 
   return null;
@@ -2442,14 +2442,18 @@ export function PrayerOfficeMockup() {
   };
 
   const toggleSegment = (segmentId: string) => {
-    if (window.innerWidth >= 900) {
+    if (typeof window !== 'undefined' && window.innerWidth >= 900) {
       return;
     }
 
-    setCollapsedSegments((current) => ({
-      ...current,
-      [segmentId]: !current[segmentId],
-    }));
+    setCollapsedSegments((current) =>
+      Object.fromEntries(
+        SEGMENTS.map((segment) => [
+          segment.id,
+          segment.id === segmentId ? !current[segmentId] : true,
+        ]),
+      ) as Record<string, boolean>,
+    );
   };
 
   const openPrayerPlayer = (session: PrayerPlayerSession) => {
