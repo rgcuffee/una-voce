@@ -1,9 +1,47 @@
+import { type FormEvent, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import type { ViewNavigator } from '../navigation';
 
 export function ContactPage({ onNavigate }: { onNavigate: ViewNavigator }) {
   const [searchParams] = useSearchParams();
-  const isSuccess = searchParams.get('success') === 'true';
+  const [submitState, setSubmitState] = useState<
+    'idle' | 'submitting' | 'success' | 'error'
+  >(searchParams.get('success') === 'true' ? 'success' : 'idle');
+  const isSuccess = submitState === 'success';
+  const isSubmitting = submitState === 'submitting';
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSubmitState('submitting');
+
+    try {
+      const formData = new FormData(event.currentTarget);
+
+      const encodedData = new URLSearchParams();
+
+      for (const [key, value] of formData.entries()) {
+        if (typeof value === 'string') {
+          encodedData.append(key, value);
+        }
+      }
+
+      const response = await fetch('/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: encodedData.toString(),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Contact form returned ${response.status}`);
+      }
+
+      setSubmitState('success');
+      event.currentTarget.reset();
+    } catch (error) {
+      console.error('Unable to submit contact form.', error);
+      setSubmitState('error');
+    }
+  }
 
   return (
     <article className='page'>
@@ -43,7 +81,9 @@ export function ContactPage({ onNavigate }: { onNavigate: ViewNavigator }) {
           action='/contact?success=true'
           data-netlify='true'
           netlify-honeypot='bot-field'
+          data-netlify-honeypot='bot-field'
           className='contact-form'
+          onSubmit={handleSubmit}
         >
           <input type='hidden' name='form-name' value='contact' />
           <p className='contact-hidden-field' hidden>
@@ -77,8 +117,18 @@ export function ContactPage({ onNavigate }: { onNavigate: ViewNavigator }) {
             <textarea name='message' rows={7} required />
           </label>
 
-          <button type='submit' className='page-cta-button contact-submit'>
-            Send message
+          {submitState === 'error' ? (
+            <p className='contact-error' role='alert'>
+              The message could not be sent. Please try again in a moment.
+            </p>
+          ) : null}
+
+          <button
+            type='submit'
+            className='page-cta-button contact-submit'
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Sending...' : 'Send message'}
           </button>
         </form>
 
