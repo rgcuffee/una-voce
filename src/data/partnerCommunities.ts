@@ -1,6 +1,7 @@
 export type PartnerCommunitySlug =
   | 'cathaholic-music'
   | 'cantor-del-camino'
+  | 'padre-didier'
   | 'worth-abbey'
   | 'ridgehaven-priory'
   | 'the-little-oratory'
@@ -156,6 +157,40 @@ export const PARTNER_COMMUNITIES: PartnerCommunity[] = [
     ],
   },
   {
+    slug: 'padre-didier',
+    name: 'Virtual Padre Didier',
+    kind: 'Creator ministry',
+    location: 'Spanish-language / online',
+    relationshipStatus: 'partner',
+    badgeEnabled: true,
+    tagline: 'Spanish daily offices with Lauds, Vespers, and Compline.',
+    description:
+      'Virtual Padre Didier shares Spanish-language Liturgy of the Hours videos, with daily Lauds, Vespers, and Compline titled for discovery.',
+    imageUrl: null,
+    accent: 'Spanish prayer, daily Lauds, Vespers, Compline',
+    prayerRhythm: ['Lauds', 'Vespers', 'Compline'],
+    links: [
+      {
+        label: 'YouTube channel',
+        href: 'https://www.youtube.com/@padreDidier',
+      },
+    ],
+    featured: [
+      {
+        label: 'Today',
+        title: 'Laudes de hoy',
+        description:
+          'Daily Lauds videos can be matched from the channel feed by Spanish office titles.',
+      },
+      {
+        label: 'Night',
+        title: 'Completas de hoy',
+        description:
+          'Compline videos are approved into the Night Prayer watch experience.',
+      },
+    ],
+  },
+  {
     slug: 'ridgehaven-priory',
     name: 'Ridgehaven Priory',
     kind: 'Mock prayer community',
@@ -285,6 +320,8 @@ const COMMUNITY_ALIASES: Record<string, PartnerCommunitySlug> = {
   'cantor del camino': 'cantor-del-camino',
   'cathaholic music': 'cathaholic-music',
   'cathoholic music': 'cathaholic-music',
+  'padre didier': 'padre-didier',
+  'virtual padre didier': 'padre-didier',
   'worth abbey': 'worth-abbey',
   'worth abbey (uk)': 'worth-abbey',
   'ridgehaven priory': 'ridgehaven-priory',
