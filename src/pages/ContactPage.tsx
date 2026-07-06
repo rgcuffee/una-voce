@@ -41,6 +41,7 @@ export function ContactPage({ onNavigate }: { onNavigate: ViewNavigator }) {
           name='contact'
           method='POST'
           action='/contact-success/'
+          encType='application/x-www-form-urlencoded'
           data-netlify='true'
           netlify-honeypot='bot-field'
           data-netlify-honeypot='bot-field'
