@@ -165,6 +165,7 @@ async function ingestFeed(feed, rulesByPartnerId) {
   try {
     const xml = await fetchFeed(feed.rss_url);
     const parsedEpisodes = parsePodcastRss(xml, feed);
+    result.fetched = parsedEpisodes.length;
     const importableEpisodes = parsedEpisodes.filter((episode) =>
       isImportableEpisode(feed, episode),
     );
@@ -182,8 +183,6 @@ async function ingestFeed(feed, rulesByPartnerId) {
         existingClassifications.get(episode.guid),
       ),
     );
-
-    result.fetched = parsedEpisodes.length;
     result.skipped = parsedEpisodes.length - importableEpisodes.length;
 
     if (episodes.length > 0) {
@@ -200,7 +199,7 @@ async function ingestFeed(feed, rulesByPartnerId) {
     await markFeedPolled(feed.id);
     logInfo('feed_finished', result);
   } catch (error) {
-    result.error = error instanceof Error ? error.message : 'Unknown error';
+    result.error = errorMessage(error);
     logError('feed_failed', result);
   }
 
@@ -220,17 +219,22 @@ async function getExistingClassifications(guids) {
     return new Map();
   }
 
-  const { data, error } = await supabase
-    .from('spotify_episodes')
-    .select('guid,prayer_type,display_status')
-    .in('guid', guids);
+  const rows = [];
+  for (const batch of chunks(guids, 100)) {
+    const { data, error } = await supabase
+      .from('spotify_episodes')
+      .select('guid,prayer_type,display_status')
+      .in('guid', batch);
 
-  if (error) {
-    throw error;
+    if (error) {
+      throw error;
+    }
+
+    rows.push(...(data ?? []));
   }
 
   return new Map(
-    (data ?? []).map((episode) => [
+    rows.map((episode) => [
       episode.guid,
       {
         prayerType: episode.prayer_type,
@@ -383,6 +387,7 @@ function normalizeEpisode(feed, parsedEpisode, rules, existingClassification) {
 }
 
 function classifyEpisode(episode, rules) {
+  const titleText = episode.title.toLowerCase();
   const searchableText = `${episode.title}\n${episode.description ?? ''}`.toLowerCase();
 
   for (const rule of rules) {
@@ -395,7 +400,7 @@ function classifyEpisode(episode, rules) {
   }
 
   for (const rule of rules) {
-    if (!hasRequiredKeywords(searchableText, rule.include_keywords)) {
+    if (!hasRequiredKeywords(titleText, rule.include_keywords)) {
       continue;
     }
 
@@ -517,6 +522,10 @@ function parseDate(value) {
 }
 
 function inferDateFromTitle(title) {
+  return inferDateFromTitleWithYear(title, new Date().getUTCFullYear());
+}
+
+function inferDateFromTitleWithYear(title, fallbackYear) {
   const months = {
     enero: '01',
     febrero: '02',
@@ -555,12 +564,13 @@ function inferDateFromTitle(title) {
   }
 
   const [, day, monthName, titleYear] = matches[matches.length - 1];
-  const year = titleYear ?? new Date().getUTCFullYear();
+  const year = titleYear ?? fallbackYear;
   return `${year}-${months[monthName.toLowerCase()]}-${day.padStart(2, '0')}`;
 }
 
 function inferPrayerDate(episode) {
-  const titleDate = inferDateFromTitle(episode.title);
+  const publishedYear = new Date(episode.publishedAt).getUTCFullYear();
+  const titleDate = inferDateFromTitleWithYear(episode.title, publishedYear);
   if (titleDate) {
     return titleDate;
   }
@@ -593,6 +603,26 @@ function isAuthorized(event) {
     secretHeader === ingestSharedSecret ||
     authorization === `Bearer ${ingestSharedSecret}`
   );
+}
+
+function chunks(values, size) {
+  const result = [];
+  for (let index = 0; index < values.length; index += size) {
+    result.push(values.slice(index, index + size));
+  }
+  return result;
+}
+
+function errorMessage(error) {
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  if (error && typeof error === 'object') {
+    return JSON.stringify(error);
+  }
+
+  return String(error ?? 'Unknown error');
 }
 
 function logInfo(message, detail = {}) {

@@ -171,7 +171,7 @@ select
   '2hjsBOvhziCNvmX5osD05V',
   'https://open.spotify.com/show/2hjsBOvhziCNvmX5osD05V',
   'https://open.spotify.com/embed/show/2hjsBOvhziCNvmX5osD05V',
-  null,
+  'https://www.spreaker.com/show/5555170/episodes/feed',
   120,
   current_date,
   true
