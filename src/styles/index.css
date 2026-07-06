@@ -2502,6 +2502,125 @@ body {
     flex-shrink: 0;
 }
 
+.contact-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 18px;
+    align-items: start;
+}
+
+.contact-form,
+.contact-note {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+}
+
+.contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 20px;
+}
+
+.contact-hidden-field {
+    display: none;
+}
+
+.contact-field {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.contact-field span,
+.contact-note-eyebrow {
+    color: var(--charcoal-soft);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.contact-field input,
+.contact-field select,
+.contact-field textarea {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--off-white);
+    color: var(--charcoal);
+    font: inherit;
+    font-size: 15px;
+    padding: 12px 13px;
+}
+
+.contact-field textarea {
+    min-height: 160px;
+    resize: vertical;
+}
+
+.contact-field input:focus,
+.contact-field select:focus,
+.contact-field textarea:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(184, 151, 58, 0.16);
+    outline: none;
+}
+
+.contact-submit {
+    align-self: flex-start;
+}
+
+.contact-note {
+    padding: 20px;
+}
+
+.contact-note .feature-list {
+    margin: 14px 0 16px;
+}
+
+.contact-note p {
+    color: var(--charcoal-mid);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.contact-success {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 22px;
+}
+
+.contact-success-mark {
+    flex-shrink: 0;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: var(--gold-dim);
+    color: var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+}
+
+.contact-success p {
+    color: var(--charcoal-mid);
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+@media (min-width: 900px) {
+    .contact-layout {
+        grid-template-columns: minmax(0, 1.4fr) minmax(220px, 0.8fr);
+    }
+}
+
 .onramp {
     position: relative;
     background: linear-gradient(135deg,

@@ -20,6 +20,70 @@ type MediaCard = {
 
 type StreamCard = MediaCard & { time: string };
 
+type PartnerPrayerVideoType =
+  | 'lauds'
+  | 'midday_prayer'
+  | 'vespers'
+  | 'compline';
+
+export type DiscoverPartnerPrayerVideo = {
+  partnerName: string;
+  partnerSlug: string;
+  prayerType: PartnerPrayerVideoType | null;
+  displayTitle: string;
+  description: string | null;
+  thumbnailUrl: string;
+  canonicalUrl: string;
+};
+
+type PartnerPrayerAudioType =
+  | 'lauds'
+  | 'midday_prayer'
+  | 'vespers'
+  | 'compline';
+
+export type DiscoverPartnerPrayerAudio = {
+  partnerName: string;
+  partnerSlug: string;
+  prayerType: PartnerPrayerAudioType | null;
+  displayTitle: string;
+  description: string | null;
+  imageUrl: string | null;
+  canonicalUrl: string;
+};
+
+type WorthAbbeyPrayerType =
+  | 'office_of_readings'
+  | 'lauds'
+  | 'midday_prayer'
+  | 'vespers'
+  | 'compline';
+
+export type DiscoverWorthAbbeyVideo = {
+  prayerType: WorthAbbeyPrayerType | null;
+  displayTitle: string;
+  description: string | null;
+  thumbnailUrl: string;
+  canonicalUrl: string;
+  liveStartAt: string | null;
+  liveEndAt: string | null;
+  scheduledStartAt: string | null;
+  isLiveNow: boolean;
+};
+
+const PRAYER_TYPE_LABELS: Record<
+  PartnerPrayerVideoType | WorthAbbeyPrayerType,
+  string
+> = {
+  office_of_readings: 'Office of Readings',
+  lauds: 'Lauds',
+  midday_prayer: 'Daytime Prayer',
+  vespers: 'Vespers',
+  compline: 'Compline',
+};
+
+const WORTH_ABBEY_PREVIOUS_STREAM_BUFFER_MINUTES = 45;
+
 const AUDIO: MediaCard[] = [
   {
     meta: 'Podcast',
@@ -156,6 +220,172 @@ const TEXT_SOURCES: StreamCard[] = [
     source: 'mock',
   },
 ];
+
+function partnerAudioCards(
+  audioItems: DiscoverPartnerPrayerAudio[],
+): MediaCard[] {
+  return audioItems
+    .filter((item) => item.prayerType)
+    .map((item) => ({
+      meta: `Spotify Audio · ${PRAYER_TYPE_LABELS[item.prayerType!]}`,
+      title: `${item.partnerName} · ${item.displayTitle}`,
+      description:
+        item.description ??
+        `Pray ${PRAYER_TYPE_LABELS[item.prayerType!]} with ${item.partnerName}.`,
+      image:
+        item.imageUrl ??
+        'https://images.unsplash.com/photo-1478737270239-2f02b77fc618?auto=format&fit=crop&w=1400&q=80',
+      href: item.canonicalUrl,
+      communitySlug: item.partnerSlug as PartnerCommunitySlug,
+      source: 'partner' as const,
+    }))
+    .slice(0, 4);
+}
+
+function partnerVideoCards(
+  videos: DiscoverPartnerPrayerVideo[],
+): MediaCard[] {
+  return videos
+    .filter((item) => item.prayerType)
+    .map((item) => ({
+      meta: `Guided Video · ${PRAYER_TYPE_LABELS[item.prayerType!]}`,
+      title: `${item.partnerName} · ${item.displayTitle}`,
+      description:
+        item.description ??
+        `Pray ${PRAYER_TYPE_LABELS[item.prayerType!]} with ${item.partnerName}.`,
+      image: item.thumbnailUrl,
+      href: item.canonicalUrl,
+      communitySlug: item.partnerSlug as PartnerCommunitySlug,
+      source: 'partner' as const,
+    }))
+    .slice(0, 4);
+}
+
+function worthAbbeyStreamCards(
+  videos: DiscoverWorthAbbeyVideo[],
+  mode: 'upcoming' | 'previous',
+): StreamCard[] {
+  return videos
+    .filter((video) => {
+      if (!video.prayerType) {
+        return false;
+      }
+
+      const isUpcoming = isWorthAbbeyUpcomingOrCurrent(video);
+      return mode === 'upcoming' ? isUpcoming : !isUpcoming;
+    })
+    .map((video) => ({
+      meta: `Community Live · ${PRAYER_TYPE_LABELS[video.prayerType!]}`,
+      title: `Worth Abbey · ${video.displayTitle}`,
+      description:
+        video.description ??
+        `Join Worth Abbey for ${PRAYER_TYPE_LABELS[video.prayerType!]}.`,
+      time: formatWorthAbbeyLiveTime(video) ?? 'Today',
+      image: video.thumbnailUrl,
+      href: video.canonicalUrl,
+      communitySlug: 'worth-abbey' as PartnerCommunitySlug,
+      source: 'partner' as const,
+    }))
+    .slice(0, 4);
+}
+
+function isWorthAbbeyUpcomingOrCurrent(video: DiscoverWorthAbbeyVideo) {
+  if (video.isLiveNow) {
+    return true;
+  }
+
+  const liveEndAt = video.liveEndAt ? Date.parse(video.liveEndAt) : NaN;
+
+  if (!Number.isNaN(liveEndAt)) {
+    return (
+      Date.now() <
+      liveEndAt + WORTH_ABBEY_PREVIOUS_STREAM_BUFFER_MINUTES * 60 * 1000
+    );
+  }
+
+  const liveStartAt = video.liveStartAt
+    ? Date.parse(video.liveStartAt)
+    : video.scheduledStartAt
+      ? Date.parse(video.scheduledStartAt)
+      : NaN;
+
+  if (Number.isNaN(liveStartAt)) {
+    return false;
+  }
+
+  return (
+    Date.now() <
+    liveStartAt + WORTH_ABBEY_PREVIOUS_STREAM_BUFFER_MINUTES * 60 * 1000
+  );
+}
+
+function formatWorthAbbeyLiveTime(video: DiscoverWorthAbbeyVideo) {
+  const liveStartAt = video.liveStartAt ?? video.scheduledStartAt;
+
+  if (!liveStartAt) {
+    return undefined;
+  }
+
+  const time = Date.parse(liveStartAt);
+
+  if (Number.isNaN(time)) {
+    return undefined;
+  }
+
+  const localTime = new Intl.DateTimeFormat(undefined, {
+    hour: 'numeric',
+    minute: '2-digit',
+  }).format(new Date(time));
+  const isPrevious =
+    Date.now() >=
+    time + WORTH_ABBEY_PREVIOUS_STREAM_BUFFER_MINUTES * 60 * 1000;
+
+  return isPrevious
+    ? `${relativeLocalDateLabel(new Date(time), true)}, ${localTime}`
+    : `${relativeLocalDateLabel(new Date(time), false)}${localTime}`;
+}
+
+function relativeLocalDateLabel(date: Date, isPrevious: boolean) {
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
+
+  if (localDateKey(date) === localDateKey(today)) {
+    return isPrevious ? 'Earlier today' : '';
+  }
+
+  if (localDateKey(date) === localDateKey(yesterday)) {
+    return 'Yesterday';
+  }
+
+  if (localDateKey(date) === localDateKey(tomorrow)) {
+    return 'Tomorrow, ';
+  }
+
+  return `${new Intl.DateTimeFormat(undefined, {
+    month: 'short',
+    day: 'numeric',
+  }).format(date)}, `;
+}
+
+function localDateKey(date: Date) {
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, '0'),
+    String(date.getDate()).padStart(2, '0'),
+  ].join('-');
+}
+
+function partnerFirst<T extends MediaCard>(
+  partnerItems: T[],
+  fallbackItems: T[],
+): T[] {
+  return partnerItems.length > 0
+    ? [...partnerItems, ...fallbackItems]
+    : fallbackItems;
+}
 
 function MediaGrid({
   items,
@@ -318,11 +548,28 @@ export function DiscoverPage({
   onNavigate,
   onOpenCommunity,
   partnerStatusOverrides,
+  partnerVideos = [],
+  partnerAudio = [],
+  worthAbbeyVideos = [],
 }: {
   onNavigate: ViewNavigator;
   onOpenCommunity?: (slug: string) => void;
   partnerStatusOverrides?: PartnerCommunityStatusOverrides;
+  partnerVideos?: DiscoverPartnerPrayerVideo[];
+  partnerAudio?: DiscoverPartnerPrayerAudio[];
+  worthAbbeyVideos?: DiscoverWorthAbbeyVideo[];
 }) {
+  const audioItems = partnerFirst(partnerAudioCards(partnerAudio), AUDIO);
+  const videoItems = partnerFirst(partnerVideoCards(partnerVideos), VIDEO);
+  const upcomingStreams = partnerFirst(
+    worthAbbeyStreamCards(worthAbbeyVideos, 'upcoming'),
+    LIVE_UPCOMING,
+  );
+  const previousStreams = partnerFirst(
+    worthAbbeyStreamCards(worthAbbeyVideos, 'previous'),
+    LIVE_PREVIOUS,
+  );
+
   return (
     <article className='page'>
       <header className='page-hero'>
@@ -339,7 +586,7 @@ export function DiscoverPage({
       <section className='page-section'>
         <h2 className='page-section-title'>Listen</h2>
         <MediaGrid
-          items={AUDIO}
+          items={audioItems}
           onOpenCommunity={onOpenCommunity}
           partnerStatusOverrides={partnerStatusOverrides}
         />
@@ -348,7 +595,7 @@ export function DiscoverPage({
       <section className='page-section'>
         <h2 className='page-section-title'>Watch</h2>
         <MediaGrid
-          items={VIDEO}
+          items={videoItems}
           onOpenCommunity={onOpenCommunity}
           partnerStatusOverrides={partnerStatusOverrides}
         />
@@ -361,7 +608,7 @@ export function DiscoverPage({
           around the world, or pray today's hours on your own.
         </p>
         <StreamGrid
-          items={LIVE_UPCOMING}
+          items={upcomingStreams}
           onOpenCommunity={onOpenCommunity}
           partnerStatusOverrides={partnerStatusOverrides}
         />
@@ -370,7 +617,7 @@ export function DiscoverPage({
       <section className='page-section'>
         <h2 className='page-section-title'>Recent streams</h2>
         <StreamGrid
-          items={LIVE_PREVIOUS}
+          items={previousStreams}
           onOpenCommunity={onOpenCommunity}
           partnerStatusOverrides={partnerStatusOverrides}
         />

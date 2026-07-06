@@ -15,6 +15,19 @@
 </head>
 
 <body>
+    <form name="contact" method="POST" data-netlify="true" netlify-honeypot="bot-field" hidden>
+        <input type="hidden" name="form-name" value="contact" />
+        <input name="name" type="text" />
+        <input name="email" type="email" />
+        <select name="reason">
+            <option value="general">General note</option>
+            <option value="partner">Partner or community listing</option>
+            <option value="content">Content suggestion</option>
+            <option value="support">Prayer support or access issue</option>
+        </select>
+        <textarea name="message"></textarea>
+        <input name="bot-field" />
+    </form>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
 </body>

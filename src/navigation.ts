@@ -5,7 +5,8 @@ export type ViewKey =
     | 'community'
     | 'more'
     | 'about'
-    | 'getting-started';
+    | 'getting-started'
+    | 'contact';
 
 export type NavItem = {
     key: ViewKey;
@@ -19,20 +20,15 @@ export type IconName =
     | 'discover'
     | 'community'
     | 'getting-started'
-    | 'about';
+    | 'about'
+    | 'more';
 
 // Primary destinations shown in the desktop header and the mobile bottom bar.
 export const PRIMARY_NAV: NavItem[] = [
     { key: 'today', label: 'Pray', icon: 'today' },
     { key: 'discover', label: 'Discover', icon: 'discover' },
     { key: 'community', label: 'Community', shortLabel: 'Community', icon: 'community' },
-    {
-        key: 'getting-started',
-        label: 'Getting Started',
-        shortLabel: 'Start',
-        icon: 'getting-started',
-    },
-    { key: 'about', label: 'About', icon: 'about' },
+    { key: 'more', label: 'More', icon: 'more' },
 ];
 
 export type ViewNavigator = (view: ViewKey) => void;
@@ -45,6 +41,7 @@ export const VIEW_PATHS: Record<ViewKey, string> = {
     more: '/more',
     about: '/about',
     'getting-started': '/getting-started',
+    contact: '/contact',
 };
 
 export function pathForView(view: ViewKey): string {

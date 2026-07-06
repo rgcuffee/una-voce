@@ -24,6 +24,7 @@ import {
   CommunityPage,
   type CommunityPrayerCard,
 } from '../pages/CommunityPage';
+import { ContactPage } from '../pages/ContactPage';
 import { DiscoverPage } from '../pages/DiscoverPage';
 import { GettingStartedPage } from '../pages/GettingStartedPage';
 import { MorePage } from '../pages/MorePage';
@@ -2288,6 +2289,9 @@ function renderPage(
     onOpenCommunity?: (slug: string) => void;
     communityPrayerCards?: CommunityPrayerCard[];
     partnerStatusOverrides?: PartnerCommunityStatusOverrides;
+    partnerVideos?: PartnerPrayerVideo[];
+    partnerAudio?: PartnerPrayerAudio[];
+    worthAbbeyVideos?: WorthAbbeyVideo[];
   } = {},
 ) {
   switch (view) {
@@ -2297,6 +2301,9 @@ function renderPage(
           onNavigate={onNavigate}
           onOpenCommunity={options.onOpenCommunity}
           partnerStatusOverrides={options.partnerStatusOverrides}
+          partnerVideos={options.partnerVideos}
+          partnerAudio={options.partnerAudio}
+          worthAbbeyVideos={options.worthAbbeyVideos}
         />
       );
     case 'community':
@@ -2315,6 +2322,8 @@ function renderPage(
       return <AboutPage onNavigate={onNavigate} />;
     case 'getting-started':
       return <GettingStartedPage onNavigate={onNavigate} />;
+    case 'contact':
+      return <ContactPage onNavigate={onNavigate} />;
     default:
       return null;
   }
@@ -2899,6 +2908,9 @@ export function PrayerOfficeMockup() {
             onOpenCommunity: openCommunity,
             communityPrayerCards,
             partnerStatusOverrides,
+            partnerVideos,
+            partnerAudio,
+            worthAbbeyVideos,
           })
         ) : (
           <>
