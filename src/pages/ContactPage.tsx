@@ -12,10 +12,11 @@ export function ContactPage({ onNavigate }: { onNavigate: ViewNavigator }) {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const form = event.currentTarget;
     setSubmitState('submitting');
 
     try {
-      const formData = new FormData(event.currentTarget);
+      const formData = new FormData(form);
 
       const encodedData = new URLSearchParams();
 
@@ -36,7 +37,7 @@ export function ContactPage({ onNavigate }: { onNavigate: ViewNavigator }) {
       }
 
       setSubmitState('success');
-      event.currentTarget.reset();
+      form.reset();
     } catch (error) {
       console.error('Unable to submit contact form.', error);
       setSubmitState('error');
