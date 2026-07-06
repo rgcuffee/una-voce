@@ -1,5 +1,6 @@
 export type PartnerCommunitySlug =
   | 'cathoholic-music'
+  | 'cantor-del-camino'
   | 'worth-abbey'
   | 'ridgehaven-priory'
   | 'the-little-oratory'
@@ -116,6 +117,42 @@ export const PARTNER_COMMUNITIES: PartnerCommunity[] = [
         title: 'Evening Prayer video',
         description:
           'A Vespers option appears in the Watch tab for the evening office.',
+      },
+    ],
+  },
+  {
+    slug: 'cantor-del-camino',
+    name: 'Cantor del Camino',
+    kind: 'Creator ministry',
+    location: 'Spain / online',
+    relationshipStatus: 'partner',
+    badgeEnabled: true,
+    tagline: 'Spanish sung offices for daily prayer.',
+    description:
+      'Cantor del Camino shares Spanish-language Liturgy of the Hours videos, with titles that identify Lauds, Nona, and Vespers for daily discovery.',
+    imageUrl:
+      'https://images.unsplash.com/photo-1505236858219-8359eb29e329?auto=format&fit=crop&w=1400&q=80',
+    accent: 'Spanish prayer, daily Lauds, Nona, Vespers',
+    prayerRhythm: ['Lauds', 'Nona', 'Vespers'],
+    links: [
+      { label: 'Website', href: 'https://cantordelcamino.com/' },
+      {
+        label: 'YouTube channel',
+        href: 'https://www.youtube.com/@CantorDelCamino',
+      },
+    ],
+    featured: [
+      {
+        label: 'Today',
+        title: 'Laudes de hoy',
+        description:
+          'Daily Lauds videos can be matched from the channel feed by title.',
+      },
+      {
+        label: 'Daytime',
+        title: 'Nona',
+        description:
+          'Nona videos are approved into the existing daytime prayer bucket until a distinct None/Nona video type exists.',
       },
     ],
   },
@@ -246,6 +283,7 @@ const COMMUNITY_BY_SLUG = new Map(
 );
 
 const COMMUNITY_ALIASES: Record<string, PartnerCommunitySlug> = {
+  'cantor del camino': 'cantor-del-camino',
   'cathoholic music': 'cathoholic-music',
   'worth abbey': 'worth-abbey',
   'worth abbey (uk)': 'worth-abbey',
