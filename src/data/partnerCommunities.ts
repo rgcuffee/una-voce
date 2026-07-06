@@ -1,5 +1,5 @@
 export type PartnerCommunitySlug =
-  | 'cathoholic-music'
+  | 'cathaholic-music'
   | 'cantor-del-camino'
   | 'worth-abbey'
   | 'ridgehaven-priory'
@@ -19,7 +19,7 @@ export type PartnerCommunity = {
   badgeEnabled: boolean;
   tagline: string;
   description: string;
-  imageUrl: string;
+  imageUrl?: string | null;
   accent: string;
   prayerRhythm: string[];
   links: {
@@ -86,15 +86,15 @@ export const PARTNER_COMMUNITIES: PartnerCommunity[] = [
     ],
   },
   {
-    slug: 'cathoholic-music',
-    name: 'Cathoholic Music',
+    slug: 'cathaholic-music',
+    name: 'Cathaholic Music',
     kind: 'Creator ministry',
     location: 'Online',
     relationshipStatus: 'verified',
     badgeEnabled: true,
     tagline: 'Sung Lauds and Vespers with visual prayer guides.',
     description:
-      'Cathoholic Music creates chant-forward prayer videos that pair the daily office with clear on-screen structure for people praying at home.',
+      'Cathaholic Music creates chant-forward prayer videos that pair the daily office with clear on-screen structure for people praying at home.',
     imageUrl:
       'https://images.unsplash.com/photo-1731258941332-844ae3f8618d?q=80&w=1887&auto=format&fit=crop',
     accent: 'Sung prayer, daily video, accessible chant',
@@ -130,8 +130,7 @@ export const PARTNER_COMMUNITIES: PartnerCommunity[] = [
     tagline: 'Spanish sung offices for daily prayer.',
     description:
       'Cantor del Camino shares Spanish-language Liturgy of the Hours videos, with titles that identify Lauds, Nona, and Vespers for daily discovery.',
-    imageUrl:
-      'https://images.unsplash.com/photo-1505236858219-8359eb29e329?auto=format&fit=crop&w=1400&q=80',
+    imageUrl: null,
     accent: 'Spanish prayer, daily Lauds, Nona, Vespers',
     prayerRhythm: ['Lauds', 'Nona', 'Vespers'],
     links: [
@@ -284,7 +283,8 @@ const COMMUNITY_BY_SLUG = new Map(
 
 const COMMUNITY_ALIASES: Record<string, PartnerCommunitySlug> = {
   'cantor del camino': 'cantor-del-camino',
-  'cathoholic music': 'cathoholic-music',
+  'cathaholic music': 'cathaholic-music',
+  'cathoholic music': 'cathaholic-music',
   'worth abbey': 'worth-abbey',
   'worth abbey (uk)': 'worth-abbey',
   'ridgehaven priory': 'ridgehaven-priory',

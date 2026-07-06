@@ -72,9 +72,12 @@ type OptionItem = {
   isLiveNow?: boolean;
 };
 
-type CathoholicVideo = {
+type PartnerPrayerVideoType = 'lauds' | 'midday_prayer' | 'vespers';
+
+type PartnerPrayerVideo = {
   partnerName: string;
-  prayerType: 'lauds' | 'vespers' | null;
+  partnerSlug: string;
+  prayerType: PartnerPrayerVideoType | null;
   prayerDate: string;
   title: string;
   displayTitle: string;
@@ -1436,52 +1439,144 @@ function sourceNameFromTitle(title: string) {
   return title.split(' - ')[0].replace(/\s+(Video|Recording|Office)$/i, '');
 }
 
-function cathoholicVideoForSegment(
-  segment: Segment,
-  videos: CathoholicVideo[],
-): OptionItem | null {
-  if (segment.id === 'segment-morning') {
-    const video = videos.find((item) => item.prayerType === 'lauds');
-    if (!video) {
-      return null;
-    }
+type PartnerPrayerVideoRow = {
+  title: string;
+  description: string | null;
+  youtube_video_id: string;
+  thumbnail_url: string | null;
+  canonical_url: string;
+  embed_url: string;
+  published_at: string;
+  scheduled_start_at: string | null;
+  prayer_date: string | null;
+  prayer_type: PartnerPrayerVideoType | null;
+  partners: { slug: string; name: string } | { slug: string; name: string }[];
+};
 
-    return {
-      meta: 'Guided Video · Lauds',
-      title: `Cathoholic Music - ${video.displayTitle}`,
-      description: 'Sing today’s Morning Prayer with visual guides.',
-      source: 'partner',
-      imageUrl: video.thumbnailUrl,
-      videoId: video.youtubeVideoId,
-      sourceUrl: video.canonicalUrl,
-      communitySlug: 'cathoholic-music',
-    };
+function displayPartnerPrayerVideoTitle(title: string) {
+  const pipeParts = title
+    .split('|')
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  if (pipeParts.length > 1) {
+    return pipeParts[pipeParts.length - 1];
   }
 
-  if (segment.id === 'segment-evening') {
-    const video = videos.find((item) => item.prayerType === 'vespers');
-    if (!video) {
-      return null;
-    }
+  return title;
+}
 
-    return {
-      meta: 'Guided Video · Vespers',
-      title: `Cathoholic Music - ${video.displayTitle}`,
-      description: 'Sing today’s Evening Prayer with visual guides.',
-      source: 'partner',
-      imageUrl: video.thumbnailUrl,
-      videoId: video.youtubeVideoId,
-      sourceUrl: video.canonicalUrl,
-      communitySlug: 'cathoholic-music',
-    };
+function normalizePartnerCommunitySlug(slug: string) {
+  if (slug === 'cathoholic-music') {
+    return 'cathaholic-music';
+  }
+
+  return slug;
+}
+
+function normalizePartnerPrayerVideo(row: PartnerPrayerVideoRow) {
+  const partner = Array.isArray(row.partners) ? row.partners[0] : row.partners;
+
+  return {
+    partnerName: partner?.name ?? 'Partner',
+    partnerSlug: normalizePartnerCommunitySlug(partner?.slug ?? ''),
+    prayerType: row.prayer_type,
+    prayerDate: row.prayer_date ?? '',
+    title: row.title,
+    displayTitle: displayPartnerPrayerVideoTitle(row.title),
+    description: row.description,
+    youtubeVideoId: row.youtube_video_id,
+    thumbnailUrl:
+      row.thumbnail_url ??
+      `https://i.ytimg.com/vi/${row.youtube_video_id}/hqdefault.jpg`,
+    canonicalUrl: row.canonical_url,
+    embedUrl: row.embed_url,
+    publishedAt: row.published_at,
+    scheduledStartAt: row.scheduled_start_at,
+  };
+}
+
+const PARTNER_VIDEO_PRAYER_META: Record<
+  PartnerPrayerVideoType,
+  {
+    label: string;
+    description: (partnerName: string) => string;
+  }
+> = {
+  lauds: {
+    label: 'Lauds',
+    description: (partnerName) =>
+      `Pray today's Morning Prayer with ${partnerName}.`,
+  },
+  midday_prayer: {
+    label: 'Daytime Prayer',
+    description: (partnerName) =>
+      `Pray today's daytime office with ${partnerName}.`,
+  },
+  vespers: {
+    label: 'Vespers',
+    description: (partnerName) =>
+      `Pray today's Evening Prayer with ${partnerName}.`,
+  },
+};
+
+function segmentIdForPartnerVideo(video: PartnerPrayerVideo) {
+  if (video.prayerType === 'lauds') {
+    return 'segment-morning';
+  }
+
+  if (video.prayerType === 'vespers') {
+    return 'segment-evening';
+  }
+
+  if (video.prayerType === 'midday_prayer') {
+    return /\b(nona|none|midafternoon)\b/i.test(video.title)
+      ? 'segment-midafternoon'
+      : 'segment-midday';
   }
 
   return null;
 }
 
-function videoOptionsForSegment(segment: Segment, videos: CathoholicVideo[]) {
-  const cathoholicVideo = cathoholicVideoForSegment(segment, videos);
-  return cathoholicVideo ? [cathoholicVideo, ...segment.video] : segment.video;
+function partnerVideoOptionForSegment(
+  segment: Segment,
+  video: PartnerPrayerVideo,
+): OptionItem | null {
+  if (!video.prayerType || segmentIdForPartnerVideo(video) !== segment.id) {
+    return null;
+  }
+
+  const meta = PARTNER_VIDEO_PRAYER_META[video.prayerType];
+
+  return {
+    meta: `Guided Video · ${meta.label}`,
+    title: `${video.partnerName} - ${video.displayTitle}`,
+    description: meta.description(video.partnerName),
+    source: 'partner',
+    imageUrl: video.thumbnailUrl,
+    videoId: video.youtubeVideoId,
+    sourceUrl: video.canonicalUrl,
+    communitySlug: video.partnerSlug as PartnerCommunitySlug,
+  };
+}
+
+function partnerVideoOptionsForSegment(
+  segment: Segment,
+  videos: PartnerPrayerVideo[],
+) {
+  return videos
+    .map((video) => partnerVideoOptionForSegment(segment, video))
+    .filter((item): item is OptionItem => Boolean(item));
+}
+
+function videoOptionsForSegment(
+  segment: Segment,
+  videos: PartnerPrayerVideo[],
+) {
+  const partnerVideos = partnerVideoOptionsForSegment(segment, videos);
+  return partnerVideos.length > 0
+    ? [...partnerVideos, ...segment.video]
+    : segment.video;
 }
 
 const WORTH_ABBEY_PRAYER_META: Record<
@@ -1729,8 +1824,9 @@ function createPrayerPlayerSession({
     devotionalLine: 'You are joining the Church at prayer.',
     communityName: community?.name,
     communityPageUrl: community ? communityPath(community.slug) : undefined,
-    communityBadgeStatus:
-      community?.badgeEnabled ? community.relationshipStatus : undefined,
+    communityBadgeStatus: community?.badgeEnabled
+      ? community.relationshipStatus
+      : undefined,
     pageContext,
     sourceUrl:
       item.sourceUrl ??
@@ -1777,9 +1873,7 @@ function liveStatusLabel(item: OptionItem) {
     return 'Live now';
   }
 
-  return isPastStreamLabel(item.time)
-    ? item.time
-    : `Live at ${item.time}`;
+  return isPastStreamLabel(item.time) ? item.time : `Live at ${item.time}`;
 }
 
 function isPastStreamLabel(label: string) {
@@ -1893,49 +1987,19 @@ function cardTitleFor(item: OptionItem, segment: Segment) {
 
 function createCommunityPrayerCards({
   slug,
-  cathoholicVideos,
+  partnerVideos,
   worthAbbeyVideos,
   onOpenPrayerPlayer,
   partnerStatusOverrides,
 }: {
   slug: string | null;
-  cathoholicVideos: CathoholicVideo[];
+  partnerVideos: PartnerPrayerVideo[];
   worthAbbeyVideos: WorthAbbeyVideo[];
   onOpenPrayerPlayer: (session: PrayerPlayerSession) => void;
   partnerStatusOverrides?: PartnerCommunityStatusOverrides;
 }): CommunityPrayerCard[] {
   if (!slug) {
     return [];
-  }
-
-  if (slug === 'cathoholic-music') {
-    return ['segment-morning', 'segment-evening']
-      .map((segmentId) => findSegment(segmentId))
-      .filter((segment): segment is Segment => Boolean(segment))
-      .map((segment) => {
-        const item = cathoholicVideoForSegment(segment, cathoholicVideos);
-
-        return item
-          ? {
-              id: `${slug}-${segment.id}`,
-              label: item.meta,
-              title: cardTitleFor(item, segment),
-              description: item.description,
-              actionLabel: 'Begin prayer',
-              onSelect: () =>
-                onOpenPrayerPlayer(
-                  createPrayerPlayerSession({
-                    item,
-                    segment,
-                    sourceType: 'recorded',
-                    pageContext: 'community_profile_today',
-                    partnerStatusOverrides,
-                  }),
-                ),
-            }
-          : null;
-      })
-      .filter((item): item is CommunityPrayerCard => Boolean(item));
   }
 
   if (slug === 'worth-abbey') {
@@ -1966,6 +2030,33 @@ function createCommunityPrayerCards({
           };
         }),
     ).slice(0, 5);
+  }
+
+  const partnerPrayerCards = SEGMENTS.flatMap((segment) =>
+    partnerVideoOptionsForSegment(
+      segment,
+      partnerVideos.filter((video) => video.partnerSlug === slug),
+    ).map((item) => ({
+      id: `${slug}-${segment.id}-${item.videoId ?? item.title}`,
+      label: item.meta,
+      title: cardTitleFor(item, segment),
+      description: item.description,
+      actionLabel: 'Begin prayer',
+      onSelect: () =>
+        onOpenPrayerPlayer(
+          createPrayerPlayerSession({
+            item,
+            segment,
+            sourceType: 'recorded',
+            pageContext: 'community_profile_today',
+            partnerStatusOverrides,
+          }),
+        ),
+    })),
+  );
+
+  if (partnerPrayerCards.length > 0) {
+    return partnerPrayerCards.slice(0, 5);
   }
 
   return (MOCK_COMMUNITY_PRAYER_MATCHES[slug] ?? [])
@@ -2141,9 +2232,7 @@ export function PrayerOfficeMockup() {
     formatPendingDateLabel(selectedDate),
   );
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
-  const [cathoholicVideos, setCathoholicVideos] = useState<CathoholicVideo[]>(
-    [],
-  );
+  const [partnerVideos, setPartnerVideos] = useState<PartnerPrayerVideo[]>([]);
   const [worthAbbeyVideos, setWorthAbbeyVideos] = useState<WorthAbbeyVideo[]>(
     [],
   );
@@ -2374,32 +2463,57 @@ export function PrayerOfficeMockup() {
   useEffect(() => {
     const controller = new AbortController();
 
-    async function loadCathoholicVideos() {
-      try {
-        const response = await fetch(
-          `/.netlify/functions/cathoholic-videos?date=${encodeURIComponent(selectedDate)}`,
-          { signal: controller.signal },
-        );
+    async function loadPartnerVideos() {
+      if (!supabase) {
+        setPartnerVideos([]);
+        return;
+      }
 
-        if (!response.ok) {
-          throw new Error(`Cathoholic videos returned ${response.status}`);
+      try {
+        const { data, error } = await supabase
+          .from('youtube_videos')
+          .select(
+            [
+              'title',
+              'description',
+              'youtube_video_id',
+              'thumbnail_url',
+              'canonical_url',
+              'embed_url',
+              'published_at',
+              'scheduled_start_at',
+              'prayer_date',
+              'prayer_type',
+              'partners!inner(slug,name)',
+            ].join(','),
+          )
+          .eq('display_status', 'approved')
+          .eq('prayer_date', selectedDate)
+          .eq('video_kind', 'video')
+          .in('prayer_type', ['lauds', 'midday_prayer', 'vespers'])
+          .order('published_at', { ascending: false })
+          .abortSignal(controller.signal);
+
+        if (error) {
+          throw error;
         }
 
-        const body = (await response.json()) as {
-          videos?: CathoholicVideo[];
-        };
-        setCathoholicVideos(body.videos ?? []);
+        setPartnerVideos(
+          ((data ?? []) as unknown as PartnerPrayerVideoRow[]).map(
+            normalizePartnerPrayerVideo,
+          ),
+        );
       } catch (error) {
         if (controller.signal.aborted) {
           return;
         }
 
-        console.warn('Unable to load Cathoholic videos.', error);
-        setCathoholicVideos([]);
+        console.warn('Unable to load partner videos.', error);
+        setPartnerVideos([]);
       }
     }
 
-    void loadCathoholicVideos();
+    void loadPartnerVideos();
 
     return () => controller.abort();
   }, [selectedDate]);
@@ -2446,13 +2560,14 @@ export function PrayerOfficeMockup() {
       return;
     }
 
-    setCollapsedSegments((current) =>
-      Object.fromEntries(
-        SEGMENTS.map((segment) => [
-          segment.id,
-          segment.id === segmentId ? !current[segmentId] : true,
-        ]),
-      ) as Record<string, boolean>,
+    setCollapsedSegments(
+      (current) =>
+        Object.fromEntries(
+          SEGMENTS.map((segment) => [
+            segment.id,
+            segment.id === segmentId ? !current[segmentId] : true,
+          ]),
+        ) as Record<string, boolean>,
     );
   };
 
@@ -2462,7 +2577,7 @@ export function PrayerOfficeMockup() {
 
   const communityPrayerCards = createCommunityPrayerCards({
     slug: selectedCommunitySlug,
-    cathoholicVideos,
+    partnerVideos,
     worthAbbeyVideos,
     onOpenPrayerPlayer: openPrayerPlayer,
     partnerStatusOverrides,
@@ -2676,7 +2791,7 @@ export function PrayerOfficeMockup() {
               const segmentSubtitle = SEGMENT_SUBTITLES[segment.id];
               const videoOptions = videoOptionsForSegment(
                 segment,
-                cathoholicVideos,
+                partnerVideos,
               );
               const liveGroups = worthAbbeyLiveOptionsForSegment(
                 segment,
@@ -2883,7 +2998,9 @@ export function PrayerOfficeMockup() {
                                 <div className="option-meta">{item.meta}</div>
                                 <OptionPartnerBadge
                                   item={item}
-                                  partnerStatusOverrides={partnerStatusOverrides}
+                                  partnerStatusOverrides={
+                                    partnerStatusOverrides
+                                  }
                                 />
                                 <div className="option-title">{item.title}</div>
                                 <p className="option-desc">

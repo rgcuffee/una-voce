@@ -90,8 +90,12 @@ export function CommunityPage({
               onClick={() => onOpenCommunity?.(community.slug)}
             >
               <span
-                className='community-card-image'
-                style={{ backgroundImage: `url(${community.imageUrl})` }}
+                className={`community-card-image${community.imageUrl ? '' : ' empty'}`}
+                style={
+                  community.imageUrl
+                    ? { backgroundImage: `url(${community.imageUrl})` }
+                    : undefined
+                }
               />
               <span className='community-card-body'>
                 <span className='community-card-meta'>
@@ -141,8 +145,12 @@ function CommunityDetail({
       </button>
 
       <header
-        className='community-profile-hero'
-        style={{ backgroundImage: `url(${community.imageUrl})` }}
+        className={`community-profile-hero${community.imageUrl ? '' : ' empty'}`}
+        style={
+          community.imageUrl
+            ? { backgroundImage: `url(${community.imageUrl})` }
+            : undefined
+        }
       >
         <div className='community-profile-overlay'>
           <div className='community-profile-badge-row'>

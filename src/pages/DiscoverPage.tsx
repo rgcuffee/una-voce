@@ -44,13 +44,13 @@ const AUDIO: MediaCard[] = [
 
 const VIDEO: MediaCard[] = [
   {
-    meta: 'Cathoholic Music',
-    title: 'Cathoholic Lauds & Vespers',
+    meta: 'Cathaholic Music',
+    title: 'Cathaholic Lauds & Vespers',
     description:
       'Partner Morning Prayer and Evening Prayer videos matched to the prayer date.',
     image:
       'https://images.unsplash.com/photo-1731258941332-844ae3f8618d?q=80&w=1887&auto=format&fit=crop',
-    communitySlug: 'cathoholic-music',
+    communitySlug: 'cathaholic-music',
     source: 'partner',
   },
   {
