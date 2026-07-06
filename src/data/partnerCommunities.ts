@@ -58,7 +58,7 @@ export const PARTNER_COMMUNITIES: PartnerCommunity[] = [
     description:
       'Worth Abbey shares livestreamed offices and liturgies from a Benedictine community whose daily rhythm is shaped by prayer, work, hospitality, and study.',
     imageUrl:
-      'https://source.unsplash.com/S3bJyQwaB8Q/1400x900',
+      'https://yt3.googleusercontent.com/ytc/AIdro_nDVgAvWHZwb_ynblsEyXIEEU1-No0mhPCHLvkD2ZunFA=s900-c-k-c0x00ffffff-no-rj',
     accent: 'Chanted offices, chapel livestreams, Benedictine rhythm',
     prayerRhythm: [
       'Office of Readings',
@@ -97,7 +97,7 @@ export const PARTNER_COMMUNITIES: PartnerCommunity[] = [
     description:
       'Cathaholic Music creates chant-forward prayer videos that pair the daily office with clear on-screen structure for people praying at home.',
     imageUrl:
-      'https://images.unsplash.com/photo-1731258941332-844ae3f8618d?q=80&w=1887&auto=format&fit=crop',
+      'https://yt3.googleusercontent.com/gnRvpLHI4h1DWvbRsssdE14PIKIUMy6afiLpMxqJRK8gBo3CD-YS925FAFwywN_62bB5ARtnL3U=s900-c-k-c0x00ffffff-no-rj',
     accent: 'Sung prayer, daily video, accessible chant',
     prayerRhythm: ['Lauds', 'Vespers'],
     links: [
@@ -131,7 +131,8 @@ export const PARTNER_COMMUNITIES: PartnerCommunity[] = [
     tagline: 'Spanish sung offices for daily prayer.',
     description:
       'Cantor del Camino shares Spanish-language Liturgy of the Hours videos, with titles that identify Lauds, Nona, and Vespers for daily discovery.',
-    imageUrl: null,
+    imageUrl:
+      'https://yt3.googleusercontent.com/4v52x8EmtPZMYbLgeZQP5fARpbZSC55GDjUG_WCI4vjifyMy7K71cZ3aKBpL9u31_2n_H0qILYE=s900-c-k-c0x00ffffff-no-rj',
     accent: 'Spanish prayer, daily Lauds, Nona, Vespers',
     prayerRhythm: ['Lauds', 'Nona', 'Vespers'],
     links: [
@@ -166,7 +167,8 @@ export const PARTNER_COMMUNITIES: PartnerCommunity[] = [
     tagline: 'Spanish daily offices with Lauds, Vespers, and Compline.',
     description:
       'Virtual Padre Didier shares Spanish-language Liturgy of the Hours videos, with daily Lauds, Vespers, and Compline titled for discovery.',
-    imageUrl: null,
+    imageUrl:
+      'https://yt3.googleusercontent.com/ytc/AIdro_m_4yAvVJF4QXa6umERwMDjJ31oCbQJBfAGue3bEidwEXc=s900-c-k-c0x00ffffff-no-rj',
     accent: 'Spanish prayer, daily Lauds, Vespers, Compline',
     prayerRhythm: ['Lauds', 'Vespers', 'Compline'],
     links: [

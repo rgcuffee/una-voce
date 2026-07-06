@@ -168,10 +168,13 @@ async function ingestFeed(feed, rulesByPartnerId) {
     const importableEpisodes = parsedEpisodes.filter((episode) =>
       isImportableEpisode(feed, episode),
     );
-    const existingClassifications = await getExistingClassifications(
-      importableEpisodes.map((episode) => episode.guid),
+    const episodesWithArtwork = await enrichEpisodesWithSpotifyArtwork(
+      importableEpisodes,
     );
-    const episodes = importableEpisodes.map((episode) =>
+    const existingClassifications = await getExistingClassifications(
+      episodesWithArtwork.map((episode) => episode.guid),
+    );
+    const episodes = episodesWithArtwork.map((episode) =>
       normalizeEpisode(
         feed,
         episode,
@@ -261,8 +264,13 @@ async function fetchFeed(url) {
 }
 
 function parsePodcastRss(xml, feed) {
+  const channelXml = textContentWithMarkup(xml, 'channel') ?? '';
+  const channelImageXml = textContentWithMarkup(channelXml, 'image') ?? '';
   const channelImage =
-    textContent(textContentWithMarkup(xml, 'channel') ?? '', 'url') ?? null;
+    attribute(channelXml, 'itunes:image', 'href') ??
+    textContent(channelImageXml, 'url') ??
+    textContent(channelXml, 'url') ??
+    null;
 
   return splitXmlElements(xml, 'item').flatMap((itemXml) => {
     const guid =
@@ -304,6 +312,48 @@ function parsePodcastRss(xml, feed) {
       },
     ];
   });
+}
+
+async function enrichEpisodesWithSpotifyArtwork(episodes) {
+  return Promise.all(
+    episodes.map(async (episode) => {
+      if (episode.imageUrl || !episode.canonicalUrl.includes('open.spotify.com/episode/')) {
+        return episode;
+      }
+
+      const thumbnailUrl = await fetchSpotifyOembedThumbnail(episode.canonicalUrl);
+      return thumbnailUrl ? { ...episode, imageUrl: thumbnailUrl } : episode;
+    }),
+  );
+}
+
+async function fetchSpotifyOembedThumbnail(canonicalUrl) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+
+  try {
+    const response = await fetch(
+      `https://open.spotify.com/oembed?url=${encodeURIComponent(canonicalUrl)}`,
+      {
+        headers: {
+          'user-agent': USER_AGENT,
+          accept: 'application/json',
+        },
+        signal: controller.signal,
+      },
+    );
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const data = await response.json();
+    return typeof data.thumbnail_url === 'string' ? data.thumbnail_url : null;
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 function normalizeEpisode(feed, parsedEpisode, rules, existingClassification) {

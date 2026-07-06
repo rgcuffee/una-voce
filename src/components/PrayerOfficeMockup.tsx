@@ -74,7 +74,11 @@ type OptionItem = {
   isLiveNow?: boolean;
 };
 
-type PartnerPrayerVideoType = 'lauds' | 'midday_prayer' | 'vespers';
+type PartnerPrayerVideoType =
+  | 'lauds'
+  | 'midday_prayer'
+  | 'vespers'
+  | 'compline';
 
 type PartnerPrayerVideo = {
   partnerName: string;
@@ -92,7 +96,11 @@ type PartnerPrayerVideo = {
   scheduledStartAt: string | null;
 };
 
-type PartnerPrayerAudioType = 'lauds' | 'midday_prayer' | 'vespers';
+type PartnerPrayerAudioType =
+  | 'lauds'
+  | 'midday_prayer'
+  | 'vespers'
+  | 'compline';
 
 type PartnerPrayerAudio = {
   partnerName: string;
@@ -310,24 +318,6 @@ const SEGMENTS: Segment[] = [
         title: 'The Little Oratory',
         description:
           'Guided video office with verse overlays and clear transitions through each section.',
-      },
-      {
-        meta: 'Guided Video · Lauds',
-        title: 'Psalm and Laurel',
-        description:
-          'Chanted Prayer with clear verse cues and responsive pauses for personal reflection.',
-      },
-      {
-        meta: 'Mock Abbey',
-        title: 'Ridgehaven Priory Video Office',
-        description:
-          'Chapel-captured Morning Prayer video with natural acoustics and full liturgical flow.',
-      },
-      {
-        meta: 'Abbey',
-        title: 'Cedarwell Abbey Liturgical Video',
-        description:
-          'Abbey-hosted prayer video with fixed camera, chant responses, and text callouts.',
       },
     ],
     live: [
@@ -921,24 +911,6 @@ const SEGMENTS: Segment[] = [
         description:
           'Evening video prayer with on-screen text and guided responses.',
       },
-      {
-        meta: 'Content Creator',
-        title: 'Psalm and Laurel',
-        description:
-          'Vespers video session with chapter markers and psalm subtitles.',
-      },
-      {
-        meta: 'Mock Abbey',
-        title: 'Ridgehaven Priory Vespers Video',
-        description:
-          'Evening Office video capture with full psalm cycle and Magnificat sequence.',
-      },
-      {
-        meta: 'Abbey',
-        title: 'Solesmes Abbey Vespers Recording',
-        description:
-          'Traditional abbey Vespers video with antiphon cues and reverent pacing.',
-      },
     ],
     live: [
       {
@@ -1287,7 +1259,7 @@ const SEGMENT_SUBTITLES: Record<string, string> = {
   'segment-office': 'Matins',
   'segment-morning': 'Lauds',
   'segment-midmorning': 'Terce',
-  'segment-midday': 'Sext',
+  'segment-midday': 'Terce | Sext | None',
   'segment-midafternoon': 'None',
   'segment-evening': 'Vespers',
   'segment-night': 'Compline',
@@ -1317,7 +1289,7 @@ const SIDEBAR_ITEMS: SidebarEntry[] = [
     children: [
       {
         title: 'Midday',
-        subtitle: 'Sext',
+        subtitle: 'Terce | Sext | None',
         segmentId: 'segment-midday',
       },
     ],
@@ -1579,6 +1551,11 @@ const PARTNER_VIDEO_PRAYER_META: Record<
     description: (partnerName) =>
       `Pray today's Evening Prayer with ${partnerName}.`,
   },
+  compline: {
+    label: 'Compline',
+    description: (partnerName) =>
+      `Pray today's Night Prayer with ${partnerName}.`,
+  },
 };
 
 const PARTNER_AUDIO_PRAYER_META: Record<
@@ -1603,6 +1580,11 @@ const PARTNER_AUDIO_PRAYER_META: Record<
     description: (partnerName) =>
       `Listen to today's Evening Prayer with ${partnerName}.`,
   },
+  compline: {
+    label: 'Compline',
+    description: (partnerName) =>
+      `Listen to today's Night Prayer with ${partnerName}.`,
+  },
 };
 
 function segmentIdForPartnerVideo(video: PartnerPrayerVideo) {
@@ -1614,10 +1596,12 @@ function segmentIdForPartnerVideo(video: PartnerPrayerVideo) {
     return 'segment-evening';
   }
 
+  if (video.prayerType === 'compline') {
+    return 'segment-night';
+  }
+
   if (video.prayerType === 'midday_prayer') {
-    return /\b(nona|none|midafternoon)\b/i.test(video.title)
-      ? 'segment-midafternoon'
-      : 'segment-midday';
+    return 'segment-midday';
   }
 
   return null;
@@ -1673,10 +1657,12 @@ function segmentIdForPartnerAudio(audio: PartnerPrayerAudio) {
     return 'segment-evening';
   }
 
+  if (audio.prayerType === 'compline') {
+    return 'segment-night';
+  }
+
   if (audio.prayerType === 'midday_prayer') {
-    return /\b(nona|none|midafternoon)\b/i.test(audio.title)
-      ? 'segment-midafternoon'
-      : 'segment-midday';
+    return 'segment-midday';
   }
 
   return null;
@@ -1740,8 +1726,8 @@ const WORTH_ABBEY_PRAYER_META: Record<
   },
   midday_prayer: {
     segmentId: 'segment-midday',
-    label: 'Sext',
-    description: 'Join Worth Abbey for midday prayer at the sixth hour.',
+    label: 'Terce | Sext | None',
+    description: 'Join Worth Abbey for daytime prayer.',
   },
   vespers: {
     segmentId: 'segment-evening',
@@ -2640,7 +2626,7 @@ export function PrayerOfficeMockup() {
           .eq('display_status', 'approved')
           .eq('prayer_date', selectedDate)
           .eq('video_kind', 'video')
-          .in('prayer_type', ['lauds', 'midday_prayer', 'vespers'])
+          .in('prayer_type', ['lauds', 'midday_prayer', 'vespers', 'compline'])
           .order('published_at', { ascending: false })
           .abortSignal(controller.signal);
 
@@ -2697,7 +2683,7 @@ export function PrayerOfficeMockup() {
           )
           .eq('display_status', 'approved')
           .eq('prayer_date', selectedDate)
-          .in('prayer_type', ['lauds', 'midday_prayer', 'vespers'])
+          .in('prayer_type', ['lauds', 'midday_prayer', 'vespers', 'compline'])
           .order('published_at', { ascending: false })
           .abortSignal(controller.signal);
 

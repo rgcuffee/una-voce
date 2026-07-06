@@ -90,7 +90,7 @@ export function CommunityPage({
               onClick={() => onOpenCommunity?.(community.slug)}
             >
               <span
-                className={`community-card-image${community.imageUrl ? '' : ' empty'}`}
+                className={`community-card-image community-${community.slug}${community.imageUrl ? '' : ' empty'}`}
                 style={
                   community.imageUrl
                     ? { backgroundImage: `url(${community.imageUrl})` }
@@ -145,7 +145,7 @@ function CommunityDetail({
       </button>
 
       <header
-        className={`community-profile-hero${community.imageUrl ? '' : ' empty'}`}
+        className={`community-profile-hero community-${community.slug}${community.imageUrl ? '' : ' empty'}`}
         style={
           community.imageUrl
             ? { backgroundImage: `url(${community.imageUrl})` }

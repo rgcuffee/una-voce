@@ -2614,10 +2614,22 @@ body {
 }
 
 .community-card-image {
+    position: relative;
     min-height: 100%;
+    overflow: hidden;
     border-radius: 12px 0 0 12px;
     background-position: center;
     background-size: cover;
+}
+
+.community-card-image::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(12, 11, 9, 0.1)),
+        linear-gradient(90deg, transparent 68%, rgba(255, 255, 255, 0.24));
+    pointer-events: none;
 }
 
 .community-card-body {
@@ -2668,6 +2680,7 @@ body {
 }
 
 .community-profile-hero {
+    position: relative;
     min-height: 330px;
     display: flex;
     align-items: flex-end;
@@ -2675,14 +2688,34 @@ body {
     border-radius: 16px;
     background-position: center;
     background-size: cover;
+    box-shadow:
+        inset 0 -190px 130px rgba(9, 8, 6, 0.46),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.08);
     margin-bottom: 28px;
 }
 
+.community-profile-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(180deg, rgba(9, 8, 6, 0.14), rgba(9, 8, 6, 0.08) 30%, rgba(9, 8, 6, 0.58)),
+        linear-gradient(90deg, rgba(9, 8, 6, 0.16), transparent 46%, rgba(9, 8, 6, 0.08));
+    pointer-events: none;
+}
+
+.community-profile-hero.community-cathaholic-music {
+    background-position: top center;
+}
+
 .community-profile-overlay {
+    position: relative;
+    z-index: 1;
     width: 100%;
     padding: 82px 28px 26px;
-    background: linear-gradient(180deg, transparent, rgba(12, 11, 9, 0.78));
+    background: linear-gradient(180deg, transparent, rgba(12, 11, 9, 0.42));
     color: var(--white);
+    text-shadow: 0 1px 12px rgba(0, 0, 0, 0.28);
 }
 
 .community-profile-overlay .page-eyebrow {

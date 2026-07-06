@@ -3,6 +3,9 @@ node_modules/
 
 # Build output
 dist/
+dist/index.html
+dist/sw.js
+
 build/
 out/
 coverage/
