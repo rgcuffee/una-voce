@@ -221,6 +221,59 @@ export type Database = {
                     },
                 ];
             };
+            partner_spotify_feeds: {
+                Row: {
+                    id: string;
+                    partner_id: string;
+                    spotify_show_id: string;
+                    show_url: string;
+                    embed_url: string;
+                    rss_url: string | null;
+                    polling_interval_minutes: number;
+                    import_from_date: string | null;
+                    active: boolean;
+                    last_polled_at: string | null;
+                    created_at: string;
+                    updated_at: string;
+                };
+                Insert: {
+                    id?: string;
+                    partner_id: string;
+                    spotify_show_id: string;
+                    show_url: string;
+                    embed_url: string;
+                    rss_url?: string | null;
+                    polling_interval_minutes?: number;
+                    import_from_date?: string | null;
+                    active?: boolean;
+                    last_polled_at?: string | null;
+                    created_at?: string;
+                    updated_at?: string;
+                };
+                Update: {
+                    id?: string;
+                    partner_id?: string;
+                    spotify_show_id?: string;
+                    show_url?: string;
+                    embed_url?: string;
+                    rss_url?: string | null;
+                    polling_interval_minutes?: number;
+                    import_from_date?: string | null;
+                    active?: boolean;
+                    last_polled_at?: string | null;
+                    created_at?: string;
+                    updated_at?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: 'partner_spotify_feeds_partner_id_fkey';
+                        columns: ['partner_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'partners';
+                        referencedColumns: ['id'];
+                    },
+                ];
+            };
             partner_classification_rules: {
                 Row: {
                     id: string;
@@ -345,6 +398,84 @@ export type Database = {
                         columns: ['feed_id'];
                         isOneToOne: false;
                         referencedRelation: 'partner_youtube_feeds';
+                        referencedColumns: ['id'];
+                    },
+                ];
+            };
+            spotify_episodes: {
+                Row: {
+                    id: string;
+                    partner_id: string;
+                    feed_id: string;
+                    spotify_episode_id: string | null;
+                    guid: string;
+                    title: string;
+                    description: string | null;
+                    published_at: string;
+                    prayer_date: string | null;
+                    duration_seconds: number | null;
+                    image_url: string | null;
+                    audio_url: string | null;
+                    canonical_url: string;
+                    embed_url: string;
+                    prayer_type: LiturgicalHour | null;
+                    display_status: YoutubeVideoDisplayStatus;
+                    created_at: string;
+                    updated_at: string;
+                };
+                Insert: {
+                    id?: string;
+                    partner_id: string;
+                    feed_id: string;
+                    spotify_episode_id?: string | null;
+                    guid: string;
+                    title: string;
+                    description?: string | null;
+                    published_at: string;
+                    prayer_date?: string | null;
+                    duration_seconds?: number | null;
+                    image_url?: string | null;
+                    audio_url?: string | null;
+                    canonical_url: string;
+                    embed_url: string;
+                    prayer_type?: LiturgicalHour | null;
+                    display_status?: YoutubeVideoDisplayStatus;
+                    created_at?: string;
+                    updated_at?: string;
+                };
+                Update: {
+                    id?: string;
+                    partner_id?: string;
+                    feed_id?: string;
+                    spotify_episode_id?: string | null;
+                    guid?: string;
+                    title?: string;
+                    description?: string | null;
+                    published_at?: string;
+                    prayer_date?: string | null;
+                    duration_seconds?: number | null;
+                    image_url?: string | null;
+                    audio_url?: string | null;
+                    canonical_url?: string;
+                    embed_url?: string;
+                    prayer_type?: LiturgicalHour | null;
+                    display_status?: YoutubeVideoDisplayStatus;
+                    created_at?: string;
+                    updated_at?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: 'spotify_episodes_partner_id_fkey';
+                        columns: ['partner_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'partners';
+                        referencedColumns: ['id'];
+                    },
+                    {
+                        foreignKeyName: 'spotify_episodes_feed_id_fkey';
+                        columns: ['feed_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'partner_spotify_feeds';
                         referencedColumns: ['id'];
                     },
                 ];

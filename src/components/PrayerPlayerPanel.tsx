@@ -14,7 +14,7 @@ export interface PrayerPlayerSession {
   ministryId?: string;
   hour?: string;
   locale?: string;
-  provider: 'youtube' | 'vimeo' | 'external';
+  provider: 'youtube' | 'vimeo' | 'spotify' | 'external';
   videoId: string;
   title: string;
   statusLabel?: string;
@@ -24,6 +24,7 @@ export interface PrayerPlayerSession {
   communityBadgeStatus?: PartnerBadgeStatus;
   pageContext: string;
   sourceUrl: string;
+  embedUrl?: string;
 }
 
 interface PrayerPlayerPanelProps {
@@ -94,6 +95,10 @@ function embedUrlFor(session: PrayerPlayerSession) {
     const origin =
       typeof window === 'undefined' ? '' : `&origin=${window.location.origin}`;
     return `https://www.youtube-nocookie.com/embed/${session.videoId}?rel=0&modestbranding=1&enablejsapi=1${origin}`;
+  }
+
+  if (session.provider === 'spotify') {
+    return session.embedUrl ?? session.sourceUrl;
   }
 
   return session.sourceUrl;

@@ -114,11 +114,23 @@ export async function handler(event) {
 
 async function dashboardResponse() {
   const today = new Date().toISOString().slice(0, 10);
-  const [partnersResult, feedsResult, rulesResult, videosResult] =
+  const [
+    partnersResult,
+    feedsResult,
+    spotifyFeedsResult,
+    rulesResult,
+    videosResult,
+    episodesResult,
+  ] =
     await Promise.all([
       supabase.from('partners').select('*').order('name'),
       supabase
         .from('partner_youtube_feeds')
+        .select('*')
+        .order('active', { ascending: false })
+        .order('last_polled_at', { ascending: false }),
+      supabase
+        .from('partner_spotify_feeds')
         .select('*')
         .order('active', { ascending: false })
         .order('last_polled_at', { ascending: false }),
@@ -131,19 +143,28 @@ async function dashboardResponse() {
         .select('*')
         .order('published_at', { ascending: false })
         .limit(250),
+      supabase
+        .from('spotify_episodes')
+        .select('*')
+        .order('published_at', { ascending: false })
+        .limit(250),
     ]);
 
   throwIfError(partnersResult.error);
   throwIfError(feedsResult.error);
+  throwIfError(spotifyFeedsResult.error);
   throwIfError(rulesResult.error);
   throwIfError(videosResult.error);
+  throwIfError(episodesResult.error);
 
   const partners = partnersResult.data ?? [];
   const feeds = feedsResult.data ?? [];
+  const spotifyFeeds = spotifyFeedsResult.data ?? [];
   const rules = rulesResult.data ?? [];
   const videos = videosResult.data ?? [];
+  const episodes = episodesResult.data ?? [];
   const summaries = partners.map((partner) =>
-    partnerSummary(partner.id, feeds, rules, videos, today),
+    partnerSummary(partner.id, feeds, spotifyFeeds, rules, videos, episodes, today),
   );
 
   return {
@@ -152,8 +173,10 @@ async function dashboardResponse() {
     today,
     partners,
     feeds,
+    spotifyFeeds,
     rules,
     videos,
+    episodes,
     summaries,
     totals: {
       partners: partners.length,
@@ -162,26 +185,33 @@ async function dashboardResponse() {
       ).length,
       pendingVideos: videos.filter((video) => video.display_status === 'pending')
         .length,
+      pendingEpisodes: episodes.filter((episode) => episode.display_status === 'pending')
+        .length,
       approvedToday: videos.filter(
         (video) =>
           video.display_status === 'approved' && video.prayer_date === today,
+      ).length + episodes.filter(
+        (episode) =>
+          episode.display_status === 'approved' && episode.prayer_date === today,
       ).length,
-      staleFeeds: feeds.filter((feed) => isStaleFeed(feed)).length,
+      staleFeeds: [...feeds, ...spotifyFeeds].filter((feed) => isStaleFeed(feed)).length,
     },
   };
 }
 
-function partnerSummary(partnerId, feeds, rules, videos, today) {
+function partnerSummary(partnerId, feeds, spotifyFeeds, rules, videos, episodes, today) {
   const partnerFeeds = feeds.filter((feed) => feed.partner_id === partnerId);
+  const partnerSpotifyFeeds = spotifyFeeds.filter((feed) => feed.partner_id === partnerId);
   const partnerRules = rules.filter((rule) => rule.partner_id === partnerId);
   const partnerVideos = videos.filter((video) => video.partner_id === partnerId);
+  const partnerEpisodes = episodes.filter((episode) => episode.partner_id === partnerId);
   const approvedTodayHours = new Set(
-    partnerVideos
+    [...partnerVideos, ...partnerEpisodes]
       .filter(
-        (video) =>
-          video.display_status === 'approved' && video.prayer_date === today,
+        (item) =>
+          item.display_status === 'approved' && item.prayer_date === today,
       )
-      .map((video) => video.prayer_type)
+      .map((item) => item.prayer_type)
       .filter(Boolean),
   );
 
@@ -189,20 +219,32 @@ function partnerSummary(partnerId, feeds, rules, videos, today) {
     partnerId,
     feedCount: partnerFeeds.length,
     activeFeedCount: partnerFeeds.filter((feed) => feed.active).length,
+    spotifyFeedCount: partnerSpotifyFeeds.length,
+    activeSpotifyFeedCount: partnerSpotifyFeeds.filter((feed) => feed.active).length,
     ruleCount: partnerRules.length,
     videoCount: partnerVideos.length,
+    episodeCount: partnerEpisodes.length,
     pendingVideoCount: partnerVideos.filter(
       (video) => video.display_status === 'pending',
     ).length,
-    approvedTodayCount: partnerVideos.filter(
-      (video) =>
-        video.display_status === 'approved' && video.prayer_date === today,
+    pendingEpisodeCount: partnerEpisodes.filter(
+      (episode) => episode.display_status === 'pending',
+    ).length,
+    approvedTodayCount: [...partnerVideos, ...partnerEpisodes].filter(
+      (item) =>
+        item.display_status === 'approved' && item.prayer_date === today,
     ).length,
     hiddenVideoCount: partnerVideos.filter(
       (video) => video.display_status === 'hidden',
     ).length,
-    lastPolledAt: latestDate(partnerFeeds.map((feed) => feed.last_polled_at)),
+    hiddenEpisodeCount: partnerEpisodes.filter(
+      (episode) => episode.display_status === 'hidden',
+    ).length,
+    lastPolledAt: latestDate(
+      [...partnerFeeds, ...partnerSpotifyFeeds].map((feed) => feed.last_polled_at),
+    ),
     latestVideoAt: latestDate(partnerVideos.map((video) => video.published_at)),
+    latestEpisodeAt: latestDate(partnerEpisodes.map((episode) => episode.published_at)),
     missingTodayHours: PRAYER_HOURS.filter((hour) => !approvedTodayHours.has(hour)),
   };
 }
@@ -213,10 +255,14 @@ async function handleAction(payload) {
       return upsertPartner(payload.partner);
     case 'upsertFeed':
       return upsertFeed(payload.feed);
+    case 'upsertSpotifyFeed':
+      return upsertSpotifyFeed(payload.feed);
     case 'upsertRule':
       return upsertRule(payload.rule);
     case 'updateVideo':
       return updateVideo(payload.video);
+    case 'updateEpisode':
+      return updateEpisode(payload.episode);
     default:
       return { ok: false, error: 'Unsupported action' };
   }
@@ -296,6 +342,32 @@ async function upsertFeed(feed) {
   return { ok: true, feed: data };
 }
 
+async function upsertSpotifyFeed(feed) {
+  const clean = compact({
+    id: feed.id,
+    partner_id: requiredString(feed.partner_id, 'partner_id'),
+    spotify_show_id: requiredString(feed.spotify_show_id, 'spotify_show_id'),
+    show_url: requiredString(feed.show_url, 'show_url'),
+    embed_url: requiredString(feed.embed_url, 'embed_url'),
+    rss_url: nullableString(feed.rss_url),
+    polling_interval_minutes: positiveInteger(
+      feed.polling_interval_minutes,
+      'polling_interval_minutes',
+    ),
+    import_from_date: nullableString(feed.import_from_date),
+    active: Boolean(feed.active),
+  });
+
+  const { data, error } = await supabase
+    .from('partner_spotify_feeds')
+    .upsert(clean, { onConflict: 'spotify_show_id' })
+    .select('*')
+    .single();
+
+  throwIfError(error);
+  return { ok: true, feed: data };
+}
+
 async function upsertRule(rule) {
   const clean = compact({
     id: rule.id,
@@ -349,6 +421,29 @@ async function updateVideo(video) {
 
   throwIfError(error);
   return { ok: true, video: data };
+}
+
+async function updateEpisode(episode) {
+  const id = requiredString(episode.id, 'id');
+  const updates = compact({
+    prayer_type: nullableEnumValue(episode.prayer_type, PRAYER_HOURS, 'prayer_type'),
+    prayer_date: nullableString(episode.prayer_date),
+    display_status: enumValue(
+      episode.display_status,
+      ['pending', 'approved', 'hidden', 'expired'],
+      'display_status',
+    ),
+  });
+
+  const { data, error } = await supabase
+    .from('spotify_episodes')
+    .update(updates)
+    .eq('id', id)
+    .select('*')
+    .single();
+
+  throwIfError(error);
+  return { ok: true, episode: data };
 }
 
 function isStaleFeed(feed) {

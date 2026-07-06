@@ -4,17 +4,22 @@ import {
   loadAdminDashboard,
   storeAdminSecret,
   updateVideo,
+  updateEpisode,
   upsertFeed,
   upsertPartner,
   upsertRule,
+  upsertSpotifyFeed,
   type AdminClassificationRule,
   type AdminDashboardData,
   type AdminPartner,
   type AdminPartnerFeed,
+  type AdminSpotifyEpisode,
+  type AdminSpotifyFeed,
   type AdminYoutubeVideo,
   type FeedDraft,
   type PartnerDraft,
   type RuleDraft,
+  type SpotifyFeedDraft,
 } from './adminApi';
 import type {
   LiturgicalHour,
@@ -26,7 +31,7 @@ import type {
 } from '../lib/database.types';
 
 type LoadState = 'idle' | 'loading' | 'ready' | 'error';
-type AdminSection = 'overview' | 'partners' | 'videos' | 'feeds' | 'rules';
+type AdminSection = 'overview' | 'partners' | 'videos' | 'audio' | 'feeds' | 'rules';
 
 const HOUR_OPTIONS: { value: LiturgicalHour; label: string }[] = [
   { value: 'office_of_readings', label: 'Office of Readings' },
@@ -145,6 +150,33 @@ function feedDraft(partnerId: string, feed?: AdminPartnerFeed | null): FeedDraft
   };
 }
 
+function spotifyFeedDraft(partnerId: string, feed?: AdminSpotifyFeed | null): SpotifyFeedDraft {
+  if (feed) {
+    return {
+      id: feed.id,
+      partner_id: feed.partner_id,
+      spotify_show_id: feed.spotify_show_id,
+      show_url: feed.show_url,
+      embed_url: feed.embed_url,
+      rss_url: feed.rss_url ?? '',
+      polling_interval_minutes: feed.polling_interval_minutes,
+      import_from_date: feed.import_from_date ?? '',
+      active: feed.active,
+    };
+  }
+
+  return {
+    partner_id: partnerId,
+    spotify_show_id: '',
+    show_url: '',
+    embed_url: '',
+    rss_url: '',
+    polling_interval_minutes: 120,
+    import_from_date: '',
+    active: true,
+  };
+}
+
 function ruleDraft(partnerId: string, rule?: AdminClassificationRule | null): RuleDraft {
   if (rule) {
     return {
@@ -219,6 +251,11 @@ export function AdminDashboardPage() {
     [data, selectedPartnerId],
   );
 
+  const partnerSpotifyFeeds = useMemo(
+    () => data?.spotifyFeeds.filter((feed) => feed.partner_id === selectedPartnerId) ?? [],
+    [data, selectedPartnerId],
+  );
+
   const partnerRules = useMemo(
     () => data?.rules.filter((rule) => rule.partner_id === selectedPartnerId) ?? [],
     [data, selectedPartnerId],
@@ -226,6 +263,11 @@ export function AdminDashboardPage() {
 
   const partnerVideos = useMemo(
     () => data?.videos.filter((video) => video.partner_id === selectedPartnerId) ?? [],
+    [data, selectedPartnerId],
+  );
+
+  const partnerEpisodes = useMemo(
+    () => data?.episodes.filter((episode) => episode.partner_id === selectedPartnerId) ?? [],
     [data, selectedPartnerId],
   );
 
@@ -240,7 +282,8 @@ export function AdminDashboardPage() {
           <button className={section === 'overview' ? 'active' : ''} type="button" onClick={() => setSection('overview')}>Overview</button>
           <button className={section === 'partners' ? 'active' : ''} type="button" onClick={() => setSection('partners')}>Partners</button>
           <button className={section === 'videos' ? 'active' : ''} type="button" onClick={() => setSection('videos')}>Video Review</button>
-          <button className={section === 'feeds' ? 'active' : ''} type="button" onClick={() => setSection('feeds')}>Feed Health</button>
+          <button className={section === 'audio' ? 'active' : ''} type="button" onClick={() => setSection('audio')}>Audio Review</button>
+          <button className={section === 'feeds' ? 'active' : ''} type="button" onClick={() => setSection('feeds')}>Source Health</button>
           <button className={section === 'rules' ? 'active' : ''} type="button" onClick={() => setSection('rules')}>Rules</button>
           <a href="/admin/calendar-engine">Calendar Engine</a>
         </nav>
@@ -286,6 +329,7 @@ export function AdminDashboardPage() {
             <section className="engine-metrics" aria-label="Partner operations summary">
               <Metric label="Partners" value={data.totals.partners} detail={`${data.totals.activePartners} active`} />
               <Metric label="Pending Videos" value={data.totals.pendingVideos} detail="Awaiting review" />
+              <Metric label="Pending Audio" value={data.totals.pendingEpisodes} detail="Awaiting review" />
               <Metric label="Approved Today" value={data.totals.approvedToday} detail={data.today} />
               <Metric label="Stale Feeds" value={data.totals.staleFeeds} detail="Past polling interval" />
             </section>
@@ -309,10 +353,20 @@ export function AdminDashboardPage() {
                 onSaved={refresh}
               />
             )}
+            {section === 'audio' && (
+              <AudioSection
+                data={data}
+                episodes={partnerEpisodes}
+                selectedPartnerId={selectedPartnerId}
+                onSelectPartner={setSelectedPartnerId}
+                onSaved={refresh}
+              />
+            )}
             {section === 'feeds' && (
               <FeedsSection
                 data={data}
                 feeds={partnerFeeds}
+                spotifyFeeds={partnerSpotifyFeeds}
                 selectedPartnerId={selectedPartnerId}
                 onSelectPartner={setSelectedPartnerId}
                 onSaved={refresh}
@@ -390,9 +444,10 @@ function Overview({
               <th>Partner</th>
               <th>Public Tier</th>
               <th>Ops Status</th>
-              <th>Feeds</th>
+              <th>Sources</th>
               <th>Rules</th>
               <th>Videos</th>
+              <th>Audio</th>
               <th>Pending</th>
               <th>Today</th>
               <th>Last Poll</th>
@@ -419,10 +474,11 @@ function Overview({
                   </td>
                   <td><span className={`engine-badge ${statusClass(partner.relationship_status)}`}>{partner.relationship_status}</span></td>
                   <td><span className={`engine-badge ${statusClass(partner.onboarding_status)}`}>{partner.onboarding_status}</span></td>
-                  <td>{summary?.activeFeedCount ?? 0}/{summary?.feedCount ?? 0}</td>
+                  <td>YT {summary?.activeFeedCount ?? 0}/{summary?.feedCount ?? 0} · SP {summary?.activeSpotifyFeedCount ?? 0}/{summary?.spotifyFeedCount ?? 0}</td>
                   <td>{summary?.ruleCount ?? 0}</td>
                   <td>{summary?.videoCount ?? 0}</td>
-                  <td>{summary?.pendingVideoCount ?? 0}</td>
+                  <td>{summary?.episodeCount ?? 0}</td>
+                  <td>{(summary?.pendingVideoCount ?? 0) + (summary?.pendingEpisodeCount ?? 0)}</td>
                   <td>{summary?.approvedTodayCount ?? 0}</td>
                   <td>{formatDateTime(summary?.lastPolledAt)}</td>
                   <td>{summary?.missingTodayHours.length ? summary.missingTodayHours.join(', ') : 'Covered'}</td>
@@ -680,23 +736,142 @@ function VideoReviewCard({ video, onSaved }: { video: AdminYoutubeVideo; onSaved
   );
 }
 
+function AudioSection({
+  data,
+  episodes,
+  selectedPartnerId,
+  onSelectPartner,
+  onSaved,
+}: {
+  data: AdminDashboardData;
+  episodes: AdminSpotifyEpisode[];
+  selectedPartnerId: string;
+  onSelectPartner: (id: string) => void;
+  onSaved: () => Promise<void>;
+}) {
+  const [statusFilter, setStatusFilter] = useState<YoutubeVideoDisplayStatus | 'all'>('pending');
+  const shownEpisodes = episodes.filter((episode) => statusFilter === 'all' || episode.display_status === statusFilter);
+
+  return (
+    <section className="engine-section">
+      <div className="engine-section-heading">
+        <div>
+          <p>Review queue</p>
+          <h2>Partner Audio</h2>
+        </div>
+        <div className="engine-controls">
+          <PartnerPicker data={data} value={selectedPartnerId} onChange={onSelectPartner} />
+          <label>
+            Status
+            <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as YoutubeVideoDisplayStatus | 'all')}>
+              <option value="all">All</option>
+              {STATUS_OPTIONS.map((status) => <option key={status} value={status}>{status}</option>)}
+            </select>
+          </label>
+        </div>
+      </div>
+      <div className="admin-video-list">
+        {shownEpisodes.length === 0 ? (
+          <div className="engine-empty small">No audio episodes match this view.</div>
+        ) : (
+          shownEpisodes.map((episode) => (
+            <EpisodeReviewCard key={episode.id} episode={episode} onSaved={onSaved} />
+          ))
+        )}
+      </div>
+    </section>
+  );
+}
+
+function EpisodeReviewCard({ episode, onSaved }: { episode: AdminSpotifyEpisode; onSaved: () => Promise<void> }) {
+  const [status, setStatus] = useState(episode.display_status);
+  const [hour, setHour] = useState<LiturgicalHour | ''>(episode.prayer_type ?? '');
+  const [date, setDate] = useState(episode.prayer_date ?? '');
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    setStatus(episode.display_status);
+    setHour(episode.prayer_type ?? '');
+    setDate(episode.prayer_date ?? '');
+  }, [episode]);
+
+  async function save(nextStatus = status) {
+    setSaving(true);
+    try {
+      await updateEpisode({
+        id: episode.id,
+        display_status: nextStatus,
+        prayer_type: hour || null,
+        prayer_date: date || null,
+      });
+      await onSaved();
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <article className="admin-video-card">
+      <a href={episode.canonical_url} target="_blank" rel="noreferrer" className="admin-video-thumb">
+        {episode.image_url ? <img alt="" src={episode.image_url} /> : <span>No image</span>}
+      </a>
+      <div className="admin-video-body">
+        <span className={`engine-badge ${statusClass(episode.display_status)}`}>{episode.display_status}</span>
+        <h3>{episode.title}</h3>
+        <p>{formatDateTime(episode.published_at)} · Spotify audio</p>
+        <div className="admin-inline-controls">
+          <label>
+            Prayer date
+            <input type="date" value={localDate(date)} onChange={(event) => setDate(event.target.value)} />
+          </label>
+          <label>
+            Hour
+            <select value={hour} onChange={(event) => setHour(event.target.value as LiturgicalHour | '')}>
+              <option value="">Unclassified</option>
+              {HOUR_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+            </select>
+          </label>
+          <label>
+            Status
+            <select value={status} onChange={(event) => setStatus(event.target.value as YoutubeVideoDisplayStatus)}>
+              {STATUS_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
+            </select>
+          </label>
+        </div>
+        <div className="admin-action-row">
+          <button type="button" className="admin-button primary" disabled={saving} onClick={() => save(status)}>Save</button>
+          <button type="button" className="admin-button" disabled={saving} onClick={() => save('approved')}>Approve</button>
+          <button type="button" className="admin-button" disabled={saving} onClick={() => save('hidden')}>Hide</button>
+        </div>
+      </div>
+    </article>
+  );
+}
+
 function FeedsSection({
   data,
   feeds,
+  spotifyFeeds,
   selectedPartnerId,
   onSelectPartner,
   onSaved,
 }: {
   data: AdminDashboardData;
   feeds: AdminPartnerFeed[];
+  spotifyFeeds: AdminSpotifyFeed[];
   selectedPartnerId: string;
   onSelectPartner: (id: string) => void;
   onSaved: () => Promise<void>;
 }) {
   const [draft, setDraft] = useState<FeedDraft>(() => feedDraft(selectedPartnerId));
+  const [spotifyDraft, setSpotifyDraft] = useState<SpotifyFeedDraft>(() => spotifyFeedDraft(selectedPartnerId));
   const [saving, setSaving] = useState(false);
+  const [savingSpotify, setSavingSpotify] = useState(false);
 
-  useEffect(() => setDraft(feedDraft(selectedPartnerId)), [selectedPartnerId]);
+  useEffect(() => {
+    setDraft(feedDraft(selectedPartnerId));
+    setSpotifyDraft(spotifyFeedDraft(selectedPartnerId));
+  }, [selectedPartnerId]);
 
   async function save() {
     setSaving(true);
@@ -709,28 +884,50 @@ function FeedsSection({
     }
   }
 
+  async function saveSpotify() {
+    setSavingSpotify(true);
+    try {
+      await upsertSpotifyFeed(spotifyDraft);
+      await onSaved();
+      setSpotifyDraft(spotifyFeedDraft(selectedPartnerId));
+    } finally {
+      setSavingSpotify(false);
+    }
+  }
+
   return (
     <section className="engine-section admin-editor-grid">
       <div>
         <div className="engine-section-heading compact">
           <div>
             <p>Polling</p>
-            <h2>YouTube Feeds</h2>
+            <h2>Partner Sources</h2>
           </div>
           <div className="engine-controls">
             <PartnerPicker data={data} value={selectedPartnerId} onChange={onSelectPartner} />
           </div>
         </div>
         <div className="admin-list">
+          <h3 className="admin-list-heading">YouTube</h3>
           {feeds.map((feed) => (
             <button key={feed.id} type="button" onClick={() => setDraft(feedDraft(selectedPartnerId, feed))}>
               <strong>{feed.type}: {feed.youtube_playlist_id ?? feed.youtube_channel_id}</strong>
               <span>{feed.active ? 'active' : 'inactive'} · last poll {formatDateTime(feed.last_polled_at)}</span>
             </button>
           ))}
+          <h3 className="admin-list-heading">Spotify</h3>
+          {spotifyFeeds.map((feed) => (
+            <button key={feed.id} type="button" onClick={() => setSpotifyDraft(spotifyFeedDraft(selectedPartnerId, feed))}>
+              <strong>show: {feed.spotify_show_id}</strong>
+              <span>{feed.active ? 'active' : 'inactive'} · {feed.rss_url ? 'RSS configured' : 'missing RSS'} · last poll {formatDateTime(feed.last_polled_at)}</span>
+            </button>
+          ))}
         </div>
       </div>
-      <FeedForm draft={draft} saving={saving} onChange={setDraft} onSave={save} />
+      <div className="admin-stacked-forms">
+        <FeedForm draft={draft} saving={saving} onChange={setDraft} onSave={save} />
+        <SpotifyFeedForm draft={spotifyDraft} saving={savingSpotify} onChange={setSpotifyDraft} onSave={saveSpotify} />
+      </div>
     </section>
   );
 }
@@ -768,6 +965,34 @@ function FeedForm({ draft, saving, onChange, onSave }: { draft: FeedDraft; savin
         </label>
         <button type="button" className="admin-button primary" disabled={saving} onClick={onSave}>
           {saving ? 'Saving...' : 'Save Feed'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function SpotifyFeedForm({ draft, saving, onChange, onSave }: { draft: SpotifyFeedDraft; saving: boolean; onChange: (draft: SpotifyFeedDraft) => void; onSave: () => void }) {
+  return (
+    <div className="admin-form">
+      <div className="engine-section-heading compact">
+        <div>
+          <p>{draft.id ? 'Edit Spotify source' : 'New Spotify source'}</p>
+          <h2>Spotify details</h2>
+        </div>
+      </div>
+      <div className="admin-form-body">
+        <Field label="Show ID" value={draft.spotify_show_id} onChange={(spotify_show_id) => onChange({ ...draft, spotify_show_id })} />
+        <Field label="Show URL" value={draft.show_url} onChange={(show_url) => onChange({ ...draft, show_url })} className="admin-full" />
+        <Field label="Embed URL" value={draft.embed_url} onChange={(embed_url) => onChange({ ...draft, embed_url })} className="admin-full" />
+        <Field label="RSS URL" value={draft.rss_url ?? ''} onChange={(rss_url) => onChange({ ...draft, rss_url })} className="admin-full" />
+        <Field label="Import from" value={draft.import_from_date ?? ''} onChange={(import_from_date) => onChange({ ...draft, import_from_date })} type="date" />
+        <Field label="Polling minutes" value={String(draft.polling_interval_minutes)} onChange={(value) => onChange({ ...draft, polling_interval_minutes: Number(value) || 120 })} type="number" />
+        <label className="admin-check">
+          <input type="checkbox" checked={draft.active} onChange={(event) => onChange({ ...draft, active: event.target.checked })} />
+          Active
+        </label>
+        <button type="button" className="admin-button primary" disabled={saving} onClick={onSave}>
+          {saving ? 'Saving...' : 'Save Spotify Source'}
         </button>
       </div>
     </div>

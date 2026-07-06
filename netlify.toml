@@ -13,6 +13,9 @@
 [functions."youtube-ingest-scheduled"]
   schedule = "*/30 * * * *"
 
+[functions."spotify-ingest-scheduled"]
+  schedule = "*/30 * * * *"
+
 [[redirects]]
   from = "/api/analytics"
   to = "/.netlify/functions/analytics"
@@ -21,6 +24,11 @@
 [[redirects]]
   from = "/api/youtube-ingest"
   to = "/.netlify/functions/youtube-ingest"
+  status = 200
+
+[[redirects]]
+  from = "/api/spotify-ingest"
+  to = "/.netlify/functions/spotify-ingest"
   status = 200
 
 [[redirects]]

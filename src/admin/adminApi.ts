@@ -51,6 +51,21 @@ export type AdminPartnerFeed = {
   updated_at: string;
 };
 
+export type AdminSpotifyFeed = {
+  id: string;
+  partner_id: string;
+  spotify_show_id: string;
+  show_url: string;
+  embed_url: string;
+  rss_url: string | null;
+  polling_interval_minutes: number;
+  import_from_date: string | null;
+  active: boolean;
+  last_polled_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export type AdminClassificationRule = {
   id: string;
   partner_id: string;
@@ -86,17 +101,44 @@ export type AdminYoutubeVideo = {
   updated_at: string;
 };
 
+export type AdminSpotifyEpisode = {
+  id: string;
+  partner_id: string;
+  feed_id: string;
+  spotify_episode_id: string | null;
+  guid: string;
+  title: string;
+  description: string | null;
+  published_at: string;
+  prayer_date: string | null;
+  duration_seconds: number | null;
+  image_url: string | null;
+  audio_url: string | null;
+  canonical_url: string;
+  embed_url: string;
+  prayer_type: LiturgicalHour | null;
+  display_status: YoutubeVideoDisplayStatus;
+  created_at: string;
+  updated_at: string;
+};
+
 export type PartnerSummary = {
   partnerId: string;
   feedCount: number;
   activeFeedCount: number;
+  spotifyFeedCount: number;
+  activeSpotifyFeedCount: number;
   ruleCount: number;
   videoCount: number;
+  episodeCount: number;
   pendingVideoCount: number;
+  pendingEpisodeCount: number;
   approvedTodayCount: number;
   hiddenVideoCount: number;
+  hiddenEpisodeCount: number;
   lastPolledAt: string | null;
   latestVideoAt: string | null;
+  latestEpisodeAt: string | null;
   missingTodayHours: LiturgicalHour[];
 };
 
@@ -106,13 +148,16 @@ export type AdminDashboardData = {
   today: string;
   partners: AdminPartner[];
   feeds: AdminPartnerFeed[];
+  spotifyFeeds: AdminSpotifyFeed[];
   rules: AdminClassificationRule[];
   videos: AdminYoutubeVideo[];
+  episodes: AdminSpotifyEpisode[];
   summaries: PartnerSummary[];
   totals: {
     partners: number;
     activePartners: number;
     pendingVideos: number;
+    pendingEpisodes: number;
     approvedToday: number;
     staleFeeds: number;
   };
@@ -152,6 +197,18 @@ export type FeedDraft = {
   active: boolean;
 };
 
+export type SpotifyFeedDraft = {
+  id?: string;
+  partner_id: string;
+  spotify_show_id: string;
+  show_url: string;
+  embed_url: string;
+  rss_url?: string | null;
+  polling_interval_minutes: number;
+  import_from_date?: string | null;
+  active: boolean;
+};
+
 export type RuleDraft = {
   id?: string;
   partner_id: string;
@@ -166,6 +223,13 @@ export type RuleDraft = {
 };
 
 export type VideoUpdate = {
+  id: string;
+  prayer_type?: LiturgicalHour | null;
+  prayer_date?: string | null;
+  display_status?: YoutubeVideoDisplayStatus;
+};
+
+export type EpisodeUpdate = {
   id: string;
   prayer_type?: LiturgicalHour | null;
   prayer_date?: string | null;
@@ -270,6 +334,13 @@ export function upsertFeed(feed: FeedDraft) {
   });
 }
 
+export function upsertSpotifyFeed(feed: SpotifyFeedDraft) {
+  return adminFetch<{ ok: true; feed: AdminSpotifyFeed }>('/api/admin/partners', {
+    method: 'POST',
+    body: JSON.stringify({ action: 'upsertSpotifyFeed', feed }),
+  });
+}
+
 export function upsertRule(rule: RuleDraft) {
   return adminFetch<{ ok: true; rule: AdminClassificationRule }>('/api/admin/partners', {
     method: 'POST',
@@ -281,5 +352,12 @@ export function updateVideo(video: VideoUpdate) {
   return adminFetch<{ ok: true; video: AdminYoutubeVideo }>('/api/admin/partners', {
     method: 'POST',
     body: JSON.stringify({ action: 'updateVideo', video }),
+  });
+}
+
+export function updateEpisode(episode: EpisodeUpdate) {
+  return adminFetch<{ ok: true; episode: AdminSpotifyEpisode }>('/api/admin/partners', {
+    method: 'POST',
+    body: JSON.stringify({ action: 'updateEpisode', episode }),
   });
 }

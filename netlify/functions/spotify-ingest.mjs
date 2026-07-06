@@ -1,0 +1,562 @@
+import { createClient } from '@supabase/supabase-js';
+
+const JSON_HEADERS = {
+  'content-type': 'application/json',
+};
+
+const USER_AGENT = 'Una Voce Spotify RSS Ingest/1.0 (+https://unavoce.app)';
+const MAX_FEEDS_PER_RUN = 15;
+const FETCH_TIMEOUT_MS = 12000;
+
+const supabaseUrl = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const ingestSharedSecret = process.env.INGEST_SHARED_SECRET;
+
+const supabase =
+  supabaseUrl && supabaseServiceRoleKey
+    ? createClient(supabaseUrl, supabaseServiceRoleKey, {
+        auth: {
+          persistSession: false,
+          autoRefreshToken: false,
+        },
+      })
+    : null;
+
+export async function handler(event) {
+  logInfo('started', {
+    method: event.httpMethod,
+    scheduled: false,
+    hasSupabaseUrl: Boolean(supabaseUrl),
+    hasServiceRoleKey: Boolean(supabaseServiceRoleKey),
+  });
+
+  if (event.httpMethod === 'OPTIONS') {
+    return response(204);
+  }
+
+  if (!['GET', 'POST'].includes(event.httpMethod)) {
+    return response(405, { error: 'Method not allowed' });
+  }
+
+  if (!supabase) {
+    return response(500, { error: 'Spotify ingestion is not configured' });
+  }
+
+  if (!isAuthorized(event)) {
+    return response(401, { error: 'Unauthorized' });
+  }
+
+  const summary = await runSpotifyIngest();
+  return response(summary.ok ? 202 : 500, summary);
+}
+
+export async function runSpotifyIngest() {
+  const dueFeedsResult = await getDueFeeds();
+  if (dueFeedsResult.error) {
+    logError('load_feeds_failed', { error: dueFeedsResult.error.message });
+    return { ok: false, error: 'Unable to load Spotify feeds' };
+  }
+
+  const rulesResult = await getRulesForFeeds(dueFeedsResult.feeds);
+  if (rulesResult.error) {
+    logError('load_rules_failed', { error: rulesResult.error.message });
+    return { ok: false, error: 'Unable to load classification rules' };
+  }
+
+  const results = [];
+  for (const feed of dueFeedsResult.feeds) {
+    results.push(await ingestFeed(feed, rulesResult.rulesByPartnerId));
+  }
+
+  const summary = {
+    ok: true,
+    feedsChecked: results.length,
+    episodesUpserted: results.reduce((total, result) => total + result.upserted, 0),
+    results,
+  };
+
+  logInfo('finished', summary);
+  return summary;
+}
+
+async function getDueFeeds() {
+  const { data, error } = await supabase
+    .from('partner_spotify_feeds')
+    .select(
+      [
+        'id',
+        'partner_id',
+        'spotify_show_id',
+        'show_url',
+        'embed_url',
+        'rss_url',
+        'polling_interval_minutes',
+        'import_from_date',
+        'last_polled_at',
+        'partners!inner(active,onboarding_status)',
+      ].join(','),
+    )
+    .eq('active', true)
+    .eq('partners.active', true)
+    .eq('partners.onboarding_status', 'active')
+    .not('rss_url', 'is', null)
+    .limit(250);
+
+  if (error) {
+    return { error };
+  }
+
+  const now = Date.now();
+  const feeds = (data ?? [])
+    .filter((feed) => isDueForPolling(feed, now))
+    .slice(0, MAX_FEEDS_PER_RUN);
+
+  return { feeds, totalActiveFeeds: data?.length ?? 0 };
+}
+
+async function getRulesForFeeds(feeds) {
+  const partnerIds = [...new Set(feeds.map((feed) => feed.partner_id))];
+  if (partnerIds.length === 0) {
+    return { rulesByPartnerId: new Map() };
+  }
+
+  const { data, error } = await supabase
+    .from('partner_classification_rules')
+    .select(
+      [
+        'id',
+        'partner_id',
+        'include_keywords',
+        'exclude_keywords',
+        'prayer_type',
+        'preferred_language',
+        'priority',
+        'default_display_status',
+      ].join(','),
+    )
+    .in('partner_id', partnerIds)
+    .eq('active', true)
+    .order('priority', { ascending: false });
+
+  if (error) {
+    return { error };
+  }
+
+  const rulesByPartnerId = new Map();
+  for (const rule of data ?? []) {
+    const partnerRules = rulesByPartnerId.get(rule.partner_id) ?? [];
+    partnerRules.push(rule);
+    rulesByPartnerId.set(rule.partner_id, partnerRules);
+  }
+
+  return { rulesByPartnerId };
+}
+
+async function ingestFeed(feed, rulesByPartnerId) {
+  const result = {
+    feedId: feed.id,
+    partnerId: feed.partner_id,
+    fetched: 0,
+    skipped: 0,
+    upserted: 0,
+    error: null,
+  };
+
+  try {
+    const xml = await fetchFeed(feed.rss_url);
+    const parsedEpisodes = parsePodcastRss(xml, feed);
+    const importableEpisodes = parsedEpisodes.filter((episode) =>
+      isImportableEpisode(feed, episode),
+    );
+    const existingClassifications = await getExistingClassifications(
+      importableEpisodes.map((episode) => episode.guid),
+    );
+    const episodes = importableEpisodes.map((episode) =>
+      normalizeEpisode(
+        feed,
+        episode,
+        rulesByPartnerId.get(feed.partner_id) ?? [],
+        existingClassifications.get(episode.guid),
+      ),
+    );
+
+    result.fetched = parsedEpisodes.length;
+    result.skipped = parsedEpisodes.length - importableEpisodes.length;
+
+    if (episodes.length > 0) {
+      const { error } = await supabase
+        .from('spotify_episodes')
+        .upsert(episodes, { onConflict: 'guid' });
+
+      if (error) {
+        throw error;
+      }
+    }
+
+    result.upserted = episodes.length;
+    await markFeedPolled(feed.id);
+    logInfo('feed_finished', result);
+  } catch (error) {
+    result.error = error instanceof Error ? error.message : 'Unknown error';
+    logError('feed_failed', result);
+  }
+
+  return result;
+}
+
+function isImportableEpisode(feed, episode) {
+  if (!feed.import_from_date) {
+    return true;
+  }
+
+  return inferPrayerDate(episode) >= feed.import_from_date;
+}
+
+async function getExistingClassifications(guids) {
+  if (guids.length === 0) {
+    return new Map();
+  }
+
+  const { data, error } = await supabase
+    .from('spotify_episodes')
+    .select('guid,prayer_type,display_status')
+    .in('guid', guids);
+
+  if (error) {
+    throw error;
+  }
+
+  return new Map(
+    (data ?? []).map((episode) => [
+      episode.guid,
+      {
+        prayerType: episode.prayer_type,
+        displayStatus: episode.display_status,
+      },
+    ]),
+  );
+}
+
+async function fetchFeed(url) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+
+  try {
+    const response = await fetch(url, {
+      headers: {
+        'user-agent': USER_AGENT,
+        accept: 'application/rss+xml, application/xml, text/xml;q=0.9',
+      },
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Feed returned ${response.status}`);
+    }
+
+    return await response.text();
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+function parsePodcastRss(xml, feed) {
+  const channelImage =
+    textContent(textContentWithMarkup(xml, 'channel') ?? '', 'url') ?? null;
+
+  return splitXmlElements(xml, 'item').flatMap((itemXml) => {
+    const guid =
+      textContent(itemXml, 'guid') ??
+      textContent(itemXml, 'id') ??
+      attribute(itemXml, 'enclosure', 'url') ??
+      attribute(itemXml, 'link', 'href');
+
+    if (!guid) {
+      return [];
+    }
+
+    const canonicalUrl =
+      spotifyEpisodeUrl(itemXml, feed) ??
+      textContent(itemXml, 'link') ??
+      feed.show_url;
+    const spotifyEpisodeId = spotifyEpisodeIdFromUrl(canonicalUrl);
+
+    return [
+      {
+        guid,
+        spotifyEpisodeId,
+        title: textContent(itemXml, 'title') ?? 'Untitled Spotify episode',
+        description:
+          textContent(itemXml, 'description') ??
+          textContent(itemXml, 'itunes:summary') ??
+          null,
+        publishedAt:
+          parseDate(textContent(itemXml, 'pubDate')) ??
+          parseDate(textContent(itemXml, 'published')) ??
+          new Date().toISOString(),
+        durationSeconds: parseDuration(textContent(itemXml, 'itunes:duration')),
+        imageUrl:
+          attribute(itemXml, 'itunes:image', 'href') ??
+          attribute(itemXml, 'image', 'href') ??
+          channelImage,
+        audioUrl: attribute(itemXml, 'enclosure', 'url'),
+        canonicalUrl,
+      },
+    ];
+  });
+}
+
+function normalizeEpisode(feed, parsedEpisode, rules, existingClassification) {
+  const classification =
+    existingClassification ?? classifyEpisode(parsedEpisode, rules);
+  const spotifyEpisodeId = parsedEpisode.spotifyEpisodeId;
+
+  return {
+    partner_id: feed.partner_id,
+    feed_id: feed.id,
+    spotify_episode_id: spotifyEpisodeId,
+    guid: parsedEpisode.guid,
+    title: parsedEpisode.title,
+    description: parsedEpisode.description,
+    published_at: parsedEpisode.publishedAt,
+    prayer_date: inferPrayerDate(parsedEpisode),
+    duration_seconds: parsedEpisode.durationSeconds,
+    image_url: parsedEpisode.imageUrl,
+    audio_url: parsedEpisode.audioUrl,
+    canonical_url: parsedEpisode.canonicalUrl,
+    embed_url: spotifyEpisodeId
+      ? `https://open.spotify.com/embed/episode/${spotifyEpisodeId}`
+      : feed.embed_url,
+    prayer_type: classification.prayerType,
+    display_status: classification.displayStatus,
+  };
+}
+
+function classifyEpisode(episode, rules) {
+  const searchableText = `${episode.title}\n${episode.description ?? ''}`.toLowerCase();
+
+  for (const rule of rules) {
+    if (hasKeyword(searchableText, rule.exclude_keywords)) {
+      return {
+        prayerType: null,
+        displayStatus: 'hidden',
+      };
+    }
+  }
+
+  for (const rule of rules) {
+    if (!hasRequiredKeywords(searchableText, rule.include_keywords)) {
+      continue;
+    }
+
+    return {
+      prayerType: rule.prayer_type,
+      displayStatus: rule.default_display_status,
+    };
+  }
+
+  return {
+    prayerType: null,
+    displayStatus: 'pending',
+  };
+}
+
+async function markFeedPolled(feedId) {
+  await supabase
+    .from('partner_spotify_feeds')
+    .update({ last_polled_at: new Date().toISOString() })
+    .eq('id', feedId);
+}
+
+function isDueForPolling(feed, now) {
+  if (!feed.last_polled_at) {
+    return true;
+  }
+
+  const lastPolledAt = Date.parse(feed.last_polled_at);
+  if (Number.isNaN(lastPolledAt)) {
+    return true;
+  }
+
+  return now - lastPolledAt >= feed.polling_interval_minutes * 60 * 1000;
+}
+
+function hasRequiredKeywords(searchableText, keywords) {
+  const normalizedKeywords = normalizeKeywords(keywords);
+  if (normalizedKeywords.length === 0) {
+    return false;
+  }
+
+  return normalizedKeywords.some((keyword) => searchableText.includes(keyword));
+}
+
+function hasKeyword(searchableText, keywords) {
+  return normalizeKeywords(keywords).some((keyword) =>
+    searchableText.includes(keyword),
+  );
+}
+
+function normalizeKeywords(keywords) {
+  return (keywords ?? [])
+    .map((keyword) => String(keyword).trim().toLowerCase())
+    .filter(Boolean);
+}
+
+function splitXmlElements(xml, tagName) {
+  const expression = new RegExp(`<${escapeRegExp(tagName)}\\b[\\s\\S]*?<\\/${escapeRegExp(tagName)}>`, 'gi');
+  return xml.match(expression) ?? [];
+}
+
+function textContent(xml, tagName) {
+  const content = textContentWithMarkup(xml, tagName);
+  return content ? decodeXml(content.replace(/<[^>]*>/g, '').trim()) : null;
+}
+
+function textContentWithMarkup(xml, tagName) {
+  const match = xml.match(
+    new RegExp(`<${escapeRegExp(tagName)}\\b[^>]*>([\\s\\S]*?)<\\/${escapeRegExp(tagName)}>`, 'i'),
+  );
+
+  return match?.[1] ?? null;
+}
+
+function attribute(xml, tagName, attributeName) {
+  const element = xml.match(
+    new RegExp(`<${escapeRegExp(tagName)}\\b[^>]*\\s${escapeRegExp(attributeName)}=["']([^"']+)["'][^>]*\\/?>`, 'i'),
+  );
+
+  return element?.[1] ? decodeXml(element[1]) : null;
+}
+
+function spotifyEpisodeUrl(itemXml, feed) {
+  const rawLinks = [
+    textContent(itemXml, 'link'),
+    attribute(itemXml, 'link', 'href'),
+    textContent(itemXml, 'guid'),
+  ].filter(Boolean);
+
+  return rawLinks.find((value) => value.includes('open.spotify.com/episode/')) ?? null;
+}
+
+function spotifyEpisodeIdFromUrl(value) {
+  const match = value?.match(/open\.spotify\.com\/episode\/([A-Za-z0-9]+)/);
+  return match?.[1] ?? null;
+}
+
+function parseDuration(value) {
+  if (!value) {
+    return null;
+  }
+
+  const parts = value.split(':').map((part) => Number(part));
+  if (parts.some((part) => !Number.isFinite(part))) {
+    const seconds = Number(value);
+    return Number.isFinite(seconds) ? seconds : null;
+  }
+
+  return parts.reduce((total, part) => total * 60 + part, 0);
+}
+
+function parseDate(value) {
+  if (!value) {
+    return null;
+  }
+
+  const time = Date.parse(value);
+  return Number.isNaN(time) ? null : new Date(time).toISOString();
+}
+
+function inferDateFromTitle(title) {
+  const months = {
+    enero: '01',
+    febrero: '02',
+    marzo: '03',
+    abril: '04',
+    mayo: '05',
+    junio: '06',
+    julio: '07',
+    agosto: '08',
+    septiembre: '09',
+    setiembre: '09',
+    octubre: '10',
+    noviembre: '11',
+    diciembre: '12',
+    january: '01',
+    february: '02',
+    march: '03',
+    april: '04',
+    may: '05',
+    june: '06',
+    july: '07',
+    august: '08',
+    september: '09',
+    october: '10',
+    november: '11',
+    december: '12',
+  };
+  const matches = [
+    ...title.matchAll(
+      /\b(\d{1,2})(?:st|nd|rd|th|º|ª)?\s+(?:de\s+)?(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|setiembre|octubre|noviembre|diciembre|january|february|march|april|may|june|july|august|september|october|november|december)(?:\s+(?:de\s+)?(\d{4}))?\b/gi,
+    ),
+  ];
+
+  if (matches.length === 0) {
+    return null;
+  }
+
+  const [, day, monthName, titleYear] = matches[matches.length - 1];
+  const year = titleYear ?? new Date().getUTCFullYear();
+  return `${year}-${months[monthName.toLowerCase()]}-${day.padStart(2, '0')}`;
+}
+
+function inferPrayerDate(episode) {
+  const titleDate = inferDateFromTitle(episode.title);
+  if (titleDate) {
+    return titleDate;
+  }
+
+  return new Date(episode.publishedAt).toISOString().slice(0, 10);
+}
+
+function decodeXml(value) {
+  return value
+    .replace(/<!\[CDATA\[([\s\S]*?)]]>/g, '$1')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'");
+}
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function isAuthorized(event) {
+  if (!ingestSharedSecret) {
+    return true;
+  }
+
+  const secretHeader = event.headers?.['x-ingest-secret'];
+  const authorization = event.headers?.authorization ?? '';
+  return (
+    secretHeader === ingestSharedSecret ||
+    authorization === `Bearer ${ingestSharedSecret}`
+  );
+}
+
+function logInfo(message, detail = {}) {
+  console.info(`[spotify-ingest] ${message}`, JSON.stringify(detail));
+}
+
+function logError(message, detail = {}) {
+  console.error(`[spotify-ingest] ${message}`, JSON.stringify(detail));
+}
+
+function response(statusCode, body) {
+  return {
+    statusCode,
+    headers: JSON_HEADERS,
+    body: body ? JSON.stringify(body) : '',
+  };
+}

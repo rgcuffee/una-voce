@@ -66,6 +66,8 @@ type OptionItem = {
   imageUrl?: string;
   videoId?: string;
   sourceUrl?: string;
+  embedUrl?: string;
+  provider?: 'youtube' | 'spotify';
   communitySlug?: PartnerCommunitySlug;
   liveStartAt?: string | null;
   liveEndAt?: string | null;
@@ -88,6 +90,24 @@ type PartnerPrayerVideo = {
   embedUrl: string;
   publishedAt: string;
   scheduledStartAt: string | null;
+};
+
+type PartnerPrayerAudioType = 'lauds' | 'midday_prayer' | 'vespers';
+
+type PartnerPrayerAudio = {
+  partnerName: string;
+  partnerSlug: string;
+  prayerType: PartnerPrayerAudioType | null;
+  prayerDate: string;
+  title: string;
+  displayTitle: string;
+  description: string | null;
+  spotifyEpisodeId: string | null;
+  imageUrl: string | null;
+  canonicalUrl: string;
+  embedUrl: string;
+  publishedAt: string;
+  durationSeconds: number | null;
 };
 
 type WorthAbbeyPrayerType =
@@ -1496,6 +1516,47 @@ function normalizePartnerPrayerVideo(row: PartnerPrayerVideoRow) {
   };
 }
 
+type PartnerPrayerAudioRow = {
+  title: string;
+  description: string | null;
+  spotify_episode_id: string | null;
+  image_url: string | null;
+  canonical_url: string;
+  embed_url: string;
+  published_at: string;
+  prayer_date: string | null;
+  prayer_type: PartnerPrayerAudioType | null;
+  duration_seconds: number | null;
+  partners: { slug: string; name: string } | { slug: string; name: string }[];
+};
+
+function displayPartnerPrayerAudioTitle(title: string) {
+  return title
+    .replace(/\s*\|\s*Cantor del Camino.*$/i, '')
+    .replace(/\s*-\s*Cantor del Camino.*$/i, '')
+    .trim();
+}
+
+function normalizePartnerPrayerAudio(row: PartnerPrayerAudioRow): PartnerPrayerAudio {
+  const partner = Array.isArray(row.partners) ? row.partners[0] : row.partners;
+
+  return {
+    partnerName: partner?.name ?? 'Partner',
+    partnerSlug: normalizePartnerCommunitySlug(partner?.slug ?? ''),
+    prayerType: row.prayer_type,
+    prayerDate: row.prayer_date ?? '',
+    title: row.title,
+    displayTitle: displayPartnerPrayerAudioTitle(row.title),
+    description: row.description,
+    spotifyEpisodeId: row.spotify_episode_id,
+    imageUrl: row.image_url,
+    canonicalUrl: row.canonical_url,
+    embedUrl: row.embed_url,
+    publishedAt: row.published_at,
+    durationSeconds: row.duration_seconds,
+  };
+}
+
 const PARTNER_VIDEO_PRAYER_META: Record<
   PartnerPrayerVideoType,
   {
@@ -1517,6 +1578,30 @@ const PARTNER_VIDEO_PRAYER_META: Record<
     label: 'Vespers',
     description: (partnerName) =>
       `Pray today's Evening Prayer with ${partnerName}.`,
+  },
+};
+
+const PARTNER_AUDIO_PRAYER_META: Record<
+  PartnerPrayerAudioType,
+  {
+    label: string;
+    description: (partnerName: string) => string;
+  }
+> = {
+  lauds: {
+    label: 'Lauds',
+    description: (partnerName) =>
+      `Listen to today's Morning Prayer with ${partnerName}.`,
+  },
+  midday_prayer: {
+    label: 'Daytime Prayer',
+    description: (partnerName) =>
+      `Listen to today's daytime office with ${partnerName}.`,
+  },
+  vespers: {
+    label: 'Vespers',
+    description: (partnerName) =>
+      `Listen to today's Evening Prayer with ${partnerName}.`,
   },
 };
 
@@ -1577,6 +1662,61 @@ function videoOptionsForSegment(
   return partnerVideos.length > 0
     ? [...partnerVideos, ...segment.video]
     : segment.video;
+}
+
+function segmentIdForPartnerAudio(audio: PartnerPrayerAudio) {
+  if (audio.prayerType === 'lauds') {
+    return 'segment-morning';
+  }
+
+  if (audio.prayerType === 'vespers') {
+    return 'segment-evening';
+  }
+
+  if (audio.prayerType === 'midday_prayer') {
+    return /\b(nona|none|midafternoon)\b/i.test(audio.title)
+      ? 'segment-midafternoon'
+      : 'segment-midday';
+  }
+
+  return null;
+}
+
+function partnerAudioOptionForSegment(
+  segment: Segment,
+  audio: PartnerPrayerAudio,
+): OptionItem | null {
+  if (!audio.prayerType || segmentIdForPartnerAudio(audio) !== segment.id) {
+    return null;
+  }
+
+  const meta = PARTNER_AUDIO_PRAYER_META[audio.prayerType];
+
+  return {
+    meta: `Spotify Audio · ${meta.label}`,
+    title: `${audio.partnerName} - ${audio.displayTitle}`,
+    description: meta.description(audio.partnerName),
+    source: 'partner',
+    imageUrl: audio.imageUrl ?? undefined,
+    videoId: audio.spotifyEpisodeId ?? undefined,
+    sourceUrl: audio.canonicalUrl,
+    embedUrl: audio.embedUrl,
+    provider: 'spotify',
+    communitySlug: audio.partnerSlug as PartnerCommunitySlug,
+  };
+}
+
+function audioOptionsForSegment(
+  segment: Segment,
+  audioItems: PartnerPrayerAudio[],
+) {
+  const partnerAudio = audioItems
+    .map((audio) => partnerAudioOptionForSegment(segment, audio))
+    .filter((item): item is OptionItem => Boolean(item));
+
+  return partnerAudio.length > 0
+    ? [...partnerAudio, ...segment.audio]
+    : segment.audio;
 }
 
 const WORTH_ABBEY_PRAYER_META: Record<
@@ -1813,7 +1953,7 @@ function createPrayerPlayerSession({
     ministryId,
     hour,
     locale: 'en-US',
-    provider: 'youtube',
+    provider: item.provider ?? 'youtube',
     videoId: item.videoId ?? MOCK_YOUTUBE_VIDEO_ID,
     title:
       sourceType === 'live'
@@ -1831,6 +1971,7 @@ function createPrayerPlayerSession({
     sourceUrl:
       item.sourceUrl ??
       `https://www.youtube.com/watch?v=${item.videoId ?? MOCK_YOUTUBE_VIDEO_ID}`,
+    embedUrl: item.embedUrl,
   };
 }
 
@@ -1988,12 +2129,14 @@ function cardTitleFor(item: OptionItem, segment: Segment) {
 function createCommunityPrayerCards({
   slug,
   partnerVideos,
+  partnerAudio,
   worthAbbeyVideos,
   onOpenPrayerPlayer,
   partnerStatusOverrides,
 }: {
   slug: string | null;
   partnerVideos: PartnerPrayerVideo[];
+  partnerAudio: PartnerPrayerAudio[];
   worthAbbeyVideos: WorthAbbeyVideo[];
   onOpenPrayerPlayer: (session: PrayerPlayerSession) => void;
   partnerStatusOverrides?: PartnerCommunityStatusOverrides;
@@ -2033,10 +2176,16 @@ function createCommunityPrayerCards({
   }
 
   const partnerPrayerCards = SEGMENTS.flatMap((segment) =>
-    partnerVideoOptionsForSegment(
-      segment,
-      partnerVideos.filter((video) => video.partnerSlug === slug),
-    ).map((item) => ({
+    [
+      ...partnerVideoOptionsForSegment(
+        segment,
+        partnerVideos.filter((video) => video.partnerSlug === slug),
+      ),
+      ...audioOptionsForSegment(
+        segment,
+        partnerAudio.filter((audio) => audio.partnerSlug === slug),
+      ).filter((item) => item.source === 'partner'),
+    ].map((item) => ({
       id: `${slug}-${segment.id}-${item.videoId ?? item.title}`,
       label: item.meta,
       title: cardTitleFor(item, segment),
@@ -2233,6 +2382,7 @@ export function PrayerOfficeMockup() {
   );
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [partnerVideos, setPartnerVideos] = useState<PartnerPrayerVideo[]>([]);
+  const [partnerAudio, setPartnerAudio] = useState<PartnerPrayerAudio[]>([]);
   const [worthAbbeyVideos, setWorthAbbeyVideos] = useState<WorthAbbeyVideo[]>(
     [],
   );
@@ -2521,6 +2671,63 @@ export function PrayerOfficeMockup() {
   useEffect(() => {
     const controller = new AbortController();
 
+    async function loadPartnerAudio() {
+      if (!supabase) {
+        setPartnerAudio([]);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('spotify_episodes')
+          .select(
+            [
+              'title',
+              'description',
+              'spotify_episode_id',
+              'image_url',
+              'canonical_url',
+              'embed_url',
+              'published_at',
+              'prayer_date',
+              'prayer_type',
+              'duration_seconds',
+              'partners!inner(slug,name)',
+            ].join(','),
+          )
+          .eq('display_status', 'approved')
+          .eq('prayer_date', selectedDate)
+          .in('prayer_type', ['lauds', 'midday_prayer', 'vespers'])
+          .order('published_at', { ascending: false })
+          .abortSignal(controller.signal);
+
+        if (error) {
+          throw error;
+        }
+
+        setPartnerAudio(
+          ((data ?? []) as unknown as PartnerPrayerAudioRow[]).map(
+            normalizePartnerPrayerAudio,
+          ),
+        );
+      } catch (error) {
+        if (controller.signal.aborted) {
+          return;
+        }
+
+        console.warn('Unable to load partner audio.', error);
+        setPartnerAudio([]);
+      }
+    }
+
+    void loadPartnerAudio();
+
+    return () => controller.abort();
+  }, [selectedDate]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
     async function loadWorthAbbeyVideos() {
       try {
         const response = await fetch(
@@ -2578,6 +2785,7 @@ export function PrayerOfficeMockup() {
   const communityPrayerCards = createCommunityPrayerCards({
     slug: selectedCommunitySlug,
     partnerVideos,
+    partnerAudio,
     worthAbbeyVideos,
     onOpenPrayerPlayer: openPrayerPlayer,
     partnerStatusOverrides,
@@ -2793,6 +3001,10 @@ export function PrayerOfficeMockup() {
                 segment,
                 partnerVideos,
               );
+              const audioOptions = audioOptionsForSegment(
+                segment,
+                partnerAudio,
+              );
               const liveGroups = worthAbbeyLiveOptionsForSegment(
                 segment,
                 worthAbbeyVideos,
@@ -2907,18 +3119,34 @@ export function PrayerOfficeMockup() {
                     >
                       <h4>Listen</h4>
                       <div className="format-options">
-                        {segment.audio.map((item, index) => (
-                          <article
+                        {audioOptions.map((item, index) => (
+                          <button
                             key={item.title}
+                            type="button"
                             className="format-option format-option-media"
                             style={{
-                              backgroundImage: `linear-gradient(165deg, rgba(12, 11, 9, 0.2), rgba(12, 11, 9, 0.78)), url(${optionImageFor('audio', index)})`,
+                              backgroundImage: `linear-gradient(165deg, rgba(12, 11, 9, 0.2), rgba(12, 11, 9, 0.78)), url(${item.imageUrl ?? optionImageFor('audio', index)})`,
                             }}
+                            onClick={() =>
+                              openPrayerPlayer(
+                                createPrayerPlayerSession({
+                                  item,
+                                  segment,
+                                  sourceType: 'recorded',
+                                  pageContext: 'today_listen_card',
+                                  partnerStatusOverrides,
+                                }),
+                              )
+                            }
                           >
                             <div className="option-meta">{item.meta}</div>
+                            <OptionPartnerBadge
+                              item={item}
+                              partnerStatusOverrides={partnerStatusOverrides}
+                            />
                             <div className="option-title">{item.title}</div>
                             <p className="option-desc">{item.description}</p>
-                          </article>
+                          </button>
                         ))}
                       </div>
                     </div>

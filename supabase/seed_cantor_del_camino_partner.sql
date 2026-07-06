@@ -150,3 +150,37 @@ on conflict (partner_id, name) do update
       priority = excluded.priority,
       default_display_status = excluded.default_display_status,
       active = excluded.active;
+
+with partner as (
+  select id
+  from public.partners
+  where slug = 'cantor-del-camino'
+)
+insert into public.partner_spotify_feeds (
+  partner_id,
+  spotify_show_id,
+  show_url,
+  embed_url,
+  rss_url,
+  polling_interval_minutes,
+  import_from_date,
+  active
+)
+select
+  partner.id,
+  '2hjsBOvhziCNvmX5osD05V',
+  'https://open.spotify.com/show/2hjsBOvhziCNvmX5osD05V',
+  'https://open.spotify.com/embed/show/2hjsBOvhziCNvmX5osD05V',
+  null,
+  120,
+  current_date,
+  true
+from partner
+on conflict (spotify_show_id) do update
+  set partner_id = excluded.partner_id,
+      show_url = excluded.show_url,
+      embed_url = excluded.embed_url,
+      rss_url = coalesce(public.partner_spotify_feeds.rss_url, excluded.rss_url),
+      polling_interval_minutes = excluded.polling_interval_minutes,
+      import_from_date = excluded.import_from_date,
+      active = excluded.active;
