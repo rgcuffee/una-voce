@@ -5,8 +5,7 @@ export type ViewKey =
     | 'community'
     | 'more'
     | 'about'
-    | 'getting-started'
-    | 'contact';
+    | 'getting-started';
 
 export type NavItem = {
     key: ViewKey;
@@ -41,7 +40,6 @@ export const VIEW_PATHS: Record<ViewKey, string> = {
     more: '/more',
     about: '/about',
     'getting-started': '/getting-started',
-    contact: '/contact',
 };
 
 export function pathForView(view: ViewKey): string {

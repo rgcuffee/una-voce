@@ -23,13 +23,6 @@ export function MorePage({ onNavigate }: { onNavigate: ViewNavigator }) {
         'What this platform is, why it exists, and the tradition it serves.',
       icon: '☩',
     },
-    {
-      view: 'contact',
-      title: 'Contact',
-      description:
-        'Send feedback, suggest a community, or start a partnership conversation.',
-      icon: '✉',
-    },
   ];
 
   return (
@@ -38,8 +31,7 @@ export function MorePage({ onNavigate }: { onNavigate: ViewNavigator }) {
         <div className='page-eyebrow'>More</div>
         <h1 className='page-hero-title'>Guidance, story, and support</h1>
         <p className='page-lead'>
-          Start with the Hours, learn why Una Voce exists, or send a note to
-          the team.
+          Start with the Hours or learn why Una Voce exists.
         </p>
       </header>
 

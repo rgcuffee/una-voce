@@ -24,7 +24,6 @@ import {
   CommunityPage,
   type CommunityPrayerCard,
 } from '../pages/CommunityPage';
-import { ContactPage } from '../pages/ContactPage';
 import { DiscoverPage } from '../pages/DiscoverPage';
 import { GettingStartedPage } from '../pages/GettingStartedPage';
 import { MorePage } from '../pages/MorePage';
@@ -2322,8 +2321,6 @@ function renderPage(
       return <AboutPage onNavigate={onNavigate} />;
     case 'getting-started':
       return <GettingStartedPage onNavigate={onNavigate} />;
-    case 'contact':
-      return <ContactPage onNavigate={onNavigate} />;
     default:
       return null;
   }
