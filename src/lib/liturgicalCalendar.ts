@@ -15,6 +15,7 @@ export type CalendarConflict = Tables<'calendar_conflicts'>;
 
 export type LiturgicalDayWithHours = LiturgicalDay & {
     hours: LiturgicalHourInstance[];
+    options: LiturgicalDayOption[];
 };
 
 function requireSupabase() {
@@ -69,9 +70,22 @@ export async function getLiturgicalDayWithHours(
         throw hoursError;
     }
 
+    const { data: options, error: optionsError } = await requireSupabase()
+        .from('liturgical_day_options')
+        .select('*')
+        .eq('calendar_id', calendarId)
+        .eq('date', date)
+        .order('precedence_rank', { ascending: true, nullsFirst: false })
+        .order('title');
+
+    if (optionsError) {
+        throw optionsError;
+    }
+
     return {
         ...day,
         hours,
+        options,
     };
 }
 

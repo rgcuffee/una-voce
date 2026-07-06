@@ -14,7 +14,10 @@ import {
   type PartnerCommunityStatusOverrides,
   type PartnerCommunitySlug,
 } from '../data/partnerCommunities';
-import { getLiturgicalDayWithHours } from '../lib/liturgicalCalendar';
+import {
+  getLiturgicalDayWithHours,
+  type LiturgicalDayOption,
+} from '../lib/liturgicalCalendar';
 import { supabase } from '../lib/supabase';
 import { AboutPage } from '../pages/AboutPage';
 import {
@@ -1423,6 +1426,10 @@ function formatLiturgicalDateLabel(
   return `${formatCivilDate(day.date)} · ${day.display_title}`;
 }
 
+function formatLiturgicalOptions(options: LiturgicalDayOption[]) {
+  return options.map((option) => option.title).join('; ');
+}
+
 function isTodayDate(date: string) {
   return date === localDateString();
 }
@@ -2366,6 +2373,7 @@ export function PrayerOfficeMockup() {
   const [dateLabel, setDateLabel] = useState(() =>
     formatPendingDateLabel(selectedDate),
   );
+  const [dateOptionsLabel, setDateOptionsLabel] = useState<string | null>(null);
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [partnerVideos, setPartnerVideos] = useState<PartnerPrayerVideo[]>([]);
   const [partnerAudio, setPartnerAudio] = useState<PartnerPrayerAudio[]>([]);
@@ -2520,6 +2528,7 @@ export function PrayerOfficeMockup() {
     let isActive = true;
 
     setDateLabel(formatPendingDateLabel(selectedDate));
+    setDateOptionsLabel(null);
 
     getLiturgicalDayWithHours(DEFAULT_CALENDAR_ID, selectedDate)
       .then((day) => {
@@ -2528,11 +2537,17 @@ export function PrayerOfficeMockup() {
         }
 
         setDateLabel(formatLiturgicalDateLabel(day, selectedDate));
+        setDateOptionsLabel(
+          day && day.options.length > 0
+            ? formatLiturgicalOptions(day.options)
+            : null,
+        );
       })
       .catch((error) => {
         console.warn('Unable to load liturgical calendar date.', error);
         if (isActive) {
           setDateLabel(formatPendingDateLabel(selectedDate));
+          setDateOptionsLabel(null);
         }
       });
 
@@ -2827,6 +2842,11 @@ export function PrayerOfficeMockup() {
           <div className="header-icon">☩</div>
         </div>
         <div className="date-line">{dateLabel}</div>
+        {dateOptionsLabel ? (
+          <div className="date-options-line">
+            Also Celebrated Today: <span>{dateOptionsLabel}</span>
+          </div>
+        ) : null}
       </header>
 
       {activeView === 'today' ? (

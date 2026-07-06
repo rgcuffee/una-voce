@@ -127,6 +127,18 @@ body {
     font-weight: 400;
 }
 
+.date-options-line {
+    margin-top: 4px;
+    color: var(--charcoal-soft);
+    font-size: 11px;
+    line-height: 1.35;
+    font-weight: 700;
+}
+
+.date-options-line span {
+    font-weight: 400;
+}
+
 .header-desktop {
     display: none;
 }
