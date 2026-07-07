@@ -93,12 +93,11 @@ async function getDueFeeds() {
         'polling_interval_minutes',
         'import_from_date',
         'last_polled_at',
-        'partners!inner(active,onboarding_status)',
+        'partners!inner(active)',
       ].join(','),
     )
     .eq('active', true)
     .eq('partners.active', true)
-    .eq('partners.onboarding_status', 'active')
     .not('rss_url', 'is', null)
     .limit(250);
 
@@ -464,7 +463,7 @@ function splitXmlElements(xml, tagName) {
 
 function textContent(xml, tagName) {
   const content = textContentWithMarkup(xml, tagName);
-  return content ? decodeXml(content.replace(/<[^>]*>/g, '').trim()) : null;
+  return content ? decodeXml(content).replace(/<[^>]*>/g, '').trim() : null;
 }
 
 function textContentWithMarkup(xml, tagName) {
@@ -526,6 +525,12 @@ function inferDateFromTitle(title) {
 }
 
 function inferDateFromTitleWithYear(title, fallbackYear) {
+  const numericDateMatch = title.match(/\b(\d{1,2})\/(\d{1,2})\/(\d{4})\b/);
+  if (numericDateMatch) {
+    const [, month, day, year] = numericDateMatch;
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+  }
+
   const months = {
     enero: '01',
     febrero: '02',

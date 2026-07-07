@@ -318,6 +318,25 @@ const COMMUNITY_BY_SLUG = new Map(
   PARTNER_COMMUNITIES.map((community) => [community.slug, community]),
 );
 
+function isManagedPartnerCommunity(community: PartnerCommunity) {
+  return community.relationshipStatus !== 'mock';
+}
+
+function isPartnerCommunityPublished(
+  community: PartnerCommunity,
+  overrides?: PartnerCommunityStatusOverrides,
+) {
+  if (!isManagedPartnerCommunity(community)) {
+    return true;
+  }
+
+  if (!overrides) {
+    return true;
+  }
+
+  return overrides[community.slug]?.communityPageEnabled === true;
+}
+
 const COMMUNITY_ALIASES: Record<string, PartnerCommunitySlug> = {
   'cantor del camino': 'cantor-del-camino',
   'cathaholic music': 'cathaholic-music',
@@ -381,9 +400,9 @@ function applyPartnerCommunityOverride(
 export function listPartnerCommunities(
   overrides?: PartnerCommunityStatusOverrides,
 ) {
-  return PARTNER_COMMUNITIES.map((community) =>
-    applyPartnerCommunityOverride(community, overrides),
-  );
+  return PARTNER_COMMUNITIES
+    .filter((community) => isPartnerCommunityPublished(community, overrides))
+    .map((community) => applyPartnerCommunityOverride(community, overrides));
 }
 
 export function getPartnerCommunity(
@@ -395,7 +414,9 @@ export function getPartnerCommunity(
   }
 
   const community = COMMUNITY_BY_SLUG.get(slug as PartnerCommunitySlug);
-  return community ? applyPartnerCommunityOverride(community, overrides) : null;
+  return community && isPartnerCommunityPublished(community, overrides)
+    ? applyPartnerCommunityOverride(community, overrides)
+    : null;
 }
 
 export function communityForName(
@@ -405,7 +426,9 @@ export function communityForName(
   const community = COMMUNITY_BY_SLUG.get(
     COMMUNITY_ALIASES[name.trim().toLowerCase()],
   );
-  return community ? applyPartnerCommunityOverride(community, overrides) : null;
+  return community && isPartnerCommunityPublished(community, overrides)
+    ? applyPartnerCommunityOverride(community, overrides)
+    : null;
 }
 
 export function getPartnerBadgeMeta(status: PartnerBadgeStatus) {

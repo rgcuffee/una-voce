@@ -1,3 +1,5 @@
+import { createClient } from '@supabase/supabase-js';
+
 const WORTH_ABBEY_FEED_URLS = [
   'https://www.youtube.com/feeds/videos.xml?channel_id=UC6qobUSZqHUiFBLChENbExg',
   'https://www.youtube.com/feeds/videos.xml?playlist_id=PLKT-EuYiVIn8',
@@ -10,6 +12,7 @@ const WORTH_ABBEY_FEED_URLS = [
 const FETCH_TIMEOUT_MS = 12000;
 const USER_AGENT = 'Una Voce Worth Abbey Card Fetch/1.0 (+https://unavoce.app)';
 const WORTH_ABBEY_TIMEZONE = 'Europe/London';
+const WORTH_ABBEY_PARTNER_SLUG = 'worth-abbey';
 const WORTH_ABBEY_FALLBACK_START_TIMES = {
   office_of_readings: '06:15',
   lauds: '07:30',
@@ -18,8 +21,34 @@ const WORTH_ABBEY_FALLBACK_START_TIMES = {
   compline: '20:15',
 };
 
+const supabaseUrl = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+const supabase =
+  supabaseUrl && supabaseServiceRoleKey
+    ? createClient(supabaseUrl, supabaseServiceRoleKey, {
+        auth: {
+          persistSession: false,
+          autoRefreshToken: false,
+        },
+      })
+    : null;
+
 export async function worthAbbeyVideosResponse(date) {
   const selectedDate = validDateOrToday(date);
+
+  if (!(await isPartnerPublishable(WORTH_ABBEY_PARTNER_SLUG))) {
+    return {
+      ok: true,
+      date: selectedDate,
+      videos: [],
+      feedErrors: 0,
+      detailErrors: 0,
+      detailMissing: 0,
+      partnerPublishable: false,
+    };
+  }
+
   const xmlResults = await Promise.allSettled(
     WORTH_ABBEY_FEED_URLS.map((url) => fetchFeed(url)),
   );
@@ -44,7 +73,30 @@ export async function worthAbbeyVideosResponse(date) {
     detailMissing: enrichedResults.filter(
       (result) => result.status === 'fulfilled' && !result.value.liveStartAt,
     ).length,
+    partnerPublishable: true,
   };
+}
+
+async function isPartnerPublishable(slug) {
+  if (!supabase) {
+    return true;
+  }
+
+  const { data, error } = await supabase
+    .from('partners')
+    .select('active,onboarding_status')
+    .eq('slug', slug)
+    .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  if (!data) {
+    return true;
+  }
+
+  return data.active === true && data.onboarding_status === 'active';
 }
 
 async function fetchFeed(url) {

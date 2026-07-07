@@ -1449,7 +1449,9 @@ type PartnerPrayerVideoRow = {
   scheduled_start_at: string | null;
   prayer_date: string | null;
   prayer_type: PartnerPrayerVideoType | null;
-  partners: { slug: string; name: string } | { slug: string; name: string }[];
+  partners:
+    | { slug: string; name: string; active: boolean; onboarding_status: string }
+    | { slug: string; name: string; active: boolean; onboarding_status: string }[];
 };
 
 function displayPartnerPrayerVideoTitle(title: string) {
@@ -1506,7 +1508,9 @@ type PartnerPrayerAudioRow = {
   prayer_date: string | null;
   prayer_type: PartnerPrayerAudioType | null;
   duration_seconds: number | null;
-  partners: { slug: string; name: string } | { slug: string; name: string }[];
+  partners:
+    | { slug: string; name: string; active: boolean; onboarding_status: string }
+    | { slug: string; name: string; active: boolean; onboarding_status: string }[];
 };
 
 function displayPartnerPrayerAudioTitle(title: string) {
@@ -2387,7 +2391,7 @@ export function PrayerOfficeMockup() {
     [],
   );
   const [partnerStatusOverrides, setPartnerStatusOverrides] =
-    useState<PartnerCommunityStatusOverrides>({});
+    useState<PartnerCommunityStatusOverrides | undefined>();
 
   const navigateTo = (view: ViewKey) => {
     const targetPath = pathForView(view);
@@ -2597,15 +2601,20 @@ export function PrayerOfficeMockup() {
                 partner.relationship_status === 'verified' ||
                 partner.relationship_status === 'partner',
             )
-            .map((partner) => [
-              partner.slug,
-              {
+            .flatMap((partner) => {
+              const override = {
                 relationshipStatus: partner.relationship_status,
                 badgeEnabled: partner.badge_enabled,
                 communityPageEnabled: partner.community_page_enabled,
                 communityPageSlug: partner.community_page_slug,
-              },
-            ]),
+              };
+              const keys = [
+                partner.slug,
+                partner.community_page_slug,
+              ].filter(Boolean);
+
+              return keys.map((key) => [key, override]);
+            }),
         ) as PartnerCommunityStatusOverrides,
       );
     }
@@ -2641,10 +2650,12 @@ export function PrayerOfficeMockup() {
               'scheduled_start_at',
               'prayer_date',
               'prayer_type',
-              'partners!inner(slug,name)',
+              'partners!inner(slug,name,active,onboarding_status)',
             ].join(','),
           )
           .eq('display_status', 'approved')
+          .eq('partners.active', true)
+          .eq('partners.onboarding_status', 'active')
           .eq('prayer_date', selectedDate)
           .eq('video_kind', 'video')
           .in('prayer_type', ['lauds', 'midday_prayer', 'vespers', 'compline'])
@@ -2699,10 +2710,12 @@ export function PrayerOfficeMockup() {
               'prayer_date',
               'prayer_type',
               'duration_seconds',
-              'partners!inner(slug,name)',
+              'partners!inner(slug,name,active,onboarding_status)',
             ].join(','),
           )
           .eq('display_status', 'approved')
+          .eq('partners.active', true)
+          .eq('partners.onboarding_status', 'active')
           .eq('prayer_date', selectedDate)
           .in('prayer_type', ['lauds', 'midday_prayer', 'vespers', 'compline'])
           .order('published_at', { ascending: false })

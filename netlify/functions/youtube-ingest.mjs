@@ -104,12 +104,11 @@ async function getDueFeeds() {
         'polling_interval_minutes',
         'import_from_date',
         'last_polled_at',
-        'partners!inner(active,onboarding_status)',
+        'partners!inner(active)',
       ].join(','),
     )
     .eq('active', true)
     .eq('partners.active', true)
-    .eq('partners.onboarding_status', 'active')
     .limit(250);
 
   if (error) {
