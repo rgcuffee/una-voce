@@ -12,7 +12,7 @@ export type PartnerCommunitySlug =
 export type PartnerBadgeStatus = 'curated' | 'verified' | 'partner' | 'mock';
 
 export type PartnerCommunity = {
-  slug: PartnerCommunitySlug;
+  slug: PartnerCommunitySlug | string;
   name: string;
   kind: string;
   location: string;

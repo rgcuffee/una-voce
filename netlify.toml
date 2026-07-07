@@ -42,6 +42,11 @@
   status = 200
 
 [[redirects]]
+  from = "/@vite/client"
+  to = "http://localhost:5173/@vite/client"
+  status = 200
+
+[[redirects]]
   from = "/@vite/*"
   to = "http://localhost:5173/@vite/:splat"
   status = 200
@@ -54,6 +59,11 @@
 [[redirects]]
   from = "/node_modules/.vite/*"
   to = "http://localhost:5173/node_modules/.vite/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/node_modules/vite/*"
+  to = "http://localhost:5173/node_modules/vite/:splat"
   status = 200
 
 [[redirects]]

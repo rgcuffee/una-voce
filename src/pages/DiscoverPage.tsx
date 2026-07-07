@@ -21,6 +21,7 @@ type MediaCard = {
 type StreamCard = MediaCard & { time: string };
 
 type PartnerPrayerVideoType =
+  | 'office_of_readings'
   | 'lauds'
   | 'midday_prayer'
   | 'vespers'
@@ -37,6 +38,7 @@ export type DiscoverPartnerPrayerVideo = {
 };
 
 type PartnerPrayerAudioType =
+  | 'office_of_readings'
   | 'lauds'
   | 'midday_prayer'
   | 'vespers'

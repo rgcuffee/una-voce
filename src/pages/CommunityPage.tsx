@@ -14,6 +14,7 @@ type CommunityPageProps = {
   onOpenCommunity?: (slug: string) => void;
   prayerCards?: CommunityPrayerCard[];
   partnerStatusOverrides?: PartnerCommunityStatusOverrides;
+  previewCommunities?: PartnerCommunity[];
 };
 
 export type CommunityPrayerCard = {
@@ -32,12 +33,26 @@ export function CommunityPage({
   onOpenCommunity,
   prayerCards = [],
   partnerStatusOverrides,
+  previewCommunities = [],
 }: CommunityPageProps) {
-  const selectedCommunity = getPartnerCommunity(
-    selectedCommunitySlug,
-    partnerStatusOverrides,
+  const selectedCommunity =
+    previewCommunities.find(
+      (community) => community.slug === selectedCommunitySlug,
+    ) ??
+    getPartnerCommunity(
+      selectedCommunitySlug,
+      partnerStatusOverrides,
+    );
+  const publishedCommunities = listPartnerCommunities(partnerStatusOverrides);
+  const publishedSlugs = new Set(
+    publishedCommunities.map((community) => community.slug),
   );
-  const communities = listPartnerCommunities(partnerStatusOverrides);
+  const communities = [
+    ...publishedCommunities,
+    ...previewCommunities.filter(
+      (community) => !publishedSlugs.has(community.slug),
+    ),
+  ];
 
   if (selectedCommunity) {
     return (

@@ -10,6 +10,7 @@ import {
   communityForName,
   communityPath,
   getPartnerCommunity,
+  type PartnerCommunity,
   type PartnerBadgeStatus,
   type PartnerCommunityStatusOverrides,
   type PartnerCommunitySlug,
@@ -18,6 +19,11 @@ import {
   getLiturgicalDayWithHours,
   type LiturgicalDayOption,
 } from '../lib/liturgicalCalendar';
+import type {
+  LiturgicalHour,
+  PartnerOnboardingStatus,
+  YoutubeVideoDisplayStatus,
+} from '../lib/database.types';
 import { supabase } from '../lib/supabase';
 import { AboutPage } from '../pages/AboutPage';
 import {
@@ -43,6 +49,27 @@ import { NightPrayer } from './prayers/NightPrayer';
 import { OfficeOfReadingsPrayer } from './prayers/OfficeOfReadingsPrayer';
 
 const ONRAMP_DISMISS_KEY = 'una-voce-onramp-dismissed';
+const showPendingPartnerContent =
+  import.meta.env.VITE_SHOW_PENDING_PARTNER_CONTENT === 'true' ||
+  (import.meta.env.DEV &&
+    import.meta.env.VITE_SHOW_PENDING_PARTNER_CONTENT !== 'false');
+const partnerContentOnboardingStatuses: PartnerOnboardingStatus[] = showPendingPartnerContent
+  ? ['active', 'pending']
+  : ['active'];
+const partnerContentPrayerTypes: LiturgicalHour[] = [
+  'office_of_readings',
+  'lauds',
+  'midday_prayer',
+  'vespers',
+  'compline',
+];
+const PARTNER_PRAYER_TYPE_LABELS: Record<LiturgicalHour, string> = {
+  office_of_readings: 'Office of Readings',
+  lauds: 'Lauds',
+  midday_prayer: 'Daytime Prayer',
+  vespers: 'Vespers',
+  compline: 'Compline',
+};
 
 type FormatKey = 'text' | 'audio' | 'video' | 'live';
 
@@ -78,6 +105,7 @@ type OptionItem = {
 };
 
 type PartnerPrayerVideoType =
+  | 'office_of_readings'
   | 'lauds'
   | 'midday_prayer'
   | 'vespers'
@@ -100,6 +128,7 @@ type PartnerPrayerVideo = {
 };
 
 type PartnerPrayerAudioType =
+  | 'office_of_readings'
   | 'lauds'
   | 'midday_prayer'
   | 'vespers'
@@ -1513,6 +1542,12 @@ type PartnerPrayerAudioRow = {
     | { slug: string; name: string; active: boolean; onboarding_status: string }[];
 };
 
+type PartnerContentPreviewResponse = {
+  ok?: boolean;
+  videos?: PartnerPrayerVideoRow[];
+  audio?: PartnerPrayerAudioRow[];
+};
+
 function displayPartnerPrayerAudioTitle(title: string) {
   return title
     .replace(/\s*\|\s*Cantor del Camino.*$/i, '')
@@ -1540,6 +1575,46 @@ function normalizePartnerPrayerAudio(row: PartnerPrayerAudioRow): PartnerPrayerA
   };
 }
 
+function mergePartnerRows<Row extends { canonical_url: string }>(
+  publicRows: Row[],
+  previewRows: Row[] | undefined,
+) {
+  const rowsByCanonicalUrl = new Map(
+    publicRows.map((row) => [row.canonical_url, row]),
+  );
+
+  for (const row of previewRows ?? []) {
+    rowsByCanonicalUrl.set(row.canonical_url, row);
+  }
+
+  return [...rowsByCanonicalUrl.values()];
+}
+
+async function loadPartnerContentPreview(
+  date: string,
+  signal: AbortSignal,
+): Promise<PartnerContentPreviewResponse | null> {
+  if (!showPendingPartnerContent) {
+    return null;
+  }
+
+  const response = await fetch(
+    `/.netlify/functions/partner-content-preview?date=${encodeURIComponent(date)}`,
+    { signal },
+  );
+
+  const contentType = response.headers.get('content-type') ?? '';
+  if (!response.ok || !contentType.includes('application/json')) {
+    return null;
+  }
+
+  try {
+    return (await response.json()) as PartnerContentPreviewResponse;
+  } catch {
+    return null;
+  }
+}
+
 const PARTNER_VIDEO_PRAYER_META: Record<
   PartnerPrayerVideoType,
   {
@@ -1547,6 +1622,11 @@ const PARTNER_VIDEO_PRAYER_META: Record<
     description: (partnerName: string) => string;
   }
 > = {
+  office_of_readings: {
+    label: 'Office of Readings',
+    description: (partnerName) =>
+      `Pray today's Office of Readings with ${partnerName}.`,
+  },
   lauds: {
     label: 'Lauds',
     description: (partnerName) =>
@@ -1576,6 +1656,11 @@ const PARTNER_AUDIO_PRAYER_META: Record<
     description: (partnerName: string) => string;
   }
 > = {
+  office_of_readings: {
+    label: 'Office of Readings',
+    description: (partnerName) =>
+      `Listen to today's Office of Readings with ${partnerName}.`,
+  },
   lauds: {
     label: 'Lauds',
     description: (partnerName) =>
@@ -1599,6 +1684,10 @@ const PARTNER_AUDIO_PRAYER_META: Record<
 };
 
 function segmentIdForPartnerVideo(video: PartnerPrayerVideo) {
+  if (video.prayerType === 'office_of_readings') {
+    return 'segment-office';
+  }
+
   if (video.prayerType === 'lauds') {
     return 'segment-morning';
   }
@@ -1660,6 +1749,10 @@ function videoOptionsForSegment(
 }
 
 function segmentIdForPartnerAudio(audio: PartnerPrayerAudio) {
+  if (audio.prayerType === 'office_of_readings') {
+    return 'segment-office';
+  }
+
   if (audio.prayerType === 'lauds') {
     return 'segment-morning';
   }
@@ -1714,6 +1807,91 @@ function audioOptionsForSegment(
   return partnerAudio.length > 0
     ? [...partnerAudio, ...segment.audio]
     : segment.audio;
+}
+
+function createPreviewCommunitiesFromPartnerMedia(
+  partnerVideos: PartnerPrayerVideo[],
+  partnerAudio: PartnerPrayerAudio[],
+  partnerStatusOverrides?: PartnerCommunityStatusOverrides,
+) {
+  if (!showPendingPartnerContent) {
+    return [];
+  }
+
+  const mediaBySlug = new Map<
+    string,
+    {
+      name: string;
+      slug: string;
+      imageUrl: string | null;
+      canonicalUrl: string;
+      prayerTypes: Set<LiturgicalHour>;
+    }
+  >();
+
+  for (const item of [...partnerVideos, ...partnerAudio]) {
+    if (
+      !item.partnerSlug ||
+      getPartnerCommunity(item.partnerSlug, partnerStatusOverrides)
+    ) {
+      continue;
+    }
+
+    const existing = mediaBySlug.get(item.partnerSlug);
+    const imageUrl =
+      'thumbnailUrl' in item ? item.thumbnailUrl : item.imageUrl;
+    const prayerTypes = existing?.prayerTypes ?? new Set<LiturgicalHour>();
+    if (item.prayerType) {
+      prayerTypes.add(item.prayerType);
+    }
+
+    mediaBySlug.set(item.partnerSlug, {
+      name: item.partnerName,
+      slug: item.partnerSlug,
+      imageUrl: existing?.imageUrl ?? imageUrl ?? null,
+      canonicalUrl: existing?.canonicalUrl ?? item.canonicalUrl,
+      prayerTypes,
+    });
+  }
+
+  return [...mediaBySlug.values()].map((source): PartnerCommunity => {
+    const prayerRhythm = [...source.prayerTypes].map(
+      (prayerType) => PARTNER_PRAYER_TYPE_LABELS[prayerType],
+    );
+    const rhythmLabel =
+      prayerRhythm.length > 0 ? prayerRhythm.join(', ') : 'Daily prayer';
+
+    return {
+      slug: source.slug,
+      name: source.name,
+      kind: 'Pending preview source',
+      location: 'Pending review',
+      relationshipStatus: 'curated',
+      badgeEnabled: false,
+      tagline: `${rhythmLabel} available in local preview.`,
+      description:
+        `${source.name} has imported partner media for the selected date. ` +
+        'This preview profile is generated locally until the community page is published.',
+      imageUrl: source.imageUrl,
+      accent: rhythmLabel,
+      prayerRhythm:
+        prayerRhythm.length > 0 ? prayerRhythm : ['Daily prayer'],
+      links: [
+        {
+          label: 'Source episode',
+          href: source.canonicalUrl,
+        },
+      ],
+      featured: [
+        {
+          label: 'Pending review',
+          title: 'Imported prayer media',
+          description:
+            'Review and approve this source before publishing a full community profile.',
+        },
+      ],
+    };
+  });
 }
 
 const WORTH_ABBEY_PRAYER_META: Record<
@@ -2295,6 +2473,7 @@ function renderPage(
     partnerVideos?: PartnerPrayerVideo[];
     partnerAudio?: PartnerPrayerAudio[];
     worthAbbeyVideos?: WorthAbbeyVideo[];
+    previewCommunities?: PartnerCommunity[];
   } = {},
 ) {
   switch (view) {
@@ -2317,6 +2496,7 @@ function renderPage(
           onOpenCommunity={options.onOpenCommunity}
           prayerCards={options.communityPrayerCards}
           partnerStatusOverrides={options.partnerStatusOverrides}
+          previewCommunities={options.previewCommunities}
         />
       );
     case 'more':
@@ -2581,7 +2761,7 @@ export function PrayerOfficeMockup() {
           'slug,relationship_status,badge_enabled,community_page_enabled,community_page_slug',
         )
         .eq('active', true)
-        .eq('onboarding_status', 'active');
+        .in('onboarding_status', partnerContentOnboardingStatuses);
 
       if (!isActive) {
         return;
@@ -2653,12 +2833,12 @@ export function PrayerOfficeMockup() {
               'partners!inner(slug,name,active,onboarding_status)',
             ].join(','),
           )
-          .eq('display_status', 'approved')
+          .eq('display_status', 'approved' satisfies YoutubeVideoDisplayStatus)
           .eq('partners.active', true)
-          .eq('partners.onboarding_status', 'active')
+          .eq('partners.onboarding_status', 'active' satisfies PartnerOnboardingStatus)
           .eq('prayer_date', selectedDate)
           .eq('video_kind', 'video')
-          .in('prayer_type', ['lauds', 'midday_prayer', 'vespers', 'compline'])
+          .in('prayer_type', partnerContentPrayerTypes)
           .order('published_at', { ascending: false })
           .abortSignal(controller.signal);
 
@@ -2666,10 +2846,17 @@ export function PrayerOfficeMockup() {
           throw error;
         }
 
+        const preview = await loadPartnerContentPreview(
+          selectedDate,
+          controller.signal,
+        );
+        const rows = mergePartnerRows(
+          (data ?? []) as unknown as PartnerPrayerVideoRow[],
+          preview?.videos,
+        );
+
         setPartnerVideos(
-          ((data ?? []) as unknown as PartnerPrayerVideoRow[]).map(
-            normalizePartnerPrayerVideo,
-          ),
+          rows.map(normalizePartnerPrayerVideo),
         );
       } catch (error) {
         if (controller.signal.aborted) {
@@ -2713,11 +2900,11 @@ export function PrayerOfficeMockup() {
               'partners!inner(slug,name,active,onboarding_status)',
             ].join(','),
           )
-          .eq('display_status', 'approved')
+          .eq('display_status', 'approved' satisfies YoutubeVideoDisplayStatus)
           .eq('partners.active', true)
-          .eq('partners.onboarding_status', 'active')
+          .eq('partners.onboarding_status', 'active' satisfies PartnerOnboardingStatus)
           .eq('prayer_date', selectedDate)
-          .in('prayer_type', ['lauds', 'midday_prayer', 'vespers', 'compline'])
+          .in('prayer_type', partnerContentPrayerTypes)
           .order('published_at', { ascending: false })
           .abortSignal(controller.signal);
 
@@ -2725,10 +2912,17 @@ export function PrayerOfficeMockup() {
           throw error;
         }
 
+        const preview = await loadPartnerContentPreview(
+          selectedDate,
+          controller.signal,
+        );
+        const rows = mergePartnerRows(
+          (data ?? []) as unknown as PartnerPrayerAudioRow[],
+          preview?.audio,
+        );
+
         setPartnerAudio(
-          ((data ?? []) as unknown as PartnerPrayerAudioRow[]).map(
-            normalizePartnerPrayerAudio,
-          ),
+          rows.map(normalizePartnerPrayerAudio),
         );
       } catch (error) {
         if (controller.signal.aborted) {
@@ -2810,6 +3004,11 @@ export function PrayerOfficeMockup() {
     onOpenPrayerPlayer: openPrayerPlayer,
     partnerStatusOverrides,
   });
+  const previewCommunities = createPreviewCommunitiesFromPartnerMedia(
+    partnerVideos,
+    partnerAudio,
+    partnerStatusOverrides,
+  );
 
   const segmentsToRender = isDesktopLayout
     ? SEGMENTS
@@ -2921,6 +3120,7 @@ export function PrayerOfficeMockup() {
             partnerVideos,
             partnerAudio,
             worthAbbeyVideos,
+            previewCommunities,
           })
         ) : (
           <>
