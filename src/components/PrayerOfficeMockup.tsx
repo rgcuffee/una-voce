@@ -97,7 +97,7 @@ type OptionItem = {
   videoId?: string;
   sourceUrl?: string;
   embedUrl?: string;
-  provider?: 'youtube' | 'spotify';
+  provider?: 'youtube' | 'spotify' | 'apple-podcast';
   communitySlug?: PartnerCommunitySlug;
   liveStartAt?: string | null;
   liveEndAt?: string | null;
@@ -142,7 +142,8 @@ type PartnerPrayerAudio = {
   title: string;
   displayTitle: string;
   description: string | null;
-  spotifyEpisodeId: string | null;
+  episodeId: string | null;
+  provider: 'spotify' | 'apple-podcast';
   imageUrl: string | null;
   canonicalUrl: string;
   embedUrl: string;
@@ -1529,7 +1530,9 @@ function normalizePartnerPrayerVideo(row: PartnerPrayerVideoRow) {
 type PartnerPrayerAudioRow = {
   title: string;
   description: string | null;
-  spotify_episode_id: string | null;
+  spotify_episode_id?: string | null;
+  apple_episode_id?: string | null;
+  provider?: 'spotify' | 'apple-podcast';
   image_url: string | null;
   canonical_url: string;
   embed_url: string;
@@ -1566,7 +1569,8 @@ function normalizePartnerPrayerAudio(row: PartnerPrayerAudioRow): PartnerPrayerA
     title: row.title,
     displayTitle: displayPartnerPrayerAudioTitle(row.title),
     description: row.description,
-    spotifyEpisodeId: row.spotify_episode_id,
+    episodeId: row.spotify_episode_id ?? row.apple_episode_id ?? null,
+    provider: row.provider ?? (row.apple_episode_id ? 'apple-podcast' : 'spotify'),
     imageUrl: row.image_url,
     canonicalUrl: row.canonical_url,
     embedUrl: row.embed_url,
@@ -1783,15 +1787,15 @@ function partnerAudioOptionForSegment(
   const meta = PARTNER_AUDIO_PRAYER_META[audio.prayerType];
 
   return {
-    meta: `Spotify Audio · ${meta.label}`,
+    meta: `${audio.provider === 'apple-podcast' ? 'Apple Podcasts' : 'Spotify'} Audio · ${meta.label}`,
     title: `${audio.partnerName} - ${audio.displayTitle}`,
     description: meta.description(audio.partnerName),
     source: 'partner',
     imageUrl: audio.imageUrl ?? undefined,
-    videoId: audio.spotifyEpisodeId ?? undefined,
+    videoId: audio.episodeId ?? undefined,
     sourceUrl: audio.canonicalUrl,
     embedUrl: audio.embedUrl,
-    provider: 'spotify',
+    provider: audio.provider === 'apple-podcast' ? 'apple-podcast' : 'spotify',
     communitySlug: audio.partnerSlug as PartnerCommunitySlug,
   };
 }
@@ -2883,33 +2887,63 @@ export function PrayerOfficeMockup() {
       }
 
       try {
-        const { data, error } = await supabase
-          .from('spotify_episodes')
-          .select(
-            [
-              'title',
-              'description',
-              'spotify_episode_id',
-              'image_url',
-              'canonical_url',
-              'embed_url',
-              'published_at',
-              'prayer_date',
-              'prayer_type',
-              'duration_seconds',
-              'partners!inner(slug,name,active,onboarding_status)',
-            ].join(','),
-          )
-          .eq('display_status', 'approved' satisfies YoutubeVideoDisplayStatus)
-          .eq('partners.active', true)
-          .eq('partners.onboarding_status', 'active' satisfies PartnerOnboardingStatus)
-          .eq('prayer_date', selectedDate)
-          .in('prayer_type', partnerContentPrayerTypes)
-          .order('published_at', { ascending: false })
-          .abortSignal(controller.signal);
+        const [spotifyResult, appleResult] = await Promise.all([
+          supabase
+            .from('spotify_episodes')
+            .select(
+              [
+                'title',
+                'description',
+                'spotify_episode_id',
+                'image_url',
+                'canonical_url',
+                'embed_url',
+                'published_at',
+                'prayer_date',
+                'prayer_type',
+                'duration_seconds',
+                'partners!inner(slug,name,active,onboarding_status)',
+              ].join(','),
+            )
+            .eq('display_status', 'approved' satisfies YoutubeVideoDisplayStatus)
+            .eq('partners.active', true)
+            .eq('partners.onboarding_status', 'active' satisfies PartnerOnboardingStatus)
+            .eq('prayer_date', selectedDate)
+            .in('prayer_type', partnerContentPrayerTypes)
+            .order('published_at', { ascending: false })
+            .abortSignal(controller.signal),
+          supabase
+            .from('apple_podcast_episodes')
+            .select(
+              [
+                'title',
+                'description',
+                'apple_episode_id',
+                'image_url',
+                'canonical_url',
+                'embed_url',
+                'published_at',
+                'prayer_date',
+                'prayer_type',
+                'duration_seconds',
+                'partners!inner(slug,name,active,onboarding_status)',
+              ].join(','),
+            )
+            .eq('display_status', 'approved' satisfies YoutubeVideoDisplayStatus)
+            .eq('partners.active', true)
+            .eq('partners.onboarding_status', 'active' satisfies PartnerOnboardingStatus)
+            .eq('prayer_date', selectedDate)
+            .in('prayer_type', partnerContentPrayerTypes)
+            .order('published_at', { ascending: false })
+            .abortSignal(controller.signal),
+        ]);
 
-        if (error) {
-          throw error;
+        if (spotifyResult.error) {
+          throw spotifyResult.error;
+        }
+
+        if (appleResult.error) {
+          throw appleResult.error;
         }
 
         const preview = await loadPartnerContentPreview(
@@ -2917,7 +2951,14 @@ export function PrayerOfficeMockup() {
           controller.signal,
         );
         const rows = mergePartnerRows(
-          (data ?? []) as unknown as PartnerPrayerAudioRow[],
+          [
+            ...((spotifyResult.data ?? []) as unknown as PartnerPrayerAudioRow[]).map(
+              (episode) => ({ ...episode, provider: 'spotify' as const }),
+            ),
+            ...((appleResult.data ?? []) as unknown as PartnerPrayerAudioRow[]).map(
+              (episode) => ({ ...episode, provider: 'apple-podcast' as const }),
+            ),
+          ],
           preview?.audio,
         );
 

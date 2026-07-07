@@ -5,17 +5,20 @@ import {
   storeAdminSecret,
   updateVideo,
   updateEpisode,
+  upsertApplePodcastFeed,
   upsertFeed,
   upsertPartner,
   upsertRule,
   upsertSpotifyFeed,
   type AdminClassificationRule,
+  type AdminApplePodcastFeed,
   type AdminDashboardData,
   type AdminPartner,
   type AdminPartnerFeed,
-  type AdminSpotifyEpisode,
+  type AdminAudioEpisode,
   type AdminSpotifyFeed,
   type AdminYoutubeVideo,
+  type ApplePodcastFeedDraft,
   type FeedDraft,
   type PartnerDraft,
   type RuleDraft,
@@ -177,6 +180,33 @@ function spotifyFeedDraft(partnerId: string, feed?: AdminSpotifyFeed | null): Sp
   };
 }
 
+function applePodcastFeedDraft(partnerId: string, feed?: AdminApplePodcastFeed | null): ApplePodcastFeedDraft {
+  if (feed) {
+    return {
+      id: feed.id,
+      partner_id: feed.partner_id,
+      apple_podcast_id: feed.apple_podcast_id,
+      show_url: feed.show_url,
+      embed_url: feed.embed_url,
+      rss_url: feed.rss_url ?? '',
+      polling_interval_minutes: feed.polling_interval_minutes,
+      import_from_date: feed.import_from_date ?? '',
+      active: feed.active,
+    };
+  }
+
+  return {
+    partner_id: partnerId,
+    apple_podcast_id: '',
+    show_url: '',
+    embed_url: '',
+    rss_url: '',
+    polling_interval_minutes: 120,
+    import_from_date: '',
+    active: true,
+  };
+}
+
 function ruleDraft(partnerId: string, rule?: AdminClassificationRule | null): RuleDraft {
   if (rule) {
     return {
@@ -253,6 +283,11 @@ export function AdminDashboardPage() {
 
   const partnerSpotifyFeeds = useMemo(
     () => data?.spotifyFeeds.filter((feed) => feed.partner_id === selectedPartnerId) ?? [],
+    [data, selectedPartnerId],
+  );
+
+  const partnerApplePodcastFeeds = useMemo(
+    () => data?.applePodcastFeeds.filter((feed) => feed.partner_id === selectedPartnerId) ?? [],
     [data, selectedPartnerId],
   );
 
@@ -367,6 +402,7 @@ export function AdminDashboardPage() {
                 data={data}
                 feeds={partnerFeeds}
                 spotifyFeeds={partnerSpotifyFeeds}
+                applePodcastFeeds={partnerApplePodcastFeeds}
                 selectedPartnerId={selectedPartnerId}
                 onSelectPartner={setSelectedPartnerId}
                 onSaved={refresh}
@@ -474,7 +510,7 @@ function Overview({
                   </td>
                   <td><span className={`engine-badge ${statusClass(partner.relationship_status)}`}>{partner.relationship_status}</span></td>
                   <td><span className={`engine-badge ${statusClass(partner.onboarding_status)}`}>{partner.onboarding_status}</span></td>
-                  <td>YT {summary?.activeFeedCount ?? 0}/{summary?.feedCount ?? 0} · SP {summary?.activeSpotifyFeedCount ?? 0}/{summary?.spotifyFeedCount ?? 0}</td>
+                  <td>YT {summary?.activeFeedCount ?? 0}/{summary?.feedCount ?? 0} · SP {summary?.activeSpotifyFeedCount ?? 0}/{summary?.spotifyFeedCount ?? 0} · AP {summary?.activeApplePodcastFeedCount ?? 0}/{summary?.applePodcastFeedCount ?? 0}</td>
                   <td>{summary?.ruleCount ?? 0}</td>
                   <td>{summary?.videoCount ?? 0}</td>
                   <td>{summary?.episodeCount ?? 0}</td>
@@ -744,7 +780,7 @@ function AudioSection({
   onSaved,
 }: {
   data: AdminDashboardData;
-  episodes: AdminSpotifyEpisode[];
+  episodes: AdminAudioEpisode[];
   selectedPartnerId: string;
   onSelectPartner: (id: string) => void;
   onSaved: () => Promise<void>;
@@ -783,7 +819,7 @@ function AudioSection({
   );
 }
 
-function EpisodeReviewCard({ episode, onSaved }: { episode: AdminSpotifyEpisode; onSaved: () => Promise<void> }) {
+function EpisodeReviewCard({ episode, onSaved }: { episode: AdminAudioEpisode; onSaved: () => Promise<void> }) {
   const [status, setStatus] = useState(episode.display_status);
   const [hour, setHour] = useState<LiturgicalHour | ''>(episode.prayer_type ?? '');
   const [date, setDate] = useState(episode.prayer_date ?? '');
@@ -800,6 +836,7 @@ function EpisodeReviewCard({ episode, onSaved }: { episode: AdminSpotifyEpisode;
     try {
       await updateEpisode({
         id: episode.id,
+        provider: episode.provider,
         display_status: nextStatus,
         prayer_type: hour || null,
         prayer_date: date || null,
@@ -818,7 +855,7 @@ function EpisodeReviewCard({ episode, onSaved }: { episode: AdminSpotifyEpisode;
       <div className="admin-video-body">
         <span className={`engine-badge ${statusClass(episode.display_status)}`}>{episode.display_status}</span>
         <h3>{episode.title}</h3>
-        <p>{formatDateTime(episode.published_at)} · Spotify audio</p>
+        <p>{formatDateTime(episode.published_at)} · {episode.provider === 'apple-podcast' ? 'Apple Podcasts' : 'Spotify'} audio</p>
         <div className="admin-inline-controls">
           <label>
             Prayer date
@@ -852,6 +889,7 @@ function FeedsSection({
   data,
   feeds,
   spotifyFeeds,
+  applePodcastFeeds,
   selectedPartnerId,
   onSelectPartner,
   onSaved,
@@ -859,18 +897,22 @@ function FeedsSection({
   data: AdminDashboardData;
   feeds: AdminPartnerFeed[];
   spotifyFeeds: AdminSpotifyFeed[];
+  applePodcastFeeds: AdminApplePodcastFeed[];
   selectedPartnerId: string;
   onSelectPartner: (id: string) => void;
   onSaved: () => Promise<void>;
 }) {
   const [draft, setDraft] = useState<FeedDraft>(() => feedDraft(selectedPartnerId));
   const [spotifyDraft, setSpotifyDraft] = useState<SpotifyFeedDraft>(() => spotifyFeedDraft(selectedPartnerId));
+  const [applePodcastDraft, setApplePodcastDraft] = useState<ApplePodcastFeedDraft>(() => applePodcastFeedDraft(selectedPartnerId));
   const [saving, setSaving] = useState(false);
   const [savingSpotify, setSavingSpotify] = useState(false);
+  const [savingApplePodcast, setSavingApplePodcast] = useState(false);
 
   useEffect(() => {
     setDraft(feedDraft(selectedPartnerId));
     setSpotifyDraft(spotifyFeedDraft(selectedPartnerId));
+    setApplePodcastDraft(applePodcastFeedDraft(selectedPartnerId));
   }, [selectedPartnerId]);
 
   async function save() {
@@ -892,6 +934,17 @@ function FeedsSection({
       setSpotifyDraft(spotifyFeedDraft(selectedPartnerId));
     } finally {
       setSavingSpotify(false);
+    }
+  }
+
+  async function saveApplePodcast() {
+    setSavingApplePodcast(true);
+    try {
+      await upsertApplePodcastFeed(applePodcastDraft);
+      await onSaved();
+      setApplePodcastDraft(applePodcastFeedDraft(selectedPartnerId));
+    } finally {
+      setSavingApplePodcast(false);
     }
   }
 
@@ -922,11 +975,19 @@ function FeedsSection({
               <span>{feed.active ? 'active' : 'inactive'} · {feed.rss_url ? 'RSS configured' : 'missing RSS'} · last poll {formatDateTime(feed.last_polled_at)}</span>
             </button>
           ))}
+          <h3 className="admin-list-heading">Apple Podcasts</h3>
+          {applePodcastFeeds.map((feed) => (
+            <button key={feed.id} type="button" onClick={() => setApplePodcastDraft(applePodcastFeedDraft(selectedPartnerId, feed))}>
+              <strong>podcast: {feed.apple_podcast_id}</strong>
+              <span>{feed.active ? 'active' : 'inactive'} · {feed.rss_url ? 'RSS configured' : 'missing RSS'} · last poll {formatDateTime(feed.last_polled_at)}</span>
+            </button>
+          ))}
         </div>
       </div>
       <div className="admin-stacked-forms">
         <FeedForm draft={draft} saving={saving} onChange={setDraft} onSave={save} />
         <SpotifyFeedForm draft={spotifyDraft} saving={savingSpotify} onChange={setSpotifyDraft} onSave={saveSpotify} />
+        <ApplePodcastFeedForm draft={applePodcastDraft} saving={savingApplePodcast} onChange={setApplePodcastDraft} onSave={saveApplePodcast} />
       </div>
     </section>
   );
@@ -993,6 +1054,34 @@ function SpotifyFeedForm({ draft, saving, onChange, onSave }: { draft: SpotifyFe
         </label>
         <button type="button" className="admin-button primary" disabled={saving} onClick={onSave}>
           {saving ? 'Saving...' : 'Save Spotify Source'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ApplePodcastFeedForm({ draft, saving, onChange, onSave }: { draft: ApplePodcastFeedDraft; saving: boolean; onChange: (draft: ApplePodcastFeedDraft) => void; onSave: () => void }) {
+  return (
+    <div className="admin-form">
+      <div className="engine-section-heading compact">
+        <div>
+          <p>{draft.id ? 'Edit Apple source' : 'New Apple source'}</p>
+          <h2>Apple Podcasts details</h2>
+        </div>
+      </div>
+      <div className="admin-form-body">
+        <Field label="Podcast ID" value={draft.apple_podcast_id} onChange={(apple_podcast_id) => onChange({ ...draft, apple_podcast_id })} />
+        <Field label="Show URL" value={draft.show_url} onChange={(show_url) => onChange({ ...draft, show_url })} className="admin-full" />
+        <Field label="Embed URL" value={draft.embed_url} onChange={(embed_url) => onChange({ ...draft, embed_url })} className="admin-full" />
+        <Field label="RSS URL" value={draft.rss_url ?? ''} onChange={(rss_url) => onChange({ ...draft, rss_url })} className="admin-full" />
+        <Field label="Import from" value={draft.import_from_date ?? ''} onChange={(import_from_date) => onChange({ ...draft, import_from_date })} type="date" />
+        <Field label="Polling minutes" value={String(draft.polling_interval_minutes)} onChange={(value) => onChange({ ...draft, polling_interval_minutes: Number(value) || 120 })} type="number" />
+        <label className="admin-check">
+          <input type="checkbox" checked={draft.active} onChange={(event) => onChange({ ...draft, active: event.target.checked })} />
+          Active
+        </label>
+        <button type="button" className="admin-button primary" disabled={saving} onClick={onSave}>
+          {saving ? 'Saving...' : 'Save Apple Source'}
         </button>
       </div>
     </div>

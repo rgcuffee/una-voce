@@ -1,7 +1,9 @@
 export type PartnerCommunitySlug =
   | 'cathaholic-music'
   | 'cantor-del-camino'
+  | 'divine-office'
   | 'padre-didier'
+  | 'sing-the-hours'
   | 'worth-abbey'
   | 'ridgehaven-priory'
   | 'the-little-oratory'
@@ -10,12 +12,14 @@ export type PartnerCommunitySlug =
   | 'sisters-of-dawnfield';
 
 export type PartnerBadgeStatus = 'curated' | 'verified' | 'partner' | 'mock';
+export type PartnerCommunityOnboardingStatus = 'active' | 'pending';
 
 export type PartnerCommunity = {
   slug: PartnerCommunitySlug | string;
   name: string;
   kind: string;
   location: string;
+  onboardingStatus?: PartnerCommunityOnboardingStatus;
   relationshipStatus: PartnerBadgeStatus;
   badgeEnabled: boolean;
   tagline: string;
@@ -34,6 +38,11 @@ export type PartnerCommunity = {
   }[];
 };
 
+const showPendingPartnerCommunities =
+  import.meta.env.VITE_SHOW_PENDING_PARTNER_CONTENT === 'true' ||
+  (import.meta.env.DEV &&
+    import.meta.env.VITE_SHOW_PENDING_PARTNER_CONTENT !== 'false');
+
 export type PartnerCommunityStatusOverride = {
   relationshipStatus: Exclude<PartnerBadgeStatus, 'mock'>;
   badgeEnabled: boolean;
@@ -47,6 +56,51 @@ export type PartnerCommunityStatusOverrides = Record<
 >;
 
 export const PARTNER_COMMUNITIES: PartnerCommunity[] = [
+  {
+    slug: 'divine-office',
+    name: 'Divine Office',
+    kind: 'Audio prayer ministry',
+    location: 'United States / online',
+    onboardingStatus: 'pending',
+    relationshipStatus: 'partner',
+    badgeEnabled: false,
+    tagline: 'Daily audio Liturgy of the Hours from DivineOffice.org.',
+    description:
+      'Divine Office shares audio recordings of the Liturgy of the Hours for people praying the daily office at home, in small groups, or wherever common celebration is not possible.',
+    imageUrl:
+      'https://is1-ssl.mzstatic.com/image/thumb/Podcasts211/v4/72/53/82/72538286-44dc-7e42-b9c0-0c5f06a87534/mza_3045095348242737945.jpg/1200x1200bf-60.jpg',
+    accent: 'Daily audio, complete office, guided communal responses',
+    prayerRhythm: [
+      'Office of Readings',
+      'Lauds',
+      'Midmorning Prayer',
+      'Midday Prayer',
+      'Midafternoon Prayer',
+      'Vespers',
+      'Compline',
+    ],
+    links: [
+      { label: 'Website', href: 'https://divineoffice.org/' },
+      {
+        label: 'Apple Podcasts',
+        href: 'https://podcasts.apple.com/us/podcast/divine-office-liturgy-of-the-hours-of-the/id1615786349',
+      },
+    ],
+    featured: [
+      {
+        label: 'Today',
+        title: 'Daily office audio',
+        description:
+          'Episodes can be matched to each prayer date and routed into the Listen tab for the relevant hour.',
+      },
+      {
+        label: 'Daytime',
+        title: 'Midmorning, Midday, and Midafternoon',
+        description:
+          'All daytime offices are grouped into the existing Midday Prayer experience for review.',
+      },
+    ],
+  },
   {
     slug: 'worth-abbey',
     name: 'Worth Abbey',
@@ -118,6 +172,43 @@ export const PARTNER_COMMUNITIES: PartnerCommunity[] = [
         title: 'Evening Prayer video',
         description:
           'A Vespers option appears in the Watch tab for the evening office.',
+      },
+    ],
+  },
+  {
+    slug: 'sing-the-hours',
+    name: 'Sing the Hours',
+    kind: 'Creator ministry',
+    location: 'United States / online',
+    onboardingStatus: 'pending',
+    relationshipStatus: 'curated',
+    badgeEnabled: true,
+    tagline: 'Daily chanted Lauds and Vespers for praying with the Church.',
+    description:
+      'Sing the Hours shares chant-led Liturgy of the Hours videos, helping people join the daily rhythm of Morning and Evening Prayer with clear, singable structure.',
+    imageUrl:
+      'https://yt3.googleusercontent.com/MovqVdp8AFW-7L83SwoxAGf50Y_F9OTSdSyitDCZ-pEvBBMfy-uV27X3o6eKlnszI5weOkxO4Q=s900-c-k-c0x00ffffff-no-rj',
+    accent: 'Chanted office, English and Latin, daily Lauds and Vespers',
+    prayerRhythm: ['Lauds', 'Vespers'],
+    links: [
+      { label: 'Website', href: 'https://singthehours.org/' },
+      {
+        label: 'YouTube channel',
+        href: 'https://www.youtube.com/@SingtheHours/videos',
+      },
+    ],
+    featured: [
+      {
+        label: 'Today',
+        title: 'Lauds',
+        description:
+          'Morning Prayer videos can be matched from the channel feed by Lauds and Morning Prayer titles.',
+      },
+      {
+        label: 'Today',
+        title: 'Vespers',
+        description:
+          'Evening Prayer videos can be reviewed for the Watch tab when Vespers is available.',
       },
     ],
   },
@@ -331,17 +422,25 @@ function isPartnerCommunityPublished(
   }
 
   if (!overrides) {
-    return true;
+    return community.onboardingStatus === 'pending'
+      ? showPendingPartnerCommunities
+      : true;
   }
 
-  return overrides[community.slug]?.communityPageEnabled === true;
+  return (
+    overrides[community.slug]?.communityPageEnabled === true ||
+    (community.onboardingStatus === 'pending' && showPendingPartnerCommunities)
+  );
 }
 
 const COMMUNITY_ALIASES: Record<string, PartnerCommunitySlug> = {
   'cantor del camino': 'cantor-del-camino',
   'cathaholic music': 'cathaholic-music',
   'cathoholic music': 'cathaholic-music',
+  'divine office': 'divine-office',
+  'divine office (divineoffice.org)': 'divine-office',
   'padre didier': 'padre-didier',
+  'sing the hours': 'sing-the-hours',
   'virtual padre didier': 'padre-didier',
   'worth abbey': 'worth-abbey',
   'worth abbey (uk)': 'worth-abbey',

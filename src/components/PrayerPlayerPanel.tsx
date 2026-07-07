@@ -14,7 +14,7 @@ export interface PrayerPlayerSession {
   ministryId?: string;
   hour?: string;
   locale?: string;
-  provider: 'youtube' | 'vimeo' | 'spotify' | 'external';
+  provider: 'youtube' | 'vimeo' | 'spotify' | 'apple-podcast' | 'external';
   videoId: string;
   title: string;
   statusLabel?: string;
@@ -97,7 +97,7 @@ function embedUrlFor(session: PrayerPlayerSession) {
     return `https://www.youtube-nocookie.com/embed/${session.videoId}?rel=0&modestbranding=1&enablejsapi=1${origin}`;
   }
 
-  if (session.provider === 'spotify') {
+  if (session.provider === 'spotify' || session.provider === 'apple-podcast') {
     return session.embedUrl ?? session.sourceUrl;
   }
 
@@ -245,10 +245,11 @@ export function PrayerPlayerPanel({
     }
     window.open(session.sourceUrl, '_blank', 'noopener,noreferrer');
   };
+  const providerClass = `provider-${session.provider}`;
 
   return createPortal(
     <div
-      className={`prayer-player-shell${isMinimized ? ' minimized' : ''}`}
+      className={`prayer-player-shell ${providerClass}${isMinimized ? ' minimized' : ''}`}
       role={isMinimized ? 'status' : 'dialog'}
       aria-modal={isMinimized ? undefined : 'true'}
       aria-label={`${session.title} prayer player`}

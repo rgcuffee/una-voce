@@ -54,7 +54,7 @@ export async function handler(event) {
     return response(400, { error: 'A YYYY-MM-DD date is required' });
   }
 
-  const [videosResult, audioResult] = await Promise.all([
+  const [videosResult, spotifyAudioResult, appleAudioResult] = await Promise.all([
     supabase
       .from('youtube_videos')
       .select(
@@ -102,21 +102,57 @@ export async function handler(event) {
       .eq('prayer_date', date)
       .in('prayer_type', PRAYER_TYPES)
       .order('published_at', { ascending: false }),
+    supabase
+      .from('apple_podcast_episodes')
+      .select(
+        [
+          'title',
+          'description',
+          'apple_episode_id',
+          'image_url',
+          'canonical_url',
+          'embed_url',
+          'published_at',
+          'prayer_date',
+          'prayer_type',
+          'duration_seconds',
+          'partners!inner(slug,name,active,onboarding_status)',
+        ].join(','),
+      )
+      .in('display_status', ['approved', 'pending'])
+      .eq('partners.active', true)
+      .in('partners.onboarding_status', ['active', 'pending'])
+      .eq('prayer_date', date)
+      .in('prayer_type', PRAYER_TYPES)
+      .order('published_at', { ascending: false }),
   ]);
 
   if (videosResult.error) {
     return response(500, { error: videosResult.error.message });
   }
 
-  if (audioResult.error) {
-    return response(500, { error: audioResult.error.message });
+  if (spotifyAudioResult.error) {
+    return response(500, { error: spotifyAudioResult.error.message });
+  }
+
+  if (appleAudioResult.error) {
+    return response(500, { error: appleAudioResult.error.message });
   }
 
   return response(200, {
     ok: true,
     date,
     videos: videosResult.data ?? [],
-    audio: audioResult.data ?? [],
+    audio: [
+      ...(spotifyAudioResult.data ?? []).map((episode) => ({
+        ...episode,
+        provider: 'spotify',
+      })),
+      ...(appleAudioResult.data ?? []).map((episode) => ({
+        ...episode,
+        provider: 'apple-podcast',
+      })),
+    ],
   });
 }
 

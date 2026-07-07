@@ -66,6 +66,21 @@ export type AdminSpotifyFeed = {
   updated_at: string;
 };
 
+export type AdminApplePodcastFeed = {
+  id: string;
+  partner_id: string;
+  apple_podcast_id: string;
+  show_url: string;
+  embed_url: string;
+  rss_url: string | null;
+  polling_interval_minutes: number;
+  import_from_date: string | null;
+  active: boolean;
+  last_polled_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export type AdminClassificationRule = {
   id: string;
   partner_id: string;
@@ -101,11 +116,13 @@ export type AdminYoutubeVideo = {
   updated_at: string;
 };
 
-export type AdminSpotifyEpisode = {
+export type AdminAudioEpisode = {
   id: string;
   partner_id: string;
   feed_id: string;
-  spotify_episode_id: string | null;
+  provider: 'spotify' | 'apple-podcast';
+  spotify_episode_id?: string | null;
+  apple_episode_id?: string | null;
   guid: string;
   title: string;
   description: string | null;
@@ -128,6 +145,8 @@ export type PartnerSummary = {
   activeFeedCount: number;
   spotifyFeedCount: number;
   activeSpotifyFeedCount: number;
+  applePodcastFeedCount: number;
+  activeApplePodcastFeedCount: number;
   ruleCount: number;
   videoCount: number;
   episodeCount: number;
@@ -149,9 +168,10 @@ export type AdminDashboardData = {
   partners: AdminPartner[];
   feeds: AdminPartnerFeed[];
   spotifyFeeds: AdminSpotifyFeed[];
+  applePodcastFeeds: AdminApplePodcastFeed[];
   rules: AdminClassificationRule[];
   videos: AdminYoutubeVideo[];
-  episodes: AdminSpotifyEpisode[];
+  episodes: AdminAudioEpisode[];
   summaries: PartnerSummary[];
   totals: {
     partners: number;
@@ -209,6 +229,18 @@ export type SpotifyFeedDraft = {
   active: boolean;
 };
 
+export type ApplePodcastFeedDraft = {
+  id?: string;
+  partner_id: string;
+  apple_podcast_id: string;
+  show_url: string;
+  embed_url: string;
+  rss_url?: string | null;
+  polling_interval_minutes: number;
+  import_from_date?: string | null;
+  active: boolean;
+};
+
 export type RuleDraft = {
   id?: string;
   partner_id: string;
@@ -231,6 +263,7 @@ export type VideoUpdate = {
 
 export type EpisodeUpdate = {
   id: string;
+  provider?: 'spotify' | 'apple-podcast';
   prayer_type?: LiturgicalHour | null;
   prayer_date?: string | null;
   display_status?: YoutubeVideoDisplayStatus;
@@ -341,6 +374,13 @@ export function upsertSpotifyFeed(feed: SpotifyFeedDraft) {
   });
 }
 
+export function upsertApplePodcastFeed(feed: ApplePodcastFeedDraft) {
+  return adminFetch<{ ok: true; feed: AdminApplePodcastFeed }>('/api/admin/partners', {
+    method: 'POST',
+    body: JSON.stringify({ action: 'upsertApplePodcastFeed', feed }),
+  });
+}
+
 export function upsertRule(rule: RuleDraft) {
   return adminFetch<{ ok: true; rule: AdminClassificationRule }>('/api/admin/partners', {
     method: 'POST',
@@ -356,7 +396,7 @@ export function updateVideo(video: VideoUpdate) {
 }
 
 export function updateEpisode(episode: EpisodeUpdate) {
-  return adminFetch<{ ok: true; episode: AdminSpotifyEpisode }>('/api/admin/partners', {
+  return adminFetch<{ ok: true; episode: AdminAudioEpisode }>('/api/admin/partners', {
     method: 'POST',
     body: JSON.stringify({ action: 'updateEpisode', episode }),
   });

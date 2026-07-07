@@ -118,9 +118,11 @@ async function dashboardResponse() {
     partnersResult,
     feedsResult,
     spotifyFeedsResult,
+    applePodcastFeedsResult,
     rulesResult,
     videosResult,
-    episodesResult,
+    spotifyEpisodesResult,
+    applePodcastEpisodesResult,
   ] =
     await Promise.all([
       supabase.from('partners').select('*').order('name'),
@@ -131,6 +133,11 @@ async function dashboardResponse() {
         .order('last_polled_at', { ascending: false }),
       supabase
         .from('partner_spotify_feeds')
+        .select('*')
+        .order('active', { ascending: false })
+        .order('last_polled_at', { ascending: false }),
+      supabase
+        .from('partner_apple_podcast_feeds')
         .select('*')
         .order('active', { ascending: false })
         .order('last_polled_at', { ascending: false }),
@@ -148,23 +155,40 @@ async function dashboardResponse() {
         .select('*')
         .order('published_at', { ascending: false })
         .limit(250),
+      supabase
+        .from('apple_podcast_episodes')
+        .select('*')
+        .order('published_at', { ascending: false })
+        .limit(250),
     ]);
 
   throwIfError(partnersResult.error);
   throwIfError(feedsResult.error);
   throwIfError(spotifyFeedsResult.error);
+  throwIfError(applePodcastFeedsResult.error);
   throwIfError(rulesResult.error);
   throwIfError(videosResult.error);
-  throwIfError(episodesResult.error);
+  throwIfError(spotifyEpisodesResult.error);
+  throwIfError(applePodcastEpisodesResult.error);
 
   const partners = partnersResult.data ?? [];
   const feeds = feedsResult.data ?? [];
   const spotifyFeeds = spotifyFeedsResult.data ?? [];
+  const applePodcastFeeds = applePodcastFeedsResult.data ?? [];
   const rules = rulesResult.data ?? [];
   const videos = videosResult.data ?? [];
-  const episodes = episodesResult.data ?? [];
+  const episodes = [
+    ...(spotifyEpisodesResult.data ?? []).map((episode) => ({
+      ...episode,
+      provider: 'spotify',
+    })),
+    ...(applePodcastEpisodesResult.data ?? []).map((episode) => ({
+      ...episode,
+      provider: 'apple-podcast',
+    })),
+  ].sort((left, right) => Date.parse(right.published_at) - Date.parse(left.published_at));
   const summaries = partners.map((partner) =>
-    partnerSummary(partner.id, feeds, spotifyFeeds, rules, videos, episodes, today),
+    partnerSummary(partner.id, feeds, spotifyFeeds, applePodcastFeeds, rules, videos, episodes, today),
   );
 
   return {
@@ -174,6 +198,7 @@ async function dashboardResponse() {
     partners,
     feeds,
     spotifyFeeds,
+    applePodcastFeeds,
     rules,
     videos,
     episodes,
@@ -194,14 +219,15 @@ async function dashboardResponse() {
         (episode) =>
           episode.display_status === 'approved' && episode.prayer_date === today,
       ).length,
-      staleFeeds: [...feeds, ...spotifyFeeds].filter((feed) => isStaleFeed(feed)).length,
+      staleFeeds: [...feeds, ...spotifyFeeds, ...applePodcastFeeds].filter((feed) => isStaleFeed(feed)).length,
     },
   };
 }
 
-function partnerSummary(partnerId, feeds, spotifyFeeds, rules, videos, episodes, today) {
+function partnerSummary(partnerId, feeds, spotifyFeeds, applePodcastFeeds, rules, videos, episodes, today) {
   const partnerFeeds = feeds.filter((feed) => feed.partner_id === partnerId);
   const partnerSpotifyFeeds = spotifyFeeds.filter((feed) => feed.partner_id === partnerId);
+  const partnerApplePodcastFeeds = applePodcastFeeds.filter((feed) => feed.partner_id === partnerId);
   const partnerRules = rules.filter((rule) => rule.partner_id === partnerId);
   const partnerVideos = videos.filter((video) => video.partner_id === partnerId);
   const partnerEpisodes = episodes.filter((episode) => episode.partner_id === partnerId);
@@ -221,6 +247,8 @@ function partnerSummary(partnerId, feeds, spotifyFeeds, rules, videos, episodes,
     activeFeedCount: partnerFeeds.filter((feed) => feed.active).length,
     spotifyFeedCount: partnerSpotifyFeeds.length,
     activeSpotifyFeedCount: partnerSpotifyFeeds.filter((feed) => feed.active).length,
+    applePodcastFeedCount: partnerApplePodcastFeeds.length,
+    activeApplePodcastFeedCount: partnerApplePodcastFeeds.filter((feed) => feed.active).length,
     ruleCount: partnerRules.length,
     videoCount: partnerVideos.length,
     episodeCount: partnerEpisodes.length,
@@ -241,7 +269,7 @@ function partnerSummary(partnerId, feeds, spotifyFeeds, rules, videos, episodes,
       (episode) => episode.display_status === 'hidden',
     ).length,
     lastPolledAt: latestDate(
-      [...partnerFeeds, ...partnerSpotifyFeeds].map((feed) => feed.last_polled_at),
+      [...partnerFeeds, ...partnerSpotifyFeeds, ...partnerApplePodcastFeeds].map((feed) => feed.last_polled_at),
     ),
     latestVideoAt: latestDate(partnerVideos.map((video) => video.published_at)),
     latestEpisodeAt: latestDate(partnerEpisodes.map((episode) => episode.published_at)),
@@ -257,6 +285,8 @@ async function handleAction(payload) {
       return upsertFeed(payload.feed);
     case 'upsertSpotifyFeed':
       return upsertSpotifyFeed(payload.feed);
+    case 'upsertApplePodcastFeed':
+      return upsertApplePodcastFeed(payload.feed);
     case 'upsertRule':
       return upsertRule(payload.rule);
     case 'updateVideo':
@@ -368,6 +398,32 @@ async function upsertSpotifyFeed(feed) {
   return { ok: true, feed: data };
 }
 
+async function upsertApplePodcastFeed(feed) {
+  const clean = compact({
+    id: feed.id,
+    partner_id: requiredString(feed.partner_id, 'partner_id'),
+    apple_podcast_id: requiredString(feed.apple_podcast_id, 'apple_podcast_id'),
+    show_url: requiredString(feed.show_url, 'show_url'),
+    embed_url: requiredString(feed.embed_url, 'embed_url'),
+    rss_url: nullableString(feed.rss_url),
+    polling_interval_minutes: positiveInteger(
+      feed.polling_interval_minutes,
+      'polling_interval_minutes',
+    ),
+    import_from_date: nullableString(feed.import_from_date),
+    active: Boolean(feed.active),
+  });
+
+  const { data, error } = await supabase
+    .from('partner_apple_podcast_feeds')
+    .upsert(clean, { onConflict: 'apple_podcast_id' })
+    .select('*')
+    .single();
+
+  throwIfError(error);
+  return { ok: true, feed: data };
+}
+
 async function upsertRule(rule) {
   const clean = compact({
     id: rule.id,
@@ -425,6 +481,7 @@ async function updateVideo(video) {
 
 async function updateEpisode(episode) {
   const id = requiredString(episode.id, 'id');
+  const provider = episode.provider === 'apple-podcast' ? 'apple-podcast' : 'spotify';
   const updates = compact({
     prayer_type: nullableEnumValue(episode.prayer_type, PRAYER_HOURS, 'prayer_type'),
     prayer_date: nullableString(episode.prayer_date),
@@ -436,7 +493,7 @@ async function updateEpisode(episode) {
   });
 
   const { data, error } = await supabase
-    .from('spotify_episodes')
+    .from(provider === 'apple-podcast' ? 'apple_podcast_episodes' : 'spotify_episodes')
     .update(updates)
     .eq('id', id)
     .select('*')

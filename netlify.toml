@@ -16,6 +16,9 @@
 [functions."spotify-ingest-scheduled"]
   schedule = "*/30 * * * *"
 
+[functions."apple-podcast-ingest-scheduled"]
+  schedule = "*/30 * * * *"
+
 [[redirects]]
   from = "/api/analytics"
   to = "/.netlify/functions/analytics"
@@ -29,6 +32,11 @@
 [[redirects]]
   from = "/api/spotify-ingest"
   to = "/.netlify/functions/spotify-ingest"
+  status = 200
+
+[[redirects]]
+  from = "/api/apple-podcast-ingest"
+  to = "/.netlify/functions/apple-podcast-ingest"
   status = 200
 
 [[redirects]]
