@@ -284,6 +284,20 @@ function CommunityDetail({
           <a href={communityPath(community.slug)}>Local profile link</a>
         </div>
       </section>
+
+      {community.relationshipStatus === 'curated' ? (
+        <CommunityDisclaimer />
+      ) : null}
     </article>
+  );
+}
+
+function CommunityDisclaimer() {
+  return (
+    <p className="community-disclaimer">
+      Una Voce is a discovery guide. If you represent a listed ministry and
+      would like to update, claim, or remove a profile, please{' '}
+      <a href="/contact">contact us</a>.
+    </p>
   );
 }

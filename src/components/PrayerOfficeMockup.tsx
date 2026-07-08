@@ -2536,7 +2536,7 @@ export function PrayerOfficeMockup() {
   >(
     () =>
       Object.fromEntries(
-        SEGMENTS.map((segment) => [segment.id, 'text']),
+        SEGMENTS.map((segment) => [segment.id, 'audio']),
       ) as Record<string, FormatKey>,
   );
   const [collapsedSegments, setCollapsedSegments] = useState<
@@ -3265,7 +3265,7 @@ export function PrayerOfficeMockup() {
               </section>
             ) : null}
             {segmentsToRender.map((segment) => {
-              const selectedFormat = selectedFormats[segment.id] ?? 'text';
+              const selectedFormat = selectedFormats[segment.id] ?? 'audio';
               const isCollapsed = collapsedSegments[segment.id];
               const isActiveDesktop = activeDesktopSegment === segment.id;
               const segmentSubtitle = SEGMENT_SUBTITLES[segment.id];

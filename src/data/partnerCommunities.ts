@@ -297,7 +297,12 @@ export const PARTNER_COMMUNITIES: PartnerCommunity[] = [
       'https://images.unsplash.com/photo-1597839977601-52b29c114af5?q=80&w=2054&auto=format&fit=crop',
     accent: 'Monastic chant, live chapel, quiet pacing',
     prayerRhythm: ['Morning Prayer', 'Midday Prayer', 'Vespers'],
-    links: [{ label: 'Mock community website', href: 'https://example.com/ridgehaven-priory' }],
+    links: [
+      {
+        label: 'Mock community website',
+        href: 'https://example.com/ridgehaven-priory',
+      },
+    ],
     featured: [
       {
         label: 'Upcoming',
@@ -321,7 +326,12 @@ export const PARTNER_COMMUNITIES: PartnerCommunity[] = [
       'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?auto=format&fit=crop&w=1400&q=80',
     accent: 'Guided pace, captions, beginner-friendly',
     prayerRhythm: ['Morning Prayer', 'Compline'],
-    links: [{ label: 'Mock community home', href: 'https://example.com/little-oratory' }],
+    links: [
+      {
+        label: 'Mock community home',
+        href: 'https://example.com/little-oratory',
+      },
+    ],
     featured: [
       {
         label: 'Live',
@@ -345,7 +355,12 @@ export const PARTNER_COMMUNITIES: PartnerCommunity[] = [
       'https://images.unsplash.com/photo-1516280030429-27679b3dc9cf?auto=format&fit=crop&w=1400&q=80',
     accent: 'Psalm cues, responsive pauses, daytime offices',
     prayerRhythm: ['Midmorning Prayer', 'Midday Prayer', 'Midafternoon Prayer'],
-    links: [{ label: 'Mock creator site', href: 'https://example.com/psalm-and-laurel' }],
+    links: [
+      {
+        label: 'Mock creator site',
+        href: 'https://example.com/psalm-and-laurel',
+      },
+    ],
     featured: [
       {
         label: 'Daytime',
@@ -369,7 +384,9 @@ export const PARTNER_COMMUNITIES: PartnerCommunity[] = [
       'https://images.unsplash.com/photo-1518895949257-7621c3c786d7?auto=format&fit=crop&w=1400&q=80',
     accent: 'Recorded offices, abbey ambience, replay library',
     prayerRhythm: ['Midmorning Prayer', 'Midday Prayer', 'Midafternoon Prayer'],
-    links: [{ label: 'Mock abbey site', href: 'https://example.com/cedarwell-abbey' }],
+    links: [
+      { label: 'Mock abbey site', href: 'https://example.com/cedarwell-abbey' },
+    ],
     featured: [
       {
         label: 'Replay',
@@ -393,7 +410,12 @@ export const PARTNER_COMMUNITIES: PartnerCommunity[] = [
       'https://plus.unsplash.com/premium_photo-1679051422153-2ea3c8cfe9ed?q=80&w=2070&auto=format&fit=crop',
     accent: 'Convent prayer, replays, shared responses',
     prayerRhythm: ['Lauds', 'Midday Prayer', 'Vespers'],
-    links: [{ label: 'Mock community site', href: 'https://example.com/sisters-of-dawnfield' }],
+    links: [
+      {
+        label: 'Mock community site',
+        href: 'https://example.com/sisters-of-dawnfield',
+      },
+    ],
     featured: [
       {
         label: 'Recent',
@@ -459,19 +481,19 @@ const BADGE_META: Record<
 > = {
   curated: {
     label: 'Curated',
-    description: 'Curated — We independently recommend this ministry.',
+    description: 'Selected by Una Voce as a recommended ministry or resource.',
   },
   verified: {
     label: 'Verified',
-    description: 'Verified — The ministry has reviewed or claimed its page.',
+    description: 'This ministry has reviewed its presence on Una Voce.',
   },
   partner: {
     label: 'Partner',
-    description: "Partner — We're actively collaborating.",
+    description: 'This ministry is actively collaborating with Una Voce.',
   },
   mock: {
-    label: 'Mock',
-    description: 'Mock — Prototype listing for design and testing.',
+    label: 'Prototype',
+    description: 'Example listing used for design and testing.',
   },
 };
 
@@ -499,9 +521,9 @@ function applyPartnerCommunityOverride(
 export function listPartnerCommunities(
   overrides?: PartnerCommunityStatusOverrides,
 ) {
-  return PARTNER_COMMUNITIES
-    .filter((community) => isPartnerCommunityPublished(community, overrides))
-    .map((community) => applyPartnerCommunityOverride(community, overrides));
+  return PARTNER_COMMUNITIES.filter((community) =>
+    isPartnerCommunityPublished(community, overrides),
+  ).map((community) => applyPartnerCommunityOverride(community, overrides));
 }
 
 export function getPartnerCommunity(
