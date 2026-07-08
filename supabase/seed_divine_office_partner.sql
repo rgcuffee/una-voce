@@ -131,7 +131,7 @@ cross join (
     ),
     (
       'Daytime Prayer',
-      array['Midmorning Prayer', 'Midday Prayer', 'Midafternoon Prayer', 'Daytime Prayer', 'Sext', 'None', 'Terce']::text[],
+      array['Midmorning Prayer', 'Midmorning', 'Midday Prayer', 'Midday', 'Midafternoon Prayer', 'Midafternoon', 'Daytime Prayer', 'Sext', 'None', 'Terce']::text[],
       array[]::text[],
       'midday_prayer',
       380,

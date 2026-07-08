@@ -289,8 +289,8 @@ function classifyCalendarConflict(baseDay, comparisonDay, baseOptions = [], comp
     const baseDisplay = display(baseDay);
     const comparisonDisplay = display(comparisonDay);
     if (baseDisplay !== comparisonDisplay) {
-        return classification('minor', 'different_title', false, baseDay, comparisonDay, baseOptions, comparisonOptions, ['display_title'], [
-            'Display title differs but canonical celebration matches.',
+        return classification('none', 'different_title', false, baseDay, comparisonDay, baseOptions, comparisonOptions, ['display_title'], [
+            'Display title differs but canonical celebration matches; this is an editorial variant, not a material conflict.',
         ]);
     }
 

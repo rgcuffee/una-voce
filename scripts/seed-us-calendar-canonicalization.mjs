@@ -39,6 +39,8 @@ const MANUAL_CANONICAL_IDS = new Map([
     ['most_holy_body_and_blood_of_christ', 'corpus_christi'],
     ['nativity_of_the_lord', 'christmas'],
     ['our_lord_jesus_christ_king_of_the_universe', 'christ_the_king'],
+    ['or_sts_augustine_zhao_rong_priest_and_companions_martyrs', 'saint_augustine_zhao_rong'],
+    ['st_juan_diego_cuahtlatoatzin', 'saint_juan_diego_cuauhtlatoatzin'],
 ]);
 
 const NOISE_PATTERNS = [
@@ -107,12 +109,30 @@ function titleCaseFromId(id) {
         .join(' ');
 }
 
+function trimSaintRoleSuffixes(id) {
+    if (!id.startsWith('saint_') && !id.startsWith('saints_')) return id;
+
+    let current = id;
+    let next = current;
+
+    do {
+        current = next;
+        next = current
+            .replace(/_doctor_of_the_church$/, '')
+            .replace(/_(?:pope|bishop|priest|deacon)_and_(?:martyr|martyrs)$/, '')
+            .replace(/_(?:pope|bishop|priest|deacon)_(?:martyr|martyrs)$/, '')
+            .replace(/_(?:and_)?(?:pope|bishop|priest|deacon|virgin|religious|abbot|abbess|martyr|martyrs)$/, '');
+    } while (next !== current);
+
+    return current;
+}
+
 function canonicalIdFor(sourceId) {
     if (MANUAL_CANONICAL_IDS.has(sourceId)) {
         return MANUAL_CANONICAL_IDS.get(sourceId);
     }
 
-    return sourceId
+    const normalized = sourceId
         .replace(/(^|_)1st(?=_|$)/g, '$1first')
         .replace(/(^|_)2nd(?=_|$)/g, '$1second')
         .replace(/(^|_)3rd(?=_|$)/g, '$1third')
@@ -151,9 +171,17 @@ function canonicalIdFor(sourceId) {
         .replace(/^(weekday_of_christmas|christmas_weekday)$/, 'christmas_weekday')
         .replace(/^(lenten_weekday|weekday_of_lent)$/, 'lenten_weekday')
         .replace(/^(easter_weekday|weekday_of_easter)$/, 'easter_weekday')
+        .replace(/^(weekday_in_ordinary_time|weekday_of_ordinary_time|ordinary_time_weekday)$/, 'weekday')
+        .replace(
+            /^(fifth|sixth|seventh)_day_of_christmas_octave(?:_.*)?$/,
+            '$1_day_within_the_octave_of_the_nativity_of_the_lord',
+        )
+        .replace(/^or_/, '')
         .replace(/^the_/, '')
         .replace(/^sts_/, 'saints_')
         .replace(/^st_/, 'saint_');
+
+    return trimSaintRoleSuffixes(normalized);
 }
 
 function canonicalCategory(row) {

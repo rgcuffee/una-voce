@@ -7,6 +7,10 @@ import type {
     CalendarConflictRun,
     CalendarReviewItem,
     CalendarSource,
+    LiturgicalDay,
+    LiturgicalDayOption,
+    LiturgicalHourInstance,
+    RawCalendarRow,
 } from '../lib/liturgicalCalendar';
 
 type CalendarStats = {
@@ -47,7 +51,29 @@ type ConflictDetailOption = {
     color?: string | null;
 };
 
+type InspectorDifference = {
+    id: string;
+    severity: CalendarConflictSeverity;
+    reason: CalendarConflictReason;
+    baseCalendarId: string;
+    comparisonCalendarId: string;
+    baseDisplay: string;
+    comparisonDisplay: string;
+    differences: string[];
+    notes: string[];
+};
+
 type LoadState = 'idle' | 'loading' | 'ready' | 'error';
+type DayInspectorState = 'idle' | 'loading' | 'ready' | 'error';
+
+type DayInspectorData = {
+    days: LiturgicalDay[];
+    options: LiturgicalDayOption[];
+    hours: LiturgicalHourInstance[];
+    rawRows: RawCalendarRow[];
+    reviews: CalendarReviewItem[];
+    conflicts: CalendarConflict[];
+};
 
 const reasonLabels: Record<CalendarConflictReason, string> = {
     same: 'Same',
@@ -72,6 +98,12 @@ const severityLabels: Record<CalendarConflictSeverity, string> = {
     major: 'Major',
 };
 
+const severityWeight: Record<CalendarConflictSeverity, number> = {
+    none: 0,
+    minor: 1,
+    major: 2,
+};
+
 function asDetails(value: Json): ConflictDetails {
     if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
     return value as ConflictDetails;
@@ -94,6 +126,74 @@ function titleForCalendar(calendar: Calendar) {
 function pct(part: number, whole: number) {
     if (!whole) return '0%';
     return `${Math.round((part / whole) * 100)}%`;
+}
+
+function todayIso() {
+    return new Date().toISOString().slice(0, 10);
+}
+
+function dayDisplay(day: LiturgicalDay | null | undefined) {
+    if (!day) return '(missing day)';
+    return day.display_title || day.title;
+}
+
+function pairKey(left: string, right: string) {
+    return [left, right].sort().join(':');
+}
+
+function conflictPairKey(conflict: CalendarConflict) {
+    return pairKey(conflict.base_calendar_id, conflict.comparison_calendar_id);
+}
+
+function buildInspectorDifferences(calendars: Calendar[], data: DayInspectorData): InspectorDifference[] {
+    const persisted = data.conflicts.map((conflict) => {
+        const details = asDetails(conflict.details);
+
+        return {
+            id: conflict.id,
+            severity: conflict.severity,
+            reason: conflict.reason,
+            baseCalendarId: conflict.base_calendar_id,
+            comparisonCalendarId: conflict.comparison_calendar_id,
+            baseDisplay: conflict.base_display,
+            comparisonDisplay: conflict.comparison_display,
+            differences: details.differences ?? [],
+            notes: details.notes ?? [],
+        };
+    });
+    const persistedPairs = new Set(data.conflicts.map(conflictPairKey));
+    const derived: InspectorDifference[] = [];
+
+    for (let leftIndex = 0; leftIndex < calendars.length; leftIndex += 1) {
+        for (let rightIndex = leftIndex + 1; rightIndex < calendars.length; rightIndex += 1) {
+            const leftCalendar = calendars[leftIndex];
+            const rightCalendar = calendars[rightIndex];
+            const key = pairKey(leftCalendar.id, rightCalendar.id);
+            if (persistedPairs.has(key)) continue;
+
+            const leftDay = data.days.find((day) => day.calendar_id === leftCalendar.id);
+            const rightDay = data.days.find((day) => day.calendar_id === rightCalendar.id);
+            if (!leftDay || !rightDay) continue;
+            if (leftDay.canonical_celebration_id !== rightDay.canonical_celebration_id) continue;
+            if (dayDisplay(leftDay) === dayDisplay(rightDay)) continue;
+
+            derived.push({
+                id: `title-variant:${key}`,
+                severity: 'none',
+                reason: 'different_title',
+                baseCalendarId: leftCalendar.id,
+                comparisonCalendarId: rightCalendar.id,
+                baseDisplay: dayDisplay(leftDay),
+                comparisonDisplay: dayDisplay(rightDay),
+                differences: ['display_title'],
+                notes: [
+                    'Display title differs but canonical celebration matches; this is an editorial variant, not a material conflict.',
+                ],
+            });
+        }
+    }
+
+    return [...persisted, ...derived];
 }
 
 async function exactCount(table: string, apply: (query: any) => any) {
@@ -142,6 +242,182 @@ function DayDetail({ title, day, options }: { title: string; day?: ConflictDetai
     );
 }
 
+function DayInspector({
+    calendars,
+    selectedDate,
+    onDateChange,
+    data,
+    state,
+    error,
+}: {
+    calendars: Calendar[];
+    selectedDate: string;
+    onDateChange: (date: string) => void;
+    data: DayInspectorData;
+    state: DayInspectorState;
+    error: string | null;
+}) {
+    const conflictCount = data.conflicts.length;
+    const reviewCount = data.reviews.length;
+    const inspectorDifferences = buildInspectorDifferences(calendars, data);
+    const noticeCount = inspectorDifferences.filter((difference) => difference.severity === 'none').length;
+
+    return (
+        <section className="engine-section" id="day-inspector">
+            <div className="engine-section-heading">
+                <div>
+                    <p>Daily lookup</p>
+                    <h2>Day Inspector</h2>
+                </div>
+                <div className="engine-controls">
+                    <button type="button" className="engine-quiet-button" onClick={() => onDateChange(todayIso())}>
+                        Today
+                    </button>
+                    <label>
+                        Date
+                        <input type="date" value={selectedDate} onChange={(event) => onDateChange(event.target.value)} />
+                    </label>
+                </div>
+            </div>
+
+            {state === 'loading' && <div className="engine-empty small">Loading {selectedDate}...</div>}
+            {state === 'error' && <div className="engine-empty engine-error">{error}</div>}
+
+            {state === 'ready' && (
+                <>
+                    <div className="engine-day-summary">
+                        <span>{data.days.length} calendar day{data.days.length === 1 ? '' : 's'}</span>
+                        <span>{conflictCount} conflict{conflictCount === 1 ? '' : 's'}</span>
+                        <span>{noticeCount} notice{noticeCount === 1 ? '' : 's'}</span>
+                        <span>{reviewCount} review item{reviewCount === 1 ? '' : 's'}</span>
+                    </div>
+                    {inspectorDifferences.length > 0 && (
+                        <div className="engine-inspector-differences">
+                            {inspectorDifferences.map((difference) => (
+                                <div className="engine-inspector-difference" key={difference.id}>
+                                    <div className="engine-inspector-difference-heading">
+                                        <div>
+                                            <span>
+                                                {difference.baseCalendarId.toUpperCase()} vs {difference.comparisonCalendarId.toUpperCase()}
+                                            </span>
+                                            <strong>{reasonLabels[difference.reason]}</strong>
+                                        </div>
+                                        <span className={`engine-badge ${difference.severity}`}>
+                                            {difference.severity === 'none' ? 'Notice' : severityLabels[difference.severity]}
+                                        </span>
+                                    </div>
+                                    <p>{difference.baseDisplay} / {difference.comparisonDisplay}</p>
+                                    <div className="engine-evidence compact">
+                                        <span>Differences</span>
+                                        <p>{difference.differences.join(', ') || 'No structured differences recorded.'}</p>
+                                        <span>Why</span>
+                                        <p>{difference.notes.join(' ') || 'No notes recorded.'}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                    <div className="engine-inspector-grid">
+                        {calendars.map((calendar) => {
+                            const day = data.days.find((item) => item.calendar_id === calendar.id);
+                            const options = data.options.filter((option) => option.calendar_id === calendar.id);
+                            const hours = data.hours.filter((hour) => hour.calendar_id === calendar.id);
+                            const rawRows = data.rawRows.filter((row) => row.calendar_id === calendar.id);
+                            const reviews = data.reviews.filter((review) => review.calendar_id === calendar.id);
+                            const conflicts = data.conflicts.filter(
+                                (conflict) => conflict.base_calendar_id === calendar.id || conflict.comparison_calendar_id === calendar.id,
+                            );
+
+                            return (
+                                <article className="engine-inspector-card" key={calendar.id}>
+                                    <div className="engine-inspector-card-header">
+                                        <div>
+                                            <p>{titleForCalendar(calendar)}</p>
+                                            <h3>{day?.display_title || day?.title || 'Missing day'}</h3>
+                                        </div>
+                                        <span className={day ? 'engine-badge completed' : 'engine-badge failed'}>
+                                            {day ? 'Found' : 'Missing'}
+                                        </span>
+                                    </div>
+
+                                    {day ? (
+                                        <div className="engine-detail-grid">
+                                            <DetailValue label="Weekday" value={day.weekday_name} />
+                                            <DetailValue label="Season" value={day.season} />
+                                            <DetailValue label="Rank" value={day.rank} />
+                                            <DetailValue label="Color" value={day.color} />
+                                            <DetailValue label="Psalter" value={day.psalter_week ? `Week ${day.psalter_week}` : null} />
+                                            <DetailValue label="Precedence" value={day.precedence_rank} />
+                                            <DetailValue label="Canonical" value={day.canonical_celebration_id} />
+                                            <DetailValue label="Obligation" value={day.obligation_status} />
+                                        </div>
+                                    ) : (
+                                        <div className="engine-empty small">No liturgical day exists for this calendar/date.</div>
+                                    )}
+
+                                    <div className="engine-inspector-subsection">
+                                        <span>Hours</span>
+                                        {hours.length === 0 ? (
+                                            <p>None</p>
+                                        ) : (
+                                            <div className="engine-chip-row">
+                                                {hours.map((hour) => (
+                                                    <span key={hour.id}>{hour.display_name}</span>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="engine-inspector-subsection">
+                                        <span>Options</span>
+                                        {options.length === 0 ? (
+                                            <p>None</p>
+                                        ) : (
+                                            options.map((option) => (
+                                                <p key={option.id}>
+                                                    {option.title}
+                                                    {option.rank ? ` · ${option.rank}` : ''}
+                                                </p>
+                                            ))
+                                        )}
+                                    </div>
+
+                                    <div className="engine-inspector-subsection">
+                                        <span>Raw source rows</span>
+                                        {rawRows.length === 0 ? (
+                                            <p>None</p>
+                                        ) : (
+                                            rawRows.map((row) => (
+                                                <p key={row.id}>
+                                                    {row.raw_title}
+                                                    {row.raw_rank ? ` · ${row.raw_rank}` : ''}
+                                                </p>
+                                            ))
+                                        )}
+                                    </div>
+
+                                    <div className="engine-inspector-flags">
+                                        {conflicts.map((conflict) => (
+                                            <a href="#conflicts" className={`engine-badge ${conflict.severity}`} key={conflict.id}>
+                                                {reasonLabels[conflict.reason]}
+                                            </a>
+                                        ))}
+                                        {reviews.map((review) => (
+                                            <a href="#review" className={`engine-badge ${review.severity}`} key={review.id}>
+                                                {review.issue_type}
+                                            </a>
+                                        ))}
+                                    </div>
+                                </article>
+                            );
+                        })}
+                    </div>
+                </>
+            )}
+        </section>
+    );
+}
+
 export function CalendarEngineAdminPage() {
     const [state, setState] = useState<LoadState>('idle');
     const [error, setError] = useState<string | null>(null);
@@ -156,6 +432,17 @@ export function CalendarEngineAdminPage() {
     const [reasonFilter, setReasonFilter] = useState<CalendarConflictReason | 'all'>('all');
     const [severityFilter, setSeverityFilter] = useState<CalendarConflictSeverity | 'all'>('all');
     const [selectedConflictId, setSelectedConflictId] = useState<string | null>(null);
+    const [inspectorDate, setInspectorDate] = useState(todayIso());
+    const [inspectorState, setInspectorState] = useState<DayInspectorState>('idle');
+    const [inspectorError, setInspectorError] = useState<string | null>(null);
+    const [inspectorData, setInspectorData] = useState<DayInspectorData>({
+        days: [],
+        options: [],
+        hours: [],
+        rawRows: [],
+        reviews: [],
+        conflicts: [],
+    });
 
     useEffect(() => {
         let cancelled = false;
@@ -266,12 +553,107 @@ export function CalendarEngineAdminPage() {
         };
     }, [baseCalendarId, comparisonCalendarId]);
 
-    const reasonBuckets = useMemo(() => {
-        const buckets = new Map<CalendarConflictReason, number>();
-        for (const conflict of conflicts) {
-            buckets.set(conflict.reason, (buckets.get(conflict.reason) ?? 0) + 1);
+    useEffect(() => {
+        let cancelled = false;
+
+        async function loadDayInspector() {
+            if (!supabase || !isSupabaseConfigured || !inspectorDate) {
+                setInspectorData({
+                    days: [],
+                    options: [],
+                    hours: [],
+                    rawRows: [],
+                    reviews: [],
+                    conflicts: [],
+                });
+                return;
+            }
+
+            setInspectorState('loading');
+            setInspectorError(null);
+
+            try {
+                const [
+                    dayResult,
+                    optionResult,
+                    hourResult,
+                    rawResult,
+                    reviewResult,
+                    conflictResult,
+                ] = await Promise.all([
+                    supabase.from('liturgical_days').select('*').eq('date', inspectorDate).order('calendar_id'),
+                    supabase
+                        .from('liturgical_day_options')
+                        .select('*')
+                        .eq('date', inspectorDate)
+                        .order('calendar_id')
+                        .order('precedence_rank', { ascending: true, nullsFirst: false })
+                        .order('title'),
+                    supabase
+                        .from('liturgical_hour_instances')
+                        .select('*')
+                        .eq('date', inspectorDate)
+                        .order('calendar_id')
+                        .order('sort_order'),
+                    supabase.from('raw_calendar_rows').select('*').eq('date', inspectorDate).order('calendar_id'),
+                    supabase
+                        .from('calendar_review_items')
+                        .select('*')
+                        .eq('date', inspectorDate)
+                        .neq('status', 'resolved')
+                        .order('severity')
+                        .order('detected_at', { ascending: false }),
+                    supabase.from('calendar_conflicts').select('*').eq('date', inspectorDate).order('severity'),
+                ]);
+
+                if (dayResult.error) throw dayResult.error;
+                if (optionResult.error) throw optionResult.error;
+                if (hourResult.error) throw hourResult.error;
+                if (rawResult.error) throw rawResult.error;
+                if (reviewResult.error) throw reviewResult.error;
+                if (conflictResult.error) throw conflictResult.error;
+
+                if (!cancelled) {
+                    setInspectorData({
+                        days: dayResult.data,
+                        options: optionResult.data,
+                        hours: hourResult.data,
+                        rawRows: rawResult.data,
+                        reviews: reviewResult.data,
+                        conflicts: conflictResult.data,
+                    });
+                    setInspectorState('ready');
+                }
+            } catch (loadError) {
+                if (!cancelled) {
+                    setInspectorError(loadError instanceof Error ? loadError.message : 'Unable to load day inspector data.');
+                    setInspectorState('error');
+                }
+            }
         }
-        return [...buckets.entries()].sort((left, right) => right[1] - left[1]);
+
+        loadDayInspector();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [inspectorDate]);
+
+    const reasonBuckets = useMemo(() => {
+        const buckets = new Map<CalendarConflictReason, { count: number; severity: CalendarConflictSeverity }>();
+        for (const conflict of conflicts) {
+            const current = buckets.get(conflict.reason);
+            buckets.set(conflict.reason, {
+                count: (current?.count ?? 0) + 1,
+                severity:
+                    current && severityWeight[current.severity] > severityWeight[conflict.severity]
+                        ? current.severity
+                        : conflict.severity,
+            });
+        }
+        return [...buckets.entries()]
+            .map(([reason, bucket]) => ({ reason, ...bucket }))
+            .sort((left, right) => right.count - left.count);
     }, [conflicts]);
 
     const severityBuckets = useMemo(() => {
@@ -310,6 +692,8 @@ export function CalendarEngineAdminPage() {
                     <strong>Calendar Engine</strong>
                 </div>
                 <nav>
+                    <a href="/admin">Admin Home</a>
+                    <a href="#day-inspector">Day Inspector</a>
                     <a href="#inventory">Calendars</a>
                     <a href="#conflicts">Conflicts</a>
                     <a href="#review">Review Queue</a>
@@ -321,7 +705,11 @@ export function CalendarEngineAdminPage() {
             <section className="engine-workspace">
                 <header className="engine-topbar">
                     <div>
-                        <p>Local admin</p>
+                        <nav className="engine-breadcrumbs" aria-label="Breadcrumb">
+                            <a href="/admin">Admin Home</a>
+                            <span>/</span>
+                            <span>Calendar Engine</span>
+                        </nav>
                         <h1>Liturgical Calendar Engine</h1>
                     </div>
                     <div className="engine-controls">
@@ -375,6 +763,15 @@ export function CalendarEngineAdminPage() {
                                 <p>{latestRun ? `${latestRun.conflict_count} conflicts · ${formatDate(latestRun.completed_at)}` : 'No runs yet'}</p>
                             </div>
                         </section>
+
+                        <DayInspector
+                            calendars={calendars}
+                            selectedDate={inspectorDate}
+                            onDateChange={setInspectorDate}
+                            data={inspectorData}
+                            state={inspectorState}
+                            error={inspectorError}
+                        />
 
                         <section className="engine-section" id="inventory">
                             <div className="engine-section-heading">
@@ -435,7 +832,7 @@ export function CalendarEngineAdminPage() {
                                         Reason
                                         <select value={reasonFilter} onChange={(event) => setReasonFilter(event.target.value as CalendarConflictReason | 'all')}>
                                             <option value="all">All reasons</option>
-                                            {reasonBuckets.map(([reason]) => (
+                                            {reasonBuckets.map(({ reason }) => (
                                                 <option key={reason} value={reason}>{reasonLabels[reason]}</option>
                                             ))}
                                         </select>
@@ -452,11 +849,11 @@ export function CalendarEngineAdminPage() {
                                 </div>
 
                                 <div className="engine-buckets">
-                                    {reasonBuckets.map(([reason, count]) => (
+                                    {reasonBuckets.map(({ reason, count, severity }) => (
                                         <button
                                             type="button"
                                             key={reason}
-                                            className={reasonFilter === reason ? 'active' : ''}
+                                            className={`severity-${severity}${reasonFilter === reason ? ' active' : ''}`}
                                             onClick={() => setReasonFilter(reasonFilter === reason ? 'all' : reason)}
                                         >
                                             <span>{reasonLabels[reason]}</span>

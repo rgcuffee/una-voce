@@ -52,6 +52,7 @@ const RELATIONSHIP_STATUSES: { value: PartnerRelationshipStatus; label: string; 
 ];
 const FEED_TYPES: PartnerYoutubeFeedType[] = ['channel', 'playlist'];
 const CONTENT_MODES: PartnerYoutubeContentMode[] = ['live', 'scheduled_live', 'pre_recorded', 'mixed'];
+const MIDDAY_TITLE_PATTERN = /\b(midmorning|midday|midafternoon)\b/i;
 
 const emptyPartner: PartnerDraft = {
   slug: '',
@@ -244,6 +245,14 @@ function statusClass(value: string | boolean) {
   return '';
 }
 
+function suggestedReviewHour(item: Pick<AdminAudioEpisode | AdminYoutubeVideo, 'display_status' | 'prayer_type' | 'title'>): LiturgicalHour | '' {
+  if (item.display_status === 'pending' && MIDDAY_TITLE_PATTERN.test(item.title)) {
+    return 'midday_prayer';
+  }
+
+  return item.prayer_type ?? '';
+}
+
 export function AdminDashboardPage() {
   const [authEmail, setAuthEmail] = useState('');
   const [state, setState] = useState<LoadState>('idle');
@@ -251,6 +260,7 @@ export function AdminDashboardPage() {
   const [data, setData] = useState<AdminDashboardData | null>(null);
   const [section, setSection] = useState<AdminSection>('overview');
   const [selectedPartnerId, setSelectedPartnerId] = useState<string>('');
+  const [reviewPartnerId, setReviewPartnerId] = useState<string>('all');
 
   async function refresh() {
     setState('loading');
@@ -312,13 +322,13 @@ export function AdminDashboardPage() {
   );
 
   const partnerVideos = useMemo(
-    () => data?.videos.filter((video) => video.partner_id === selectedPartnerId) ?? [],
-    [data, selectedPartnerId],
+    () => data?.videos.filter((video) => reviewPartnerId === 'all' || video.partner_id === reviewPartnerId) ?? [],
+    [data, reviewPartnerId],
   );
 
   const partnerEpisodes = useMemo(
-    () => data?.episodes.filter((episode) => episode.partner_id === selectedPartnerId) ?? [],
-    [data, selectedPartnerId],
+    () => data?.episodes.filter((episode) => reviewPartnerId === 'all' || episode.partner_id === reviewPartnerId) ?? [],
+    [data, reviewPartnerId],
   );
 
   return (
@@ -383,8 +393,8 @@ export function AdminDashboardPage() {
               <VideosSection
                 data={data}
                 videos={partnerVideos}
-                selectedPartnerId={selectedPartnerId}
-                onSelectPartner={setSelectedPartnerId}
+                selectedPartnerId={reviewPartnerId}
+                onSelectPartner={setReviewPartnerId}
                 onSaved={refresh}
               />
             )}
@@ -392,8 +402,8 @@ export function AdminDashboardPage() {
               <AudioSection
                 data={data}
                 episodes={partnerEpisodes}
-                selectedPartnerId={selectedPartnerId}
-                onSelectPartner={setSelectedPartnerId}
+                selectedPartnerId={reviewPartnerId}
+                onSelectPartner={setReviewPartnerId}
                 onSaved={refresh}
               />
             )}
@@ -438,15 +448,18 @@ function PartnerPicker({
   data,
   value,
   onChange,
+  includeAll = false,
 }: {
   data: AdminDashboardData;
   value: string;
   onChange: (value: string) => void;
+  includeAll?: boolean;
 }) {
   return (
     <label>
       Partner
       <select value={value} onChange={(event) => onChange(event.target.value)}>
+        {includeAll ? <option value="all">All partners</option> : null}
         {data.partners.map((partner) => (
           <option key={partner.id} value={partner.id}>{partner.name}</option>
         ))}
@@ -684,7 +697,7 @@ function VideosSection({
           <h2>Partner Videos</h2>
         </div>
         <div className="engine-controls">
-          <PartnerPicker data={data} value={selectedPartnerId} onChange={onSelectPartner} />
+          <PartnerPicker data={data} value={selectedPartnerId} onChange={onSelectPartner} includeAll />
           <label>
             Status
             <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as YoutubeVideoDisplayStatus | 'all')}>
@@ -709,13 +722,13 @@ function VideosSection({
 
 function VideoReviewCard({ video, onSaved }: { video: AdminYoutubeVideo; onSaved: () => Promise<void> }) {
   const [status, setStatus] = useState(video.display_status);
-  const [hour, setHour] = useState<LiturgicalHour | ''>(video.prayer_type ?? '');
+  const [hour, setHour] = useState<LiturgicalHour | ''>(() => suggestedReviewHour(video));
   const [date, setDate] = useState(video.prayer_date ?? '');
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     setStatus(video.display_status);
-    setHour(video.prayer_type ?? '');
+    setHour(suggestedReviewHour(video));
     setDate(video.prayer_date ?? '');
   }, [video]);
 
@@ -796,7 +809,7 @@ function AudioSection({
           <h2>Partner Audio</h2>
         </div>
         <div className="engine-controls">
-          <PartnerPicker data={data} value={selectedPartnerId} onChange={onSelectPartner} />
+          <PartnerPicker data={data} value={selectedPartnerId} onChange={onSelectPartner} includeAll />
           <label>
             Status
             <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as YoutubeVideoDisplayStatus | 'all')}>
@@ -821,13 +834,13 @@ function AudioSection({
 
 function EpisodeReviewCard({ episode, onSaved }: { episode: AdminAudioEpisode; onSaved: () => Promise<void> }) {
   const [status, setStatus] = useState(episode.display_status);
-  const [hour, setHour] = useState<LiturgicalHour | ''>(episode.prayer_type ?? '');
+  const [hour, setHour] = useState<LiturgicalHour | ''>(() => suggestedReviewHour(episode));
   const [date, setDate] = useState(episode.prayer_date ?? '');
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     setStatus(episode.display_status);
-    setHour(episode.prayer_type ?? '');
+    setHour(suggestedReviewHour(episode));
     setDate(episode.prayer_date ?? '');
   }, [episode]);
 
