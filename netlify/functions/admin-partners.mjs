@@ -25,6 +25,12 @@ const supabaseUrl = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const adminSharedSecret =
   process.env.ADMIN_SHARED_SECRET ?? process.env.INGEST_SHARED_SECRET;
+const adminAllowedEmails = new Set(
+  (process.env.ADMIN_ALLOWED_EMAILS ?? '')
+    .split(',')
+    .map((email) => email.trim().toLowerCase())
+    .filter(Boolean),
+);
 
 const supabase =
   supabaseUrl && supabaseServiceRoleKey
@@ -89,7 +95,7 @@ export async function handler(event) {
     return response(500, { error: 'Admin partners API is not configured' });
   }
 
-  if (!isAuthorized(event)) {
+  if (!(await isAuthorized(event))) {
     return response(401, { error: 'Unauthorized' });
   }
 
@@ -603,17 +609,32 @@ function throwIfError(error) {
   }
 }
 
-function isAuthorized(event) {
-  if (!adminSharedSecret) {
+async function isAuthorized(event) {
+  const secretHeader = event.headers?.['x-admin-secret'];
+  const authorization = event.headers?.authorization ?? '';
+
+  if (
+    adminSharedSecret &&
+    (secretHeader === adminSharedSecret ||
+      authorization === `Bearer ${adminSharedSecret}`)
+  ) {
     return true;
   }
 
-  const secretHeader = event.headers?.['x-admin-secret'];
-  const authorization = event.headers?.authorization ?? '';
-  return (
-    secretHeader === adminSharedSecret ||
-    authorization === `Bearer ${adminSharedSecret}`
-  );
+  const token = authorization.startsWith('Bearer ')
+    ? authorization.slice('Bearer '.length).trim()
+    : '';
+
+  if (!token || adminAllowedEmails.size === 0) {
+    return false;
+  }
+
+  const { data, error } = await supabase.auth.getUser(token);
+  if (error || !data.user?.email) {
+    return false;
+  }
+
+  return adminAllowedEmails.has(data.user.email.toLowerCase());
 }
 
 function response(statusCode, body) {

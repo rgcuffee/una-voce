@@ -1,8 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
-  getStoredAdminSecret,
   loadAdminDashboard,
-  storeAdminSecret,
   updateVideo,
   updateEpisode,
   upsertApplePodcastFeed,
@@ -24,6 +22,7 @@ import {
   type RuleDraft,
   type SpotifyFeedDraft,
 } from './adminApi';
+import { supabase } from '../lib/supabase';
 import type {
   LiturgicalHour,
   PartnerOnboardingStatus,
@@ -246,12 +245,12 @@ function statusClass(value: string | boolean) {
 }
 
 export function AdminDashboardPage() {
+  const [authEmail, setAuthEmail] = useState('');
   const [state, setState] = useState<LoadState>('idle');
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<AdminDashboardData | null>(null);
   const [section, setSection] = useState<AdminSection>('overview');
   const [selectedPartnerId, setSelectedPartnerId] = useState<string>('');
-  const [secret, setSecret] = useState(() => getStoredAdminSecret());
 
   async function refresh() {
     setState('loading');
@@ -268,8 +267,24 @@ export function AdminDashboardPage() {
   }
 
   useEffect(() => {
-    void refresh();
+    supabase?.auth.getSession().then(({ data: sessionData }) => {
+      setAuthEmail(sessionData.session?.user.email ?? '');
+      void refresh();
+    });
+
+    const {
+      data: { subscription },
+    } = supabase?.auth.onAuthStateChange((_event, session) => {
+      setAuthEmail(session?.user.email ?? '');
+    }) ?? { data: { subscription: null } };
+
+    return () => subscription?.unsubscribe();
   }, []);
+
+  async function signOut() {
+    if (!supabase) return;
+    await supabase.auth.signOut();
+  }
 
   const selectedPartner = useMemo(
     () => data?.partners.find((partner) => partner.id === selectedPartnerId) ?? null,
@@ -331,27 +346,12 @@ export function AdminDashboardPage() {
             <h1>Partner Dashboard</h1>
           </div>
           <div className="engine-controls admin-secret-controls">
-            <label>
-              Admin Key
-              <input
-                value={secret}
-                onChange={(event) => setSecret(event.target.value)}
-                placeholder="Optional locally"
-                type="password"
-              />
-            </label>
-            <button
-              type="button"
-              className="admin-button"
-              onClick={() => {
-                storeAdminSecret(secret);
-                void refresh();
-              }}
-            >
-              Save
-            </button>
+            <span className="admin-user-email">{authEmail}</span>
             <button type="button" className="admin-button primary" onClick={() => void refresh()}>
               Refresh
+            </button>
+            <button type="button" className="admin-button" onClick={() => void signOut()}>
+              Sign out
             </button>
           </div>
         </header>

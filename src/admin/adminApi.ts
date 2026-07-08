@@ -7,6 +7,7 @@ import type {
   PrayerVideoKind,
   YoutubeVideoDisplayStatus,
 } from '../lib/database.types';
+import { supabase } from '../lib/supabase';
 
 const ADMIN_API_BASE = import.meta.env.VITE_ADMIN_API_BASE_URL ?? '';
 const ADMIN_SECRET_KEY = 'una-voce-admin-secret';
@@ -296,6 +297,12 @@ async function adminFetch<T>(path: string, options: RequestInit = {}): Promise<T
 
   if (secret) {
     headers.set('x-admin-secret', secret);
+  } else if (supabase) {
+    const { data } = await supabase.auth.getSession();
+    const token = data.session?.access_token;
+    if (token) {
+      headers.set('authorization', `Bearer ${token}`);
+    }
   }
 
   const response = await fetch(adminApiUrl(path), {
