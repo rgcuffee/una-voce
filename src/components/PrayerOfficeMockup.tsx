@@ -3248,9 +3248,9 @@ export function PrayerOfficeMockup() {
                 </button>
                 <div className="onramp-eyebrow">New to the Hours?</div>
                 <p className="onramp-text">
-                  Most people begin with two: Morning Prayer to open the day,
-                  Night Prayer to close it. You don't need a book, just press
-                  play below.
+                  Many lay Catholics start with Morning Prayer to consecrate
+                  the day and Night Prayer, or Compline, to close it. Once that
+                  rhythm becomes natural, Evening Prayer is often the next step.
                 </p>
                 <button
                   type="button"

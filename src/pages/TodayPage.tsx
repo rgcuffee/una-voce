@@ -24,7 +24,7 @@ const SOURCE_STYLES = [
   {
     id: 'gregorian',
     label: 'Gregorian Chant',
-    description: 'Traditional chant settings from monastic communities.',
+    description: 'Chant settings from monastic prayer communities.',
     availability: '7 live options',
   },
 ];
@@ -75,9 +75,10 @@ export function TodayPage() {
           aria-label='Prayer sources'
         >
           <div className='rail-header'>
-            <h2 className='rail-title'>Choose Your Prayer Style</h2>
+            <h2 className='rail-title'>Don't pray alone.</h2>
             <p className='rail-copy'>
-              Select how each hour is prayed before joining a community.
+              Join monasteries, parishes, ministries, and Catholics around the
+              world who are already praying the Hours live.
             </p>
           </div>
           <div className='rail-track source-rail-track'>
@@ -95,8 +96,8 @@ export function TodayPage() {
 
         <FeaturedCard
           kicker='Featured Community'
-          title='A reverent path into prayer'
-          copy='Listen with a community already praying the Liturgy of the Hours.'
+          title='Discover the Hours, then keep the rhythm'
+          copy='Una Voce helps Catholics discover the Liturgy of the Hours, begin praying it, and connect with communities already praying throughout the world.'
           imageUrl={FEATURED_IMAGE}
         />
 
@@ -107,7 +108,8 @@ export function TodayPage() {
           <div className='rail-header'>
             <h2 className='rail-title'>Community Highlights</h2>
             <p className='rail-copy'>
-              Explore trusted houses and apostolates currently leading prayer.
+              Find live prayer communities without replacing the breviary apps
+              and official books you already use.
             </p>
           </div>
           <div className='rail-track community-rail-track'>

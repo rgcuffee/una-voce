@@ -583,6 +583,13 @@ export function DiscoverPage({
           prayer, or quiet reading, find a rhythm that helps you return
           tomorrow.
         </p>
+        <div className='prose'>
+          <p>
+            Una Voce helps Catholics discover the Liturgy of the Hours, begin
+            praying it, and connect with communities already praying throughout
+            the world.
+          </p>
+        </div>
       </header>
 
       <section className='page-section'>
@@ -606,8 +613,8 @@ export function DiscoverPage({
       <section className='page-section'>
         <h2 className='page-section-title'>Live now &amp; upcoming</h2>
         <p className='page-section-intro'>
-          The Church prays as one body. Join real-time streams from communities
-          around the world, or pray today's hours on your own.
+          Don't pray alone. Join monasteries, parishes, ministries, and
+          Catholics around the world who are already praying the Hours live.
         </p>
         <StreamGrid
           items={upcomingStreams}
@@ -630,7 +637,14 @@ export function DiscoverPage({
         <p className='page-section-intro'>
           The Liturgy of the Hours is a rich tradition with many editions and
           formats. Here are some of the most trusted sources for the daily
-          prayer of the Church.
+          prayer of the Church. Una Voce is not trying to replace breviary apps
+          like Universalis, iBreviary, or Divine Office.
+        </p>
+        <p className='page-section-intro'>
+          Una Voce is being developed with the intention of using the official
+          approved liturgical texts for each region, subject to the proper
+          permissions and licensing. As new editions are promulgated, Una Voce
+          will follow the Church's approved texts and timelines.
         </p>
         <StreamGrid items={TEXT_SOURCES} />
       </section>

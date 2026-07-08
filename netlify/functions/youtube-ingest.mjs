@@ -494,13 +494,20 @@ function inferDateFromTitle(title) {
     ...title.matchAll(
       /\b(\d{1,2})(?:st|nd|rd|th)?\s+(january|february|march|april|may|june|july|august|september|october|november|december)(?:\s+(\d{4}))?\b/gi,
     ),
+    ...title.matchAll(
+      /\b(january|february|march|april|may|june|july|august|september|october|november|december)\s+(\d{1,2})(?:st|nd|rd|th)?(?:,?\s+(\d{4}))?\b/gi,
+    ),
   ];
 
   if (matches.length === 0) {
     return null;
   }
 
-  const [, day, monthName, titleYear] = matches[matches.length - 1];
+  const match = matches[matches.length - 1];
+  const monthFirst = Number.isNaN(Number(match[1]));
+  const monthName = monthFirst ? match[1] : match[2];
+  const day = monthFirst ? match[2] : match[1];
+  const titleYear = match[3];
   const year = titleYear ?? new Date().getUTCFullYear();
   return `${year}-${months[monthName.toLowerCase()]}-${day.padStart(2, '0')}`;
 }

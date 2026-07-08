@@ -25,9 +25,10 @@ export function GettingStartedPage({
             Prayer (Compline).
           </p>
           <p>
-            You don't have to pray all seven. Most people begin with two:
-            Morning Prayer to consecrate the day, and Night Prayer (Compline) to
-            close it. Start there.
+            You do not have to begin by praying every hour. Many lay Catholics
+            start with Morning Prayer to consecrate the day and Night Prayer, or
+            Compline, to close it. Once that rhythm becomes natural, Evening
+            Prayer is often the next step.
           </p>
         </>
       ),
@@ -57,15 +58,15 @@ export function GettingStartedPage({
         <>
           <p>
             More people are discovering the Liturgy of the Hours through spoken
-            prayer, chant, video, livestreams, and traditional books. Every
-            voice and every format offers a different way to enter into the
-            Church's daily prayer.
+            prayer, chant, video, livestreams, and printed books. Every voice
+            and every format offers a different way to enter into the Church's
+            daily prayer.
           </p>
           <p>
             Discover brings these trusted resources together in one place.
-            Explore audio and video from creators, monasteries, and communities
-            around the world, and find the rhythm that keeps you returning to
-            prayer.
+            Una Voce helps Catholics discover the Liturgy of the Hours, begin
+            praying it, and connect with communities already praying throughout
+            the world.
           </p>
         </>
       ),
@@ -106,8 +107,8 @@ export function GettingStartedPage({
               the year
             </li>
             <li>
-              Creator communities and discussions around traditional Catholic
-              prayer
+              Creator communities and discussions around Latin Prayer, Sacred
+              Music, Monastic Prayer, and Traditional Sacred Music
             </li>
           </ul>
         </>
@@ -136,14 +137,37 @@ export function GettingStartedPage({
         </p>
         <div className='prose'>
           <p>
+            This guide is written primarily for lay Catholics who are new to
+            praying the Liturgy of the Hours.
+          </p>
+          <p>
             The Liturgy of the Hours can look intimidating at first. Four
             volumes. Ribbons. Week numbers. Seasonal variations. But underneath
             all of that structure is something remarkably simple: stopping
             throughout the day to pray with the Church.
           </p>
+          <p>
+            Clergy, religious, and others bound to pray the Office should follow
+            the official liturgical books and requirements applicable to them.
+          </p>
           <p className='prose-emphasis'>Here's how to begin.</p>
         </div>
       </header>
+
+      <section className='page-section'>
+        <h2 className='page-section-title'>Who is this for?</h2>
+        <ul className='feature-list'>
+          <li>New to the Hours</li>
+          <li>Lay Catholics beginning a daily rhythm</li>
+          <li>Families</li>
+          <li>Audio-first pray-ers</li>
+          <li>Spanish / multilingual users</li>
+          <li>People looking for live prayer communities</li>
+          <li>
+            People already praying the Office who want more ways to join others
+          </li>
+        </ul>
+      </section>
 
       <ol className='step-list'>
         {steps.map((step) => (
@@ -170,9 +194,9 @@ export function GettingStartedPage({
         <h2 className='page-section-title'>A word of encouragement</h2>
         <div className='prose'>
           <p>
-            Una Voce exists to serve the faithful interested in living and
-            nurturing traditional Catholic culture and the traditional liturgy
-            that is its glory and foundation.
+            Una Voce exists to serve the faithful interested in living the
+            Church's daily prayer more deeply through the Liturgy of the Hours,
+            Sacred Music, Monastic Prayer, Gregorian Chant, and Latin Prayer.
           </p>
           <p>
             The Hours are not a burden. They are a gift, an invitation to
@@ -181,6 +205,18 @@ export function GettingStartedPage({
             be praying them long after we are gone.
           </p>
           <p className='prose-emphasis'>Come pray with her.</p>
+        </div>
+      </section>
+
+      <section className='page-section'>
+        <h2 className='page-section-title'>Liturgical texts</h2>
+        <div className='prose'>
+          <p>
+            Una Voce is being developed with the intention of using the official
+            approved liturgical texts for each region, subject to the proper
+            permissions and licensing. As new editions are promulgated, Una Voce
+            will follow the Church's approved texts and timelines.
+          </p>
         </div>
       </section>
 

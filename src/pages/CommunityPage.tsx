@@ -38,11 +38,7 @@ export function CommunityPage({
   const selectedCommunity =
     previewCommunities.find(
       (community) => community.slug === selectedCommunitySlug,
-    ) ??
-    getPartnerCommunity(
-      selectedCommunitySlug,
-      partnerStatusOverrides,
-    );
+    ) ?? getPartnerCommunity(selectedCommunitySlug, partnerStatusOverrides);
   const publishedCommunities = listPartnerCommunities(partnerStatusOverrides);
   const publishedSlugs = new Set(
     publishedCommunities.map((community) => community.slug),
@@ -66,42 +62,42 @@ export function CommunityPage({
   }
 
   return (
-    <article className='page'>
-      <header className='page-hero'>
-        <div className='page-eyebrow'>Community</div>
-        <h1 className='page-hero-title'>Pray more, know more, together</h1>
-        <p className='page-lead'>
+    <article className="page">
+      <header className="page-hero">
+        <div className="page-eyebrow">Community</div>
+        <h1 className="page-hero-title">Pray more, know more, together</h1>
+        <p className="page-lead">
           A gathering place for those who want to live the liturgical life more
           fully, alongside creators, ministers, and fellow faithful.
         </p>
       </header>
 
-      <section className='page-section'>
-        <h2 className='page-section-title'>What's here</h2>
-        <ul className='feature-list'>
-          <li>
+      <section className="page-section">
+        <h2 className="page-section-title">What's here</h2>
+        <ul className="feature-list">
+          {/* <li>
             <span className='feature-name'>Discussions.</span> Questions and
-            conversation around traditional Catholic prayer and the Divine
-            Office.
-          </li>
+            conversation around Latin Prayer, Gregorian Chant, Monastic Prayer,
+            Sacred Music, and the Divine Office.
+          </li> */}
           <li>
-            <span className='feature-name'>Creators.</span> Follow the voices
+            <span className="feature-name">Creators.</span> Follow the voices
             who chant, recite, and teach the Hours.
           </li>
           <li>
-            <span className='feature-name'>Communities.</span> Monasteries,
+            <span className="feature-name">Communities.</span> Monasteries,
             parishes, and groups that pray and stream together.
           </li>
         </ul>
       </section>
 
-      <section className='page-section'>
-        <div className='community-grid'>
+      <section className="page-section">
+        <div className="community-grid">
           {communities.map((community) => (
             <button
               key={community.slug}
-              type='button'
-              className='community-card'
+              type="button"
+              className="community-card"
               onClick={() => onOpenCommunity?.(community.slug)}
             >
               <span
@@ -112,11 +108,11 @@ export function CommunityPage({
                     : undefined
                 }
               />
-              <span className='community-card-body'>
-                <span className='community-card-meta'>
+              <span className="community-card-body">
+                <span className="community-card-meta">
                   {community.kind} · {community.location}
                 </span>
-                <span className='community-card-title-row'>
+                <span className="community-card-title-row">
                   <strong>{community.name}</strong>
                   {community.badgeEnabled ? (
                     <PartnerBadge status={community.relationshipStatus} />
@@ -129,10 +125,10 @@ export function CommunityPage({
         </div>
       </section>
 
-      <div className='page-cta'>
+      <div className="page-cta">
         <button
-          type='button'
-          className='page-cta-button'
+          type="button"
+          className="page-cta-button"
           onClick={() => onNavigate('getting-started')}
         >
           Start with Getting Started
@@ -154,8 +150,8 @@ function CommunityDetail({
   onBack: () => void;
 }) {
   return (
-    <article className='page community-detail-page'>
-      <button type='button' className='page-back' onClick={onBack}>
+    <article className="page community-detail-page">
+      <button type="button" className="page-back" onClick={onBack}>
         Back to Community
       </button>
 
@@ -167,24 +163,24 @@ function CommunityDetail({
             : undefined
         }
       >
-        <div className='community-profile-overlay'>
-          <div className='community-profile-badge-row'>
-            <div className='page-eyebrow'>{community.kind}</div>
+        <div className="community-profile-overlay">
+          <div className="community-profile-badge-row">
+            <div className="page-eyebrow">{community.kind}</div>
             {community.badgeEnabled ? (
               <PartnerBadge status={community.relationshipStatus} />
             ) : null}
           </div>
-          <h1 className='community-profile-title'>{community.name}</h1>
+          <h1 className="community-profile-title">{community.name}</h1>
           <p>{community.tagline}</p>
         </div>
       </header>
 
-      <section className='page-section community-profile-summary'>
+      <section className="page-section community-profile-summary">
         <div>
-          <h2 className='page-section-title'>About</h2>
+          <h2 className="page-section-title">About</h2>
           <p>{community.description}</p>
         </div>
-        <div className='community-facts'>
+        <div className="community-facts">
           <div>
             <span>Status</span>
             <strong>
@@ -206,36 +202,36 @@ function CommunityDetail({
         </div>
       </section>
 
-      <section className='page-section'>
-        <h2 className='page-section-title'>Prayer rhythm</h2>
-        <div className='community-pill-row'>
+      <section className="page-section">
+        <h2 className="page-section-title">Prayer rhythm</h2>
+        <div className="community-pill-row">
           {community.prayerRhythm.map((item) => (
             <span key={item}>{item}</span>
           ))}
         </div>
       </section>
 
-      <section className='page-section'>
-        <h2 className='page-section-title'>
+      <section className="page-section">
+        <h2 className="page-section-title">
           {prayerCards.length > 0
             ? 'Pray with this community today'
             : 'Ways to pray with this community'}
         </h2>
         {prayerCards.length > 0 ? (
-          <div className='community-feature-grid'>
+          <div className="community-feature-grid">
             {prayerCards.map((item) => (
               <button
                 key={item.id}
-                type='button'
-                className='community-feature-card community-prayer-card'
+                type="button"
+                className="community-feature-card community-prayer-card"
                 onClick={item.onSelect}
               >
                 <span>{item.label}</span>
                 <strong>{item.title}</strong>
                 <p>{item.description}</p>
-                <div className='community-prayer-footer'>
+                <div className="community-prayer-footer">
                   {item.time ? (
-                    <em className='community-prayer-time'>{item.time}</em>
+                    <em className="community-prayer-time">{item.time}</em>
                   ) : (
                     <span />
                   )}
@@ -246,23 +242,23 @@ function CommunityDetail({
           </div>
         ) : (
           <div>
-            <div className='community-feature-grid'>
+            <div className="community-feature-grid">
               {community.featured.map((item) => (
-                <article key={item.title} className='community-feature-card'>
+                <article key={item.title} className="community-feature-card">
                   <span>{item.label}</span>
                   <strong>{item.title}</strong>
                   <p>{item.description}</p>
                 </article>
               ))}
             </div>
-            <div className='community-empty compact'>
+            <div className="community-empty compact">
               <p>
                 No current prayer video is available from this community for the
                 selected day.
               </p>
               <button
-                type='button'
-                className='page-cta-button'
+                type="button"
+                className="page-cta-button"
                 onClick={onPrayToday}
               >
                 Open today's prayers
@@ -272,15 +268,15 @@ function CommunityDetail({
         )}
       </section>
 
-      <section className='page-section'>
-        <h2 className='page-section-title'>Links</h2>
-        <div className='community-link-list'>
+      <section className="page-section">
+        <h2 className="page-section-title">Links</h2>
+        <div className="community-link-list">
           {community.links.map((link) => (
             <a
               key={link.href}
               href={link.href}
-              target='_blank'
-              rel='noreferrer'
+              target="_blank"
+              rel="noreferrer"
             >
               {link.label}
             </a>
