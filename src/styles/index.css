@@ -2465,6 +2465,105 @@ body {
     gap: 12px;
 }
 
+.contact-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+}
+
+.contact-form,
+.contact-note {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+}
+
+.contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.contact-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    color: var(--charcoal);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.contact-field input,
+.contact-field select,
+.contact-field textarea {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--off-white);
+    color: var(--charcoal);
+    font: inherit;
+    font-size: 15px;
+    letter-spacing: 0;
+    line-height: 1.5;
+    padding: 12px 14px;
+    text-transform: none;
+}
+
+.contact-field textarea {
+    min-height: 150px;
+    resize: vertical;
+}
+
+.contact-field input:focus,
+.contact-field select:focus,
+.contact-field textarea:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(184, 151, 58, 0.16);
+    outline: none;
+}
+
+.contact-hidden-field {
+    height: 0;
+    margin: 0;
+    overflow: hidden;
+    position: absolute;
+    width: 0;
+}
+
+.contact-submit {
+    align-self: flex-start;
+}
+
+.contact-note {
+    color: var(--charcoal-mid);
+}
+
+.contact-note-eyebrow {
+    color: var(--gold);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+}
+
+.contact-note p {
+    color: var(--charcoal-mid);
+    font-size: 14px;
+    line-height: 1.6;
+    margin-top: 16px;
+}
+
+@media (min-width: 760px) {
+    .contact-layout {
+        grid-template-columns: minmax(0, 1fr) 240px;
+        align-items: start;
+    }
+}
+
 .menu-item {
     display: flex;
     align-items: center;

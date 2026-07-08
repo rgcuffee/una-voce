@@ -12,11 +12,25 @@
         href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap"
         rel="stylesheet" />
     <title>Una Voce – The Church at Prayer</title>
-  <script type="module" crossorigin src="/assets/index-BGwDy_W7.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-DRxwyfis.css">
+  <script type="module" crossorigin src="/assets/index-KgCDmDGu.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-CDBnMbq-.css">
 <link rel="manifest" href="/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/registerSW.js"></script></head>
 
 <body>
+    <form name="contact" method="POST" action="/contact-success/" data-netlify="true" netlify-honeypot="bot-field"
+        hidden>
+        <input type="hidden" name="form-name" value="contact" />
+        <input name="name" type="text" />
+        <input name="email" type="email" />
+        <select name="reason">
+            <option value="general">General note</option>
+            <option value="partner">Partner or community listing</option>
+            <option value="content">Content suggestion</option>
+            <option value="support">Prayer support or access issue</option>
+        </select>
+        <textarea name="message"></textarea>
+        <input name="bot-field" />
+    </form>
     <div id="root"></div>
 </body>
 

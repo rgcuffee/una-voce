@@ -23,6 +23,13 @@ export function MorePage({ onNavigate }: { onNavigate: ViewNavigator }) {
         'What this platform is, why it exists, and the tradition it serves.',
       icon: '☩',
     },
+    {
+      view: 'contact',
+      title: 'Contact',
+      description:
+        'Send a note about partnerships, community listings, content, or support.',
+      icon: '✉',
+    },
   ];
 
   return (
