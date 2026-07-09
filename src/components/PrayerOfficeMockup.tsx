@@ -1368,7 +1368,7 @@ const FORMATS: {
     key: 'media',
     label: 'Pray Along',
     description: 'Follow sung and spoken offices from partner communities.',
-    icon: '♪ | ▶',
+    icon: '▶',
     className: 'pray-along',
   },
 ];

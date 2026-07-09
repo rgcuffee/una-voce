@@ -1,29 +1,69 @@
 import { PartnerBadge } from '../components/PartnerBadge';
+import {
+  PARTNER_COMMUNITIES,
+  type PartnerBadgeStatus,
+  type PartnerCommunity,
+} from '../data/partnerCommunities';
 import type { ViewNavigator } from '../navigation';
 
-const FEATURED_RESOURCES = [
+type FeaturedResource = {
+  name: string;
+  description: string;
+  image: string;
+  badge: PartnerBadgeStatus | null;
+};
+
+const PREFERRED_FEATURED_RESOURCE_SLUGS = [
+  'worth-abbey',
+  'cathaholic-music',
+];
+
+const CURATED_FEATURED_RESOURCE_FALLBACKS: FeaturedResource[] = [
   {
-    name: 'Worth Abbey',
-    description: 'Monastic livestreams and replays from a Benedictine abbey.',
+    name: 'Cantor del Camino',
+    description: 'Spanish sung offices for daily prayer.',
     image:
-      'https://yt3.googleusercontent.com/ytc/AIdro_nDVgAvWHZwb_ynblsEyXIEEU1-No0mhPCHLvkD2ZunFA=s900-c-k-c0x00ffffff-no-rj',
-    badge: 'verified' as const,
-  },
-  {
-    name: 'Cathaholic Music',
-    description: 'Sung Lauds and Vespers with visual prayer guides.',
-    image:
-      'https://yt3.googleusercontent.com/gnRvpLHI4h1DWvbRsssdE14PIKIUMy6afiLpMxqJRK8gBo3CD-YS925FAFwywN_62bB5ARtnL3U=s900-c-k-c0x00ffffff-no-rj',
-    badge: 'verified' as const,
-  },
-  {
-    name: 'Sing the Hours',
-    description: 'Chant-led Morning and Evening Prayer for praying along.',
-    image:
-      'https://yt3.googleusercontent.com/MovqVdp8AFW-7L83SwoxAGf50Y_F9OTSdSyitDCZ-pEvBBMfy-uV27X3o6eKlnszI5weOkxO4Q=s900-c-k-c0x00ffffff-no-rj',
-    badge: 'curated' as const,
+      'https://yt3.googleusercontent.com/4v52x8EmtPZMYbLgeZQP5fARpbZSC55GDjUG_WCI4vjifyMy7K71cZ3aKBpL9u31_2n_H0qILYE=s900-c-k-c0x00ffffff-no-rj',
+    badge: 'curated',
   },
 ];
+
+const FEATURED_RESOURCES = partnerFeaturedResources()
+  .concat(CURATED_FEATURED_RESOURCE_FALLBACKS)
+  .slice(0, 3);
+
+function partnerFeaturedResources() {
+  return [
+    ...PREFERRED_FEATURED_RESOURCE_SLUGS.map((slug) =>
+      PARTNER_COMMUNITIES.find((community) => community.slug === slug),
+    ),
+    ...PARTNER_COMMUNITIES.filter(
+      (community) => !PREFERRED_FEATURED_RESOURCE_SLUGS.includes(community.slug),
+    ),
+  ]
+    .map(featuredResourceFromCommunity)
+    .filter((resource): resource is FeaturedResource => Boolean(resource));
+}
+
+function featuredResourceFromCommunity(
+  community: PartnerCommunity | undefined,
+): FeaturedResource | null {
+  if (
+    !community ||
+    community.onboardingStatus === 'pending' ||
+    !['curated', 'verified'].includes(community.relationshipStatus) ||
+    !community.imageUrl
+  ) {
+    return null;
+  }
+
+  return {
+    name: community.name,
+    description: community.tagline,
+    image: community.imageUrl,
+    badge: community.badgeEnabled ? community.relationshipStatus : null,
+  };
+}
 
 export function HomePage({ onNavigate }: { onNavigate: ViewNavigator }) {
   return (
@@ -143,7 +183,7 @@ export function HomePage({ onNavigate }: { onNavigate: ViewNavigator }) {
               <span className="home-featured-body">
                 <span className="home-featured-title-row">
                   <strong>{resource.name}</strong>
-                  <PartnerBadge status={resource.badge} />
+                  {resource.badge ? <PartnerBadge status={resource.badge} /> : null}
                 </span>
                 <span>{resource.description}</span>
                 <button type="button" onClick={() => onNavigate('discover')}>
