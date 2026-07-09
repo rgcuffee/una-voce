@@ -20,6 +20,14 @@ const PRAYER_HOURS = [
 ];
 
 const PARTNER_RELATIONSHIP_STATUSES = ['curated', 'verified', 'partner'];
+const LITURGICAL_SEASONS = [
+  'advent',
+  'christmas',
+  'ordinary_time',
+  'lent',
+  'triduum',
+  'easter',
+];
 
 const supabaseUrl = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -365,6 +373,12 @@ async function upsertFeed(feed) {
       'polling_interval_minutes',
     ),
     import_from_date: nullableString(feed.import_from_date),
+    poll_once: Boolean(feed.poll_once),
+    default_available_liturgical_seasons: enumArray(
+      feed.default_available_liturgical_seasons,
+      LITURGICAL_SEASONS,
+      'default_available_liturgical_seasons',
+    ),
     active: Boolean(feed.active),
   });
 
@@ -472,6 +486,12 @@ async function updateVideo(video) {
       ['pending', 'approved', 'hidden', 'expired'],
       'display_status',
     ),
+    available_liturgical_seasons: enumArray(
+      video.available_liturgical_seasons,
+      LITURGICAL_SEASONS,
+      'available_liturgical_seasons',
+    ),
+    available_weekdays: weekdayArray(video.available_weekdays),
   });
 
   const { data, error } = await supabase
@@ -595,6 +615,29 @@ function textArray(value) {
   return Array.isArray(value)
     ? value.map((item) => String(item).trim()).filter(Boolean)
     : [];
+}
+
+function enumArray(value, allowed, field) {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.map((item) => enumValue(item, allowed, field));
+}
+
+function weekdayArray(value) {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.map((item) => {
+    const weekday = Number(item);
+    if (!Number.isInteger(weekday) || weekday < 0 || weekday > 6) {
+      throw new Error('Invalid available_weekdays');
+    }
+
+    return weekday;
+  });
 }
 
 function compact(value) {

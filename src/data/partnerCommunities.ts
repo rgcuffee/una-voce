@@ -4,6 +4,7 @@ export type PartnerCommunitySlug =
   | 'divine-office'
   | 'padre-didier'
   | 'sing-the-hours'
+  | 'word-on-fire'
   | 'worth-abbey'
   | 'ridgehaven-priory'
   | 'the-little-oratory'
@@ -56,6 +57,37 @@ export type PartnerCommunityStatusOverrides = Record<
 >;
 
 export const PARTNER_COMMUNITIES: PartnerCommunity[] = [
+  {
+    slug: 'word-on-fire',
+    name: 'Word on Fire',
+    kind: 'Curated prayer resource',
+    location: 'United States / online',
+    onboardingStatus: 'active',
+    relationshipStatus: 'curated',
+    badgeEnabled: true,
+    tagline: 'Ordinary Time Night Prayer videos led by Bishop Robert Barron.',
+    description:
+      'Word on Fire shares Liturgy of the Hours Night Prayer videos for Ordinary Time, led by Bishop Robert Barron.',
+    imageUrl:
+      'https://yt3.googleusercontent.com/yjqfvu6ZX2QWSqczNIi3sbN6224_O62eAFob7uLgomGEVG6es2Tc3i_RNjAa4TbJfrceWuHw8Q=s900-c-k-c0x00ffffff-no-rj',
+    accent: 'Ordinary Time, Night Prayer, guided Compline',
+    prayerRhythm: ['Compline'],
+    links: [
+      { label: 'Word on Fire prayer', href: 'https://www.wordonfire.org/pray/' },
+      {
+        label: 'YouTube playlist',
+        href: 'https://www.youtube.com/playlist?list=PLg6k5UmSDlcjmNXrGitfEfieONIIgXen6',
+      },
+    ],
+    featured: [
+      {
+        label: 'Ordinary Time',
+        title: 'Night Prayer',
+        description:
+          'Playlist videos are imported once, reviewed as pending, and surfaced for Compline only during Ordinary Time.',
+      },
+    ],
+  },
   {
     slug: 'divine-office',
     name: 'Divine Office',
@@ -456,6 +488,8 @@ function isPartnerCommunityPublished(
 }
 
 const COMMUNITY_ALIASES: Record<string, PartnerCommunitySlug> = {
+  'bishop barron': 'word-on-fire',
+  'bishop robert barron': 'word-on-fire',
   'cantor del camino': 'cantor-del-camino',
   'cathaholic music': 'cathaholic-music',
   'cathoholic music': 'cathaholic-music',
@@ -464,6 +498,7 @@ const COMMUNITY_ALIASES: Record<string, PartnerCommunitySlug> = {
   'padre didier': 'padre-didier',
   'sing the hours': 'sing-the-hours',
   'virtual padre didier': 'padre-didier',
+  'word on fire': 'word-on-fire',
   'worth abbey': 'worth-abbey',
   'worth abbey (uk)': 'worth-abbey',
   'ridgehaven priory': 'ridgehaven-priory',

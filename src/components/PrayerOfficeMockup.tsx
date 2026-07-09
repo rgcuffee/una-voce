@@ -21,6 +21,7 @@ import {
 } from '../lib/liturgicalCalendar';
 import type {
   LiturgicalHour,
+  LiturgicalSeason,
   PartnerOnboardingStatus,
   YoutubeVideoDisplayStatus,
 } from '../lib/database.types';
@@ -1100,32 +1101,7 @@ const SEGMENTS: Segment[] = [
         description: 'Abbey night office audio with psalm and Marian antiphon.',
       },
     ],
-    video: [
-      {
-        meta: 'Content Creator',
-        title: 'The Little Oratory',
-        description:
-          'Night prayer video with gentle pacing and readable line-by-line text.',
-      },
-      {
-        meta: 'Content Creator',
-        title: 'Psalm and Laurel',
-        description:
-          'Compline video session with responsive captions and chapter timestamps.',
-      },
-      {
-        meta: 'Mock Abbey',
-        title: 'Sisters of Dawnfield Compline Video',
-        description:
-          'Convent chapel Compline video with closing Marian antiphon and silence.',
-      },
-      {
-        meta: 'Abbey',
-        title: 'Riverbend Abbey Night Office Video',
-        description:
-          'Night Office video archive with fixed camera and complete prayer structure.',
-      },
-    ],
+    video: [],
     live: [
       {
         title: 'Upcoming',
@@ -1474,6 +1450,7 @@ type PartnerPrayerVideoRow = {
   scheduled_start_at: string | null;
   prayer_date: string | null;
   prayer_type: PartnerPrayerVideoType | null;
+  available_weekdays?: number[] | null;
   partners:
     | { slug: string; name: string; active: boolean; onboarding_status: string }
     | {
@@ -1525,6 +1502,24 @@ function normalizePartnerPrayerVideo(row: PartnerPrayerVideoRow) {
     publishedAt: row.published_at,
     scheduledStartAt: row.scheduled_start_at,
   };
+}
+
+function weekdayForDate(date: string) {
+  const [year, month, day] = date.split('-').map(Number);
+  return new Date(Date.UTC(year, month - 1, day, 12)).getUTCDay();
+}
+
+function isVideoAvailableForWeekday(
+  video: Pick<PartnerPrayerVideoRow, 'available_weekdays'>,
+  selectedWeekday: number,
+) {
+  const availableWeekdays = video.available_weekdays ?? [];
+
+  if (availableWeekdays.length === 0) {
+    return true;
+  }
+
+  return availableWeekdays.map(Number).includes(selectedWeekday);
 }
 
 type PartnerPrayerAudioRow = {
@@ -1604,16 +1599,21 @@ function mergePartnerRows<Row extends { canonical_url: string }>(
 
 async function loadPartnerContentPreview(
   date: string,
+  liturgicalSeason: LiturgicalSeason | null,
   signal: AbortSignal,
 ): Promise<PartnerContentPreviewResponse | null> {
   if (!showPendingPartnerContent) {
     return null;
   }
 
-  const response = await fetch(
-    `/.netlify/functions/partner-content-preview?date=${encodeURIComponent(date)}`,
-    { signal },
-  );
+  const params = new URLSearchParams({ date });
+  if (liturgicalSeason) {
+    params.set('season', liturgicalSeason);
+  }
+
+  const response = await fetch(`/.netlify/functions/partner-content-preview?${params}`, {
+    signal,
+  });
 
   const contentType = response.headers.get('content-type') ?? '';
   if (!response.ok || !contentType.includes('application/json')) {
@@ -2582,6 +2582,8 @@ export function PrayerOfficeMockup() {
     formatPendingDateLabel(selectedDate),
   );
   const [dateOptionsLabel, setDateOptionsLabel] = useState<string | null>(null);
+  const [liturgicalSeason, setLiturgicalSeason] =
+    useState<LiturgicalSeason | null>(null);
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [partnerVideos, setPartnerVideos] = useState<PartnerPrayerVideo[]>([]);
   const [partnerAudio, setPartnerAudio] = useState<PartnerPrayerAudio[]>([]);
@@ -2776,6 +2778,7 @@ export function PrayerOfficeMockup() {
 
     setDateLabel(formatPendingDateLabel(selectedDate));
     setDateOptionsLabel(null);
+    setLiturgicalSeason(null);
 
     getLiturgicalDayWithHours(DEFAULT_CALENDAR_ID, selectedDate)
       .then((day) => {
@@ -2784,6 +2787,7 @@ export function PrayerOfficeMockup() {
         }
 
         setDateLabel(formatLiturgicalDateLabel(day, selectedDate));
+        setLiturgicalSeason(day?.season ?? null);
         setDateOptionsLabel(
           day && day.options.length > 0
             ? formatLiturgicalOptions(day.options)
@@ -2795,6 +2799,7 @@ export function PrayerOfficeMockup() {
         if (isActive) {
           setDateLabel(formatPendingDateLabel(selectedDate));
           setDateOptionsLabel(null);
+          setLiturgicalSeason(null);
         }
       });
 
@@ -2871,46 +2876,69 @@ export function PrayerOfficeMockup() {
         return;
       }
 
-      try {
-        const { data, error } = await supabase
-          .from('youtube_videos')
-          .select(
-            [
-              'title',
-              'description',
-              'youtube_video_id',
-              'thumbnail_url',
-              'canonical_url',
-              'embed_url',
-              'published_at',
-              'scheduled_start_at',
-              'prayer_date',
-              'prayer_type',
-              'partners!inner(slug,name,active,onboarding_status)',
-            ].join(','),
-          )
-          .eq('display_status', 'approved' satisfies YoutubeVideoDisplayStatus)
-          .eq('partners.active', true)
-          .eq(
-            'partners.onboarding_status',
-            'active' satisfies PartnerOnboardingStatus,
-          )
-          .eq('prayer_date', selectedDate)
-          .eq('video_kind', 'video')
-          .in('prayer_type', partnerContentPrayerTypes)
-          .order('published_at', { ascending: false })
-          .abortSignal(controller.signal);
+      const partnerClient = supabase;
 
-        if (error) {
-          throw error;
+      try {
+        const videoSelect = [
+          'title',
+          'description',
+          'youtube_video_id',
+          'thumbnail_url',
+          'canonical_url',
+          'embed_url',
+          'published_at',
+          'scheduled_start_at',
+          'prayer_date',
+          'prayer_type',
+          'available_weekdays',
+          'partners!inner(slug,name,active,onboarding_status)',
+        ].join(',');
+        const selectedWeekday = weekdayForDate(selectedDate);
+        const baseVideoQuery = () =>
+          partnerClient
+            .from('youtube_videos')
+            .select(videoSelect)
+            .eq('display_status', 'approved' satisfies YoutubeVideoDisplayStatus)
+            .eq('partners.active', true)
+            .eq(
+              'partners.onboarding_status',
+              'active' satisfies PartnerOnboardingStatus,
+            )
+            .eq('video_kind', 'video')
+            .in('prayer_type', partnerContentPrayerTypes)
+            .order('published_at', { ascending: false })
+            .abortSignal(controller.signal);
+        const [datedResult, seasonalResult] = await Promise.all([
+          baseVideoQuery().eq('prayer_date', selectedDate),
+          liturgicalSeason
+            ? baseVideoQuery()
+                .is('prayer_date', null)
+                .contains('available_liturgical_seasons', [liturgicalSeason])
+            : Promise.resolve({ data: [], error: null }),
+        ]);
+
+        if (datedResult.error) {
+          throw datedResult.error;
+        }
+
+        if (seasonalResult.error) {
+          throw seasonalResult.error;
         }
 
         const preview = await loadPartnerContentPreview(
           selectedDate,
+          liturgicalSeason,
           controller.signal,
         );
         const rows = mergePartnerRows(
-          (data ?? []) as unknown as PartnerPrayerVideoRow[],
+          [
+            ...((datedResult.data ?? []) as unknown as PartnerPrayerVideoRow[]),
+            ...(
+              (seasonalResult.data ?? []) as unknown as PartnerPrayerVideoRow[]
+            ).filter((video) =>
+              isVideoAvailableForWeekday(video, selectedWeekday),
+            ),
+          ],
           preview?.videos,
         );
 
@@ -2928,7 +2956,7 @@ export function PrayerOfficeMockup() {
     void loadPartnerVideos();
 
     return () => controller.abort();
-  }, [selectedDate]);
+  }, [liturgicalSeason, selectedDate]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -3013,6 +3041,7 @@ export function PrayerOfficeMockup() {
 
         const preview = await loadPartnerContentPreview(
           selectedDate,
+          liturgicalSeason,
           controller.signal,
         );
         const rows = mergePartnerRows(
@@ -3044,7 +3073,7 @@ export function PrayerOfficeMockup() {
     void loadPartnerAudio();
 
     return () => controller.abort();
-  }, [selectedDate]);
+  }, [liturgicalSeason, selectedDate]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -3491,47 +3520,49 @@ export function PrayerOfficeMockup() {
                       </div>
                     </div>
 
-                    <div
-                      className={`format-output${selectedFormat === 'media' ? '' : ' hidden'}`}
-                    >
-                      <h4>Watch</h4>
-                      <div className="format-options">
-                        {videoOptions.map((item, index) => (
-                          <button
-                            key={item.title}
-                            type="button"
-                            className="format-option format-option-media"
-                            style={{
-                              backgroundImage: `linear-gradient(165deg, rgba(14, 12, 9, 0.18), rgba(14, 12, 9, 0.8)), url(${item.imageUrl ?? optionImageFor('video', index)})`,
-                            }}
-                            onClick={() =>
-                              openPrayerPlayer(
-                                createPrayerPlayerSession({
-                                  item,
-                                  segment,
-                                  sourceType: 'recorded',
-                                  pageContext: 'today_watch_card',
-                                  partnerStatusOverrides,
-                                }),
-                              )
-                            }
-                          >
-                            <div className="option-meta">{item.meta}</div>
-                            <OptionPartnerBadge
-                              item={item}
-                              partnerStatusOverrides={partnerStatusOverrides}
-                            />
-                            <div className="option-title">{item.title}</div>
-                            <p className="option-desc">{item.description}</p>
-                            <div className="option-card-footer">
-                              <span className="option-prayer-action">
-                                Begin Prayer
-                              </span>
-                            </div>
-                          </button>
-                        ))}
+                    {videoOptions.length > 0 ? (
+                      <div
+                        className={`format-output${selectedFormat === 'media' ? '' : ' hidden'}`}
+                      >
+                        <h4>Watch</h4>
+                        <div className="format-options">
+                          {videoOptions.map((item, index) => (
+                            <button
+                              key={item.title}
+                              type="button"
+                              className="format-option format-option-media"
+                              style={{
+                                backgroundImage: `linear-gradient(165deg, rgba(14, 12, 9, 0.18), rgba(14, 12, 9, 0.8)), url(${item.imageUrl ?? optionImageFor('video', index)})`,
+                              }}
+                              onClick={() =>
+                                openPrayerPlayer(
+                                  createPrayerPlayerSession({
+                                    item,
+                                    segment,
+                                    sourceType: 'recorded',
+                                    pageContext: 'today_watch_card',
+                                    partnerStatusOverrides,
+                                  }),
+                                )
+                              }
+                            >
+                              <div className="option-meta">{item.meta}</div>
+                              <OptionPartnerBadge
+                                item={item}
+                                partnerStatusOverrides={partnerStatusOverrides}
+                              />
+                              <div className="option-title">{item.title}</div>
+                              <p className="option-desc">{item.description}</p>
+                              <div className="option-card-footer">
+                                <span className="option-prayer-action">
+                                  Begin Prayer
+                                </span>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
                       </div>
-                    </div>
+                    ) : null}
 
                     <div
                       className={`format-output${selectedFormat === 'media' ? '' : ' hidden'}`}

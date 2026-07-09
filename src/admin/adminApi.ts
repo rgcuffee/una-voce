@@ -1,5 +1,6 @@
 import type {
   LiturgicalHour,
+  LiturgicalSeason,
   PartnerOnboardingStatus,
   PartnerRelationshipStatus,
   PartnerYoutubeContentMode,
@@ -46,6 +47,8 @@ export type AdminPartnerFeed = {
   expected_content_mode: PartnerYoutubeContentMode;
   polling_interval_minutes: number;
   import_from_date: string | null;
+  poll_once: boolean;
+  default_available_liturgical_seasons: LiturgicalSeason[];
   active: boolean;
   last_polled_at: string | null;
   created_at: string;
@@ -113,6 +116,8 @@ export type AdminYoutubeVideo = {
   prayer_type: LiturgicalHour | null;
   video_kind: PrayerVideoKind;
   display_status: YoutubeVideoDisplayStatus;
+  available_liturgical_seasons: LiturgicalSeason[];
+  available_weekdays: number[];
   created_at: string;
   updated_at: string;
 };
@@ -215,6 +220,8 @@ export type FeedDraft = {
   expected_content_mode: PartnerYoutubeContentMode;
   polling_interval_minutes: number;
   import_from_date?: string | null;
+  poll_once: boolean;
+  default_available_liturgical_seasons: LiturgicalSeason[];
   active: boolean;
 };
 
@@ -260,6 +267,8 @@ export type VideoUpdate = {
   prayer_type?: LiturgicalHour | null;
   prayer_date?: string | null;
   display_status?: YoutubeVideoDisplayStatus;
+  available_liturgical_seasons?: LiturgicalSeason[];
+  available_weekdays?: number[];
 };
 
 export type EpisodeUpdate = {

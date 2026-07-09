@@ -19,6 +19,15 @@ const PRAYER_TYPES = [
   'compline',
 ];
 
+const LITURGICAL_SEASONS = [
+  'advent',
+  'christmas',
+  'ordinary_time',
+  'lent',
+  'triduum',
+  'easter',
+];
+
 const supabaseUrl = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -49,36 +58,55 @@ export async function handler(event) {
     return response(500, { error: 'Preview content API is not configured' });
   }
 
-  const date = new URLSearchParams(event.rawQuery ?? '').get('date');
+  const params = new URLSearchParams(event.rawQuery ?? '');
+  const date = params.get('date');
+  const season = params.get('season');
   if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
     return response(400, { error: 'A YYYY-MM-DD date is required' });
   }
 
-  const [videosResult, spotifyAudioResult, appleAudioResult] = await Promise.all([
+  if (season && !LITURGICAL_SEASONS.includes(season)) {
+    return response(400, { error: 'Invalid liturgical season' });
+  }
+
+  const selectedWeekday = weekdayForDate(date);
+  const videoSelect = [
+    'title',
+    'description',
+    'youtube_video_id',
+    'thumbnail_url',
+    'canonical_url',
+    'embed_url',
+    'published_at',
+    'scheduled_start_at',
+    'prayer_date',
+    'prayer_type',
+    'available_weekdays',
+    'partners!inner(slug,name,active,onboarding_status)',
+  ].join(',');
+  const baseVideoQuery = () =>
     supabase
       .from('youtube_videos')
-      .select(
-        [
-          'title',
-          'description',
-          'youtube_video_id',
-          'thumbnail_url',
-          'canonical_url',
-          'embed_url',
-          'published_at',
-          'scheduled_start_at',
-          'prayer_date',
-          'prayer_type',
-          'partners!inner(slug,name,active,onboarding_status)',
-        ].join(','),
-      )
+      .select(videoSelect)
       .in('display_status', ['approved', 'pending'])
       .eq('partners.active', true)
       .in('partners.onboarding_status', ['active', 'pending'])
-      .eq('prayer_date', date)
       .eq('video_kind', 'video')
       .in('prayer_type', PRAYER_TYPES)
-      .order('published_at', { ascending: false }),
+      .order('published_at', { ascending: false });
+
+  const [
+    datedVideosResult,
+    seasonalVideosResult,
+    spotifyAudioResult,
+    appleAudioResult,
+  ] = await Promise.all([
+    baseVideoQuery().eq('prayer_date', date),
+    season
+      ? baseVideoQuery()
+          .is('prayer_date', null)
+          .contains('available_liturgical_seasons', [season])
+      : Promise.resolve({ data: [], error: null }),
     supabase
       .from('spotify_episodes')
       .select(
@@ -127,8 +155,12 @@ export async function handler(event) {
       .order('published_at', { ascending: false }),
   ]);
 
-  if (videosResult.error) {
-    return response(500, { error: videosResult.error.message });
+  if (datedVideosResult.error) {
+    return response(500, { error: datedVideosResult.error.message });
+  }
+
+  if (seasonalVideosResult.error) {
+    return response(500, { error: seasonalVideosResult.error.message });
   }
 
   if (spotifyAudioResult.error) {
@@ -142,7 +174,13 @@ export async function handler(event) {
   return response(200, {
     ok: true,
     date,
-    videos: videosResult.data ?? [],
+    videos: mergeByCanonicalUrl([
+      ...(datedVideosResult.data ?? []),
+      ...filterVideosForWeekday(
+        seasonalVideosResult.data ?? [],
+        selectedWeekday,
+      ),
+    ]),
     audio: [
       ...(spotifyAudioResult.data ?? []).map((episode) => ({
         ...episode,
@@ -154,6 +192,29 @@ export async function handler(event) {
       })),
     ],
   });
+}
+
+function mergeByCanonicalUrl(rows) {
+  return [...new Map(rows.map((row) => [row.canonical_url, row])).values()];
+}
+
+function filterVideosForWeekday(rows, selectedWeekday) {
+  return rows.filter((row) =>
+    isAvailableForWeekday(row.available_weekdays, selectedWeekday),
+  );
+}
+
+function isAvailableForWeekday(availableWeekdays, selectedWeekday) {
+  if (!Array.isArray(availableWeekdays) || availableWeekdays.length === 0) {
+    return true;
+  }
+
+  return availableWeekdays.map(Number).includes(selectedWeekday);
+}
+
+function weekdayForDate(date) {
+  const [year, month, day] = date.split('-').map(Number);
+  return new Date(Date.UTC(year, month - 1, day, 12)).getUTCDay();
 }
 
 function loadLocalEnv() {

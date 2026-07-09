@@ -827,7 +827,7 @@ body {
     margin-top: 12px;
 }
 
-.option-card-footer > .option-prayer-action:only-child {
+.option-card-footer>.option-prayer-action:only-child {
     margin-left: auto;
 }
 
@@ -1285,6 +1285,7 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+
     .format-option,
     .segment-header,
     .segment-toggle {
@@ -2364,6 +2365,14 @@ body {
     background-size: cover;
 }
 
+.home-featured-image.community-cathaholic-music {
+    background-position: top center;
+}
+
+.home-featured-image.community-word-on-fire {
+    background-position: center 10%;
+}
+
 .home-featured-body {
     display: flex;
     min-width: 0;
@@ -2729,6 +2738,7 @@ body {
 }
 
 @media (min-width: 760px) {
+
     .begin-card-grid,
     .parish-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -3411,7 +3421,7 @@ body {
     line-height: 1;
 }
 
-.community-card-body > span:last-child {
+.community-card-body>span:last-child {
     color: var(--charcoal-soft);
     font-size: 13px;
     line-height: 1.35;
@@ -3540,6 +3550,10 @@ body {
 
 .community-profile-hero.community-cathaholic-music {
     background-position: top center;
+}
+
+.community-profile-hero.community-word-on-fire {
+    background-position: center 12%;
 }
 
 .community-profile-overlay {
@@ -4134,7 +4148,7 @@ body {
     letter-spacing: 0;
 }
 
-.engine-section-heading > span {
+.engine-section-heading>span {
     color: #697064;
     font-size: 13px;
     font-weight: 700;
@@ -4208,7 +4222,7 @@ body {
     font-size: 14px;
 }
 
-.engine-inspector-difference > p {
+.engine-inspector-difference>p {
     margin-top: 8px;
     overflow-wrap: anywhere;
     color: #697064;
@@ -4235,7 +4249,7 @@ body {
 }
 
 .engine-inspector-card-header p,
-.engine-inspector-subsection > span {
+.engine-inspector-subsection>span {
     color: #697064;
     font-size: 11px;
     font-weight: 800;
@@ -4611,7 +4625,7 @@ body {
     gap: 0;
 }
 
-.engine-two-col > div:first-child {
+.engine-two-col>div:first-child {
     border-right: 1px solid #eef1ec;
 }
 
@@ -4632,8 +4646,8 @@ body {
     text-decoration: none;
 }
 
-.engine-review-item + .engine-review-item,
-.engine-run-item + .engine-run-item {
+.engine-review-item+.engine-review-item,
+.engine-run-item+.engine-run-item {
     margin-top: 10px;
 }
 
@@ -4787,7 +4801,7 @@ body {
     gap: 0;
 }
 
-.admin-editor-grid > div:first-child {
+.admin-editor-grid>div:first-child {
     border-right: 1px solid #eef1ec;
 }
 
@@ -4810,7 +4824,7 @@ body {
     text-align: left;
 }
 
-.admin-list button + button {
+.admin-list button+button {
     margin-top: 8px;
 }
 
@@ -5030,8 +5044,8 @@ body {
     }
 
     .engine-detail-panel,
-    .engine-two-col > div:first-child,
-    .admin-editor-grid > div:first-child {
+    .engine-two-col>div:first-child,
+    .admin-editor-grid>div:first-child {
         border-left: 1px solid #dfe4dc;
         border-right: 0;
     }

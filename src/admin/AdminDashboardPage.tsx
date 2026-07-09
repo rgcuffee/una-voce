@@ -25,6 +25,7 @@ import {
 import { supabase } from '../lib/supabase';
 import type {
   LiturgicalHour,
+  LiturgicalSeason,
   PartnerOnboardingStatus,
   PartnerRelationshipStatus,
   PartnerYoutubeContentMode,
@@ -52,6 +53,23 @@ const RELATIONSHIP_STATUSES: { value: PartnerRelationshipStatus; label: string; 
 ];
 const FEED_TYPES: PartnerYoutubeFeedType[] = ['channel', 'playlist'];
 const CONTENT_MODES: PartnerYoutubeContentMode[] = ['live', 'scheduled_live', 'pre_recorded', 'mixed'];
+const SEASON_OPTIONS: { value: LiturgicalSeason; label: string }[] = [
+  { value: 'advent', label: 'Advent' },
+  { value: 'christmas', label: 'Christmas' },
+  { value: 'ordinary_time', label: 'Ordinary Time' },
+  { value: 'lent', label: 'Lent' },
+  { value: 'triduum', label: 'Triduum' },
+  { value: 'easter', label: 'Easter' },
+];
+const WEEKDAY_OPTIONS = [
+  { value: 0, label: 'Sunday' },
+  { value: 1, label: 'Monday' },
+  { value: 2, label: 'Tuesday' },
+  { value: 3, label: 'Wednesday' },
+  { value: 4, label: 'Thursday' },
+  { value: 5, label: 'Friday' },
+  { value: 6, label: 'Saturday' },
+];
 const MIDDAY_TITLE_PATTERN = /\b(midmorning|midday|midafternoon)\b/i;
 
 const emptyPartner: PartnerDraft = {
@@ -136,6 +154,9 @@ function feedDraft(partnerId: string, feed?: AdminPartnerFeed | null): FeedDraft
       expected_content_mode: feed.expected_content_mode,
       polling_interval_minutes: feed.polling_interval_minutes,
       import_from_date: feed.import_from_date ?? '',
+      poll_once: feed.poll_once,
+      default_available_liturgical_seasons:
+        feed.default_available_liturgical_seasons,
       active: feed.active,
     };
   }
@@ -149,6 +170,8 @@ function feedDraft(partnerId: string, feed?: AdminPartnerFeed | null): FeedDraft
     expected_content_mode: 'mixed',
     polling_interval_minutes: 120,
     import_from_date: '',
+    poll_once: false,
+    default_available_liturgical_seasons: [],
     active: true,
   };
 }
@@ -251,6 +274,49 @@ function suggestedReviewHour(item: Pick<AdminAudioEpisode | AdminYoutubeVideo, '
   }
 
   return item.prayer_type ?? '';
+}
+
+function seasonLabels(seasons: LiturgicalSeason[] | undefined) {
+  if (!seasons?.length) {
+    return 'All seasons';
+  }
+
+  return seasons
+    .map((season) => SEASON_OPTIONS.find((option) => option.value === season)?.label ?? season)
+    .join(', ');
+}
+
+function seasonValue(seasons: LiturgicalSeason[] | undefined) {
+  return (seasons ?? []).join(', ');
+}
+
+function parseSeasons(value: string): LiturgicalSeason[] {
+  const allowed = new Set(SEASON_OPTIONS.map((option) => option.value));
+  return value
+    .split(',')
+    .map((item) => item.trim() as LiturgicalSeason)
+    .filter((item) => allowed.has(item));
+}
+
+function weekdayLabels(weekdays: number[] | undefined) {
+  if (!weekdays?.length) {
+    return 'Every weekday';
+  }
+
+  return weekdays
+    .map((weekday) => WEEKDAY_OPTIONS.find((option) => option.value === weekday)?.label ?? String(weekday))
+    .join(', ');
+}
+
+function weekdayValue(weekdays: number[] | undefined) {
+  return (weekdays ?? []).join(', ');
+}
+
+function parseWeekdays(value: string) {
+  return value
+    .split(',')
+    .map((item) => Number(item.trim()))
+    .filter((item) => Number.isInteger(item) && item >= 0 && item <= 6);
 }
 
 export function AdminDashboardPage() {
@@ -724,12 +790,18 @@ function VideoReviewCard({ video, onSaved }: { video: AdminYoutubeVideo; onSaved
   const [status, setStatus] = useState(video.display_status);
   const [hour, setHour] = useState<LiturgicalHour | ''>(() => suggestedReviewHour(video));
   const [date, setDate] = useState(video.prayer_date ?? '');
+  const [seasons, setSeasons] = useState<LiturgicalSeason[]>(
+    video.available_liturgical_seasons,
+  );
+  const [weekdays, setWeekdays] = useState<number[]>(video.available_weekdays);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     setStatus(video.display_status);
     setHour(suggestedReviewHour(video));
     setDate(video.prayer_date ?? '');
+    setSeasons(video.available_liturgical_seasons);
+    setWeekdays(video.available_weekdays);
   }, [video]);
 
   async function save(nextStatus = status) {
@@ -740,6 +812,8 @@ function VideoReviewCard({ video, onSaved }: { video: AdminYoutubeVideo; onSaved
         display_status: nextStatus,
         prayer_type: hour || null,
         prayer_date: date || null,
+        available_liturgical_seasons: seasons,
+        available_weekdays: weekdays,
       });
       await onSaved();
     } finally {
@@ -756,6 +830,7 @@ function VideoReviewCard({ video, onSaved }: { video: AdminYoutubeVideo; onSaved
         <span className={`engine-badge ${statusClass(video.display_status)}`}>{video.display_status}</span>
         <h3>{video.title}</h3>
         <p>{formatDateTime(video.published_at)} · {video.video_kind}</p>
+        <p>{seasonLabels(video.available_liturgical_seasons)} · {weekdayLabels(video.available_weekdays)}</p>
         <div className="admin-inline-controls">
           <label>
             Prayer date
@@ -773,6 +848,14 @@ function VideoReviewCard({ video, onSaved }: { video: AdminYoutubeVideo; onSaved
             <select value={status} onChange={(event) => setStatus(event.target.value as YoutubeVideoDisplayStatus)}>
               {STATUS_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
             </select>
+          </label>
+          <label>
+            Seasons
+            <input value={seasonValue(seasons)} onChange={(event) => setSeasons(parseSeasons(event.target.value))} placeholder="ordinary_time" />
+          </label>
+          <label>
+            Weekdays
+            <input value={weekdayValue(weekdays)} onChange={(event) => setWeekdays(parseWeekdays(event.target.value))} placeholder="0, 1, 2" />
           </label>
         </div>
         <div className="admin-action-row">
@@ -978,7 +1061,7 @@ function FeedsSection({
           {feeds.map((feed) => (
             <button key={feed.id} type="button" onClick={() => setDraft(feedDraft(selectedPartnerId, feed))}>
               <strong>{feed.type}: {feed.youtube_playlist_id ?? feed.youtube_channel_id}</strong>
-              <span>{feed.active ? 'active' : 'inactive'} · last poll {formatDateTime(feed.last_polled_at)}</span>
+              <span>{feed.active ? 'active' : 'inactive'} · {feed.poll_once ? 'one-time' : `${feed.polling_interval_minutes}m`} · {seasonLabels(feed.default_available_liturgical_seasons)} · last poll {formatDateTime(feed.last_polled_at)}</span>
             </button>
           ))}
           <h3 className="admin-list-heading">Spotify</h3>
@@ -1033,6 +1116,11 @@ function FeedForm({ draft, saving, onChange, onSave }: { draft: FeedDraft; savin
         <Field label="RSS URL" value={draft.rss_url} onChange={(rss_url) => onChange({ ...draft, rss_url })} className="admin-full" />
         <Field label="Import from" value={draft.import_from_date ?? ''} onChange={(import_from_date) => onChange({ ...draft, import_from_date })} type="date" />
         <Field label="Polling minutes" value={String(draft.polling_interval_minutes)} onChange={(value) => onChange({ ...draft, polling_interval_minutes: Number(value) || 120 })} type="number" />
+        <Field label="Default seasons" value={seasonValue(draft.default_available_liturgical_seasons)} onChange={(value) => onChange({ ...draft, default_available_liturgical_seasons: parseSeasons(value) })} placeholder="ordinary_time" />
+        <label className="admin-check">
+          <input type="checkbox" checked={draft.poll_once} onChange={(event) => onChange({ ...draft, poll_once: event.target.checked })} />
+          Poll once
+        </label>
         <label className="admin-check">
           <input type="checkbox" checked={draft.active} onChange={(event) => onChange({ ...draft, active: event.target.checked })} />
           Active
@@ -1201,18 +1289,20 @@ function Field({
   value,
   onChange,
   className,
+  placeholder,
   type = 'text',
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
   className?: string;
+  placeholder?: string;
   type?: string;
 }) {
   return (
     <label className={className}>
       {label}
-      <input type={type} value={value} onChange={(event) => onChange(event.target.value)} />
+      <input type={type} value={value} placeholder={placeholder} onChange={(event) => onChange(event.target.value)} />
     </label>
   );
 }

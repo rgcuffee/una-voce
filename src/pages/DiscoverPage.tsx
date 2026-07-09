@@ -1,7 +1,9 @@
 import { type ReactNode } from 'react';
 import {
+  PARTNER_COMMUNITIES,
   getPartnerCommunity,
   type PartnerBadgeStatus,
+  type PartnerCommunity,
   type PartnerCommunityStatusOverrides,
   type PartnerCommunitySlug,
 } from '../data/partnerCommunities';
@@ -170,64 +172,6 @@ const TEXT_SOURCES: StreamCard[] = [
   },
 ];
 
-const COMMUNITY_RESOURCES: MediaCard[] = [
-  {
-    meta: 'Benedictine monastery',
-    title: 'Worth Abbey',
-    description: 'Chapel livestreams and monastic offices from a Benedictine community.',
-    image:
-      'https://yt3.googleusercontent.com/ytc/AIdro_nDVgAvWHZwb_ynblsEyXIEEU1-No0mhPCHLvkD2ZunFA=s900-c-k-c0x00ffffff-no-rj',
-    communitySlug: 'worth-abbey',
-    source: 'partner',
-    actionLabel: 'View profile',
-  },
-  {
-    meta: 'Creator ministry',
-    title: 'Cathaholic Music',
-    description: 'Sung Lauds and Vespers with clear visual prayer guides.',
-    image:
-      'https://yt3.googleusercontent.com/gnRvpLHI4h1DWvbRsssdE14PIKIUMy6afiLpMxqJRK8gBo3CD-YS925FAFwywN_62bB5ARtnL3U=s900-c-k-c0x00ffffff-no-rj',
-    communitySlug: 'cathaholic-music',
-    source: 'partner',
-    actionLabel: 'View profile',
-  },
-  {
-    meta: 'Creator ministry',
-    title: 'Sing the Hours',
-    description: 'Daily chanted Lauds and Vespers for praying with the Church.',
-    image:
-      'https://yt3.googleusercontent.com/MovqVdp8AFW-7L83SwoxAGf50Y_F9OTSdSyitDCZ-pEvBBMfy-uV27X3o6eKlnszI5weOkxO4Q=s900-c-k-c0x00ffffff-no-rj',
-    communitySlug: 'sing-the-hours',
-    source: 'partner',
-    actionLabel: 'View profile',
-  },
-];
-
-const MULTILINGUAL_RESOURCES: MediaCard[] = [
-  {
-    meta: 'Spanish video',
-    title: 'Cantor del Camino',
-    description: 'Spanish-language sung offices, including Lauds, Nona, and Vespers.',
-    image:
-      'https://yt3.googleusercontent.com/4v52x8EmtPZMYbLgeZQP5fARpbZSC55GDjUG_WCI4vjifyMy7K71cZ3aKBpL9u31_2n_H0qILYE=s900-c-k-c0x00ffffff-no-rj',
-    communitySlug: 'cantor-del-camino',
-    source: 'partner',
-    language: 'Spanish',
-    actionLabel: 'View profile',
-  },
-  {
-    meta: 'Spanish video',
-    title: 'Virtual Padre Didier',
-    description: 'Spanish daily offices with Lauds, Vespers, and Compline.',
-    image:
-      'https://yt3.googleusercontent.com/ytc/AIdro_m_4yAvVJF4QXa6umERwMDjJ31oCbQJBfAGue3bEidwEXc=s900-c-k-c0x00ffffff-no-rj',
-    communitySlug: 'padre-didier',
-    source: 'partner',
-    language: 'Spanish',
-    actionLabel: 'View profile',
-  },
-];
-
 function worthAbbeyStreamCards(
   videos: DiscoverWorthAbbeyVideo[],
   mode: 'upcoming' | 'previous',
@@ -352,6 +296,43 @@ function partnerFirst<T extends MediaCard>(
   return partnerItems.length > 0
     ? [...partnerItems, ...fallbackItems]
     : fallbackItems;
+}
+
+function isDiscoverCommunity(community: PartnerCommunity) {
+  return (
+    community.relationshipStatus !== 'mock' &&
+    community.onboardingStatus !== 'pending' &&
+    Boolean(community.imageUrl)
+  );
+}
+
+function isMultilingualCommunity(community: PartnerCommunity) {
+  const searchableText = [
+    community.location,
+    community.accent,
+    community.tagline,
+    community.description,
+  ]
+    .join('\n')
+    .toLowerCase();
+
+  return searchableText.includes('spanish');
+}
+
+function discoverCardFromCommunity(
+  community: PartnerCommunity,
+  language?: string,
+): MediaCard {
+  return {
+    meta: community.kind,
+    title: community.name,
+    description: community.tagline,
+    image: community.imageUrl!,
+    communitySlug: community.slug as PartnerCommunitySlug,
+    source: 'partner',
+    language,
+    actionLabel: 'View profile',
+  };
 }
 
 function MediaGrid({
@@ -545,6 +526,13 @@ export function DiscoverPage({
     worthAbbeyStreamCards(worthAbbeyVideos, 'previous'),
     LIVE_PREVIOUS,
   );
+  const discoverCommunities = PARTNER_COMMUNITIES.filter(isDiscoverCommunity);
+  const multilingualResources = discoverCommunities
+    .filter(isMultilingualCommunity)
+    .map((community) => discoverCardFromCommunity(community, 'Spanish'));
+  const communityResources = discoverCommunities
+    .filter((community) => !isMultilingualCommunity(community))
+    .map((community) => discoverCardFromCommunity(community));
 
   return (
     <article className='page'>
@@ -560,7 +548,7 @@ export function DiscoverPage({
       <section className='page-section'>
         <h2 className='page-section-title'>Communities at prayer</h2>
         <MediaGrid
-          items={COMMUNITY_RESOURCES}
+          items={communityResources}
           onOpenCommunity={onOpenCommunity}
           partnerStatusOverrides={partnerStatusOverrides}
         />
@@ -569,7 +557,7 @@ export function DiscoverPage({
       <section className='page-section'>
         <h2 className='page-section-title'>Spanish and multilingual resources</h2>
         <MediaGrid
-          items={MULTILINGUAL_RESOURCES}
+          items={multilingualResources}
           onOpenCommunity={onOpenCommunity}
           partnerStatusOverrides={partnerStatusOverrides}
         />

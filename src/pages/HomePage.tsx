@@ -7,6 +7,7 @@ import {
 import type { ViewNavigator } from '../navigation';
 
 type FeaturedResource = {
+  slug?: string;
   name: string;
   description: string;
   image: string;
@@ -58,6 +59,7 @@ function featuredResourceFromCommunity(
   }
 
   return {
+    slug: community.slug,
     name: community.name,
     description: community.tagline,
     image: community.imageUrl,
@@ -177,7 +179,7 @@ export function HomePage({ onNavigate }: { onNavigate: ViewNavigator }) {
           {FEATURED_RESOURCES.map((resource) => (
             <article key={resource.name} className="home-featured-card">
               <span
-                className="home-featured-image"
+                className={`home-featured-image${resource.slug ? ` community-${resource.slug}` : ''}`}
                 style={{ backgroundImage: `url(${resource.image})` }}
               />
               <span className="home-featured-body">

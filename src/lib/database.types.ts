@@ -176,6 +176,8 @@ export type Database = {
                     expected_content_mode: PartnerYoutubeContentMode;
                     polling_interval_minutes: number;
                     import_from_date: string | null;
+                    poll_once: boolean;
+                    default_available_liturgical_seasons: LiturgicalSeason[];
                     active: boolean;
                     last_polled_at: string | null;
                     created_at: string;
@@ -191,6 +193,8 @@ export type Database = {
                     expected_content_mode?: PartnerYoutubeContentMode;
                     polling_interval_minutes?: number;
                     import_from_date?: string | null;
+                    poll_once?: boolean;
+                    default_available_liturgical_seasons?: LiturgicalSeason[];
                     active?: boolean;
                     last_polled_at?: string | null;
                     created_at?: string;
@@ -206,6 +210,8 @@ export type Database = {
                     expected_content_mode?: PartnerYoutubeContentMode;
                     polling_interval_minutes?: number;
                     import_from_date?: string | null;
+                    poll_once?: boolean;
+                    default_available_liturgical_seasons?: LiturgicalSeason[];
                     active?: boolean;
                     last_polled_at?: string | null;
                     created_at?: string;
@@ -338,6 +344,7 @@ export type Database = {
                     preferred_language: string | null;
                     priority: number;
                     default_display_status: YoutubeVideoDisplayStatus;
+                    default_available_liturgical_seasons: LiturgicalSeason[];
                     active: boolean;
                     created_at: string;
                     updated_at: string;
@@ -352,6 +359,7 @@ export type Database = {
                     preferred_language?: string | null;
                     priority?: number;
                     default_display_status?: YoutubeVideoDisplayStatus;
+                    default_available_liturgical_seasons?: LiturgicalSeason[];
                     active?: boolean;
                     created_at?: string;
                     updated_at?: string;
@@ -366,6 +374,7 @@ export type Database = {
                     preferred_language?: string | null;
                     priority?: number;
                     default_display_status?: YoutubeVideoDisplayStatus;
+                    default_available_liturgical_seasons?: LiturgicalSeason[];
                     active?: boolean;
                     created_at?: string;
                     updated_at?: string;
@@ -397,6 +406,8 @@ export type Database = {
                     prayer_type: LiturgicalHour | null;
                     video_kind: PrayerVideoKind;
                     display_status: YoutubeVideoDisplayStatus;
+                    available_liturgical_seasons: LiturgicalSeason[];
+                    available_weekdays: number[];
                     created_at: string;
                     updated_at: string;
                 };
@@ -416,6 +427,8 @@ export type Database = {
                     prayer_type?: LiturgicalHour | null;
                     video_kind?: PrayerVideoKind;
                     display_status?: YoutubeVideoDisplayStatus;
+                    available_liturgical_seasons?: LiturgicalSeason[];
+                    available_weekdays?: number[];
                     created_at?: string;
                     updated_at?: string;
                 };
@@ -435,6 +448,8 @@ export type Database = {
                     prayer_type?: LiturgicalHour | null;
                     video_kind?: PrayerVideoKind;
                     display_status?: YoutubeVideoDisplayStatus;
+                    available_liturgical_seasons?: LiturgicalSeason[];
+                    available_weekdays?: number[];
                     created_at?: string;
                     updated_at?: string;
                 };

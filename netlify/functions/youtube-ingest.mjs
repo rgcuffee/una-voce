@@ -103,6 +103,8 @@ async function getDueFeeds() {
         'expected_content_mode',
         'polling_interval_minutes',
         'import_from_date',
+        'poll_once',
+        'default_available_liturgical_seasons',
         'last_polled_at',
         'partners!inner(active)',
       ].join(','),
@@ -141,6 +143,7 @@ async function getRulesForFeeds(feeds) {
         'preferred_language',
         'priority',
         'default_display_status',
+        'default_available_liturgical_seasons',
       ].join(','),
     )
     .in('partner_id', partnerIds)
@@ -235,7 +238,9 @@ async function getExistingClassifications(youtubeVideoIds) {
 
   const { data, error } = await supabase
     .from('youtube_videos')
-    .select('youtube_video_id,prayer_type,display_status')
+    .select(
+      'youtube_video_id,prayer_type,display_status,available_liturgical_seasons,available_weekdays',
+    )
     .in('youtube_video_id', youtubeVideoIds);
 
   if (error) {
@@ -248,6 +253,10 @@ async function getExistingClassifications(youtubeVideoIds) {
       {
         prayerType: video.prayer_type,
         displayStatus: video.display_status,
+        availableLiturgicalSeasons: normalizeSeasons(
+          video.available_liturgical_seasons,
+        ),
+        availableWeekdays: normalizeWeekdays(video.available_weekdays),
       },
     ]),
   );
@@ -323,6 +332,18 @@ function normalizeVideo(feed, parsedVideo, rules, existingClassification) {
   const classification =
     existingClassification ?? classifyVideo(parsedVideo, rules);
   const videoKind = inferVideoKind(feed.expected_content_mode, parsedVideo);
+  const availableLiturgicalSeasons =
+    classification.availableLiturgicalSeasons?.length > 0
+      ? classification.availableLiturgicalSeasons
+      : normalizeSeasons(feed.default_available_liturgical_seasons);
+  const inferredWeekdays =
+    availableLiturgicalSeasons.length > 0
+      ? inferWeekdaysFromTitle(parsedVideo.title)
+      : [];
+  const availableWeekdays =
+    classification.availableWeekdays?.length > 0
+      ? classification.availableWeekdays
+      : inferredWeekdays;
 
   return {
     partner_id: feed.partner_id,
@@ -331,7 +352,8 @@ function normalizeVideo(feed, parsedVideo, rules, existingClassification) {
     title: parsedVideo.title,
     description: parsedVideo.description,
     published_at: parsedVideo.publishedAt,
-    prayer_date: inferPrayerDate(parsedVideo),
+    prayer_date:
+      availableLiturgicalSeasons.length > 0 ? null : inferPrayerDate(parsedVideo),
     scheduled_start_at: parsedVideo.scheduledStartAt,
     thumbnail_url: parsedVideo.thumbnailUrl,
     canonical_url: parsedVideo.canonicalUrl,
@@ -339,6 +361,8 @@ function normalizeVideo(feed, parsedVideo, rules, existingClassification) {
     prayer_type: classification.prayerType,
     video_kind: videoKind,
     display_status: classification.displayStatus,
+    available_liturgical_seasons: availableLiturgicalSeasons,
+    available_weekdays: availableWeekdays,
   };
 }
 
@@ -350,6 +374,8 @@ function classifyVideo(video, rules) {
       return {
         prayerType: null,
         displayStatus: 'hidden',
+        availableLiturgicalSeasons: [],
+        availableWeekdays: [],
       };
     }
   }
@@ -362,12 +388,18 @@ function classifyVideo(video, rules) {
     return {
       prayerType: rule.prayer_type,
       displayStatus: rule.default_display_status,
+      availableLiturgicalSeasons: normalizeSeasons(
+        rule.default_available_liturgical_seasons,
+      ),
+      availableWeekdays: [],
     };
   }
 
   return {
     prayerType: null,
     displayStatus: 'pending',
+    availableLiturgicalSeasons: [],
+    availableWeekdays: [],
   };
 }
 
@@ -392,13 +424,26 @@ function inferVideoKind(expectedContentMode, video) {
 }
 
 async function markFeedPolled(feedId) {
+  const { data } = await supabase
+    .from('partner_youtube_feeds')
+    .select('poll_once')
+    .eq('id', feedId)
+    .maybeSingle();
+
   await supabase
     .from('partner_youtube_feeds')
-    .update({ last_polled_at: new Date().toISOString() })
+    .update({
+      last_polled_at: new Date().toISOString(),
+      ...(data?.poll_once ? { active: false } : {}),
+    })
     .eq('id', feedId);
 }
 
 function isDueForPolling(feed, now) {
+  if (feed.poll_once && feed.last_polled_at) {
+    return false;
+  }
+
   if (!feed.last_polled_at) {
     return true;
   }
@@ -430,6 +475,37 @@ function normalizeKeywords(keywords) {
   return (keywords ?? [])
     .map((keyword) => String(keyword).trim().toLowerCase())
     .filter(Boolean);
+}
+
+function normalizeSeasons(seasons) {
+  return (seasons ?? [])
+    .map((season) => String(season).trim())
+    .filter(Boolean);
+}
+
+function normalizeWeekdays(weekdays) {
+  return (weekdays ?? [])
+    .map((weekday) => Number(weekday))
+    .filter((weekday) => Number.isInteger(weekday) && weekday >= 0 && weekday <= 6);
+}
+
+function inferWeekdaysFromTitle(title) {
+  const normalizedTitle = title.toLowerCase();
+  const weekdays = [
+    ['sunday', 0],
+    ['monday', 1],
+    ['tuesday', 2],
+    ['wednesday', 3],
+    ['thursday', 4],
+    ['friday', 5],
+    ['saturday', 6],
+  ];
+
+  return weekdays
+    .filter(([weekdayName]) =>
+      new RegExp(`\\b${weekdayName}\\b`, 'i').test(normalizedTitle),
+    )
+    .map(([, weekday]) => weekday);
 }
 
 function splitXmlElements(xml, tagName) {
