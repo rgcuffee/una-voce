@@ -1275,17 +1275,12 @@ body {
 }
 
 @media (min-width: 900px) {
-    .prayer-player-shell {
-        justify-content: flex-end;
-        padding-right: 48px;
-    }
-
     .prayer-player-panel {
-        width: min(720px, calc(100vw - 396px));
+        width: min(720px, calc(100vw - 48px));
     }
 
     .prayer-player-shell.provider-apple-podcast .prayer-player-panel {
-        width: min(580px, calc(100vw - 396px));
+        width: min(580px, calc(100vw - 48px));
     }
 }
 
