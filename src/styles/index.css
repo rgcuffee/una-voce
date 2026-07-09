@@ -87,6 +87,17 @@ body {
     color: var(--charcoal-soft);
 }
 
+.prototype-banner-link {
+    color: var(--charcoal);
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.prototype-banner-link:hover {
+    color: var(--accent);
+}
+
 .header-top {
     display: flex;
     justify-content: space-between;

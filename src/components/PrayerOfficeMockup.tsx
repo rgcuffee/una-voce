@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   PRIMARY_NAV,
   pathForView,
@@ -3066,13 +3066,17 @@ export function PrayerOfficeMockup() {
         <div
           className="prototype-banner"
           role="status"
-          aria-label="Preview mode: This site is a mockup for prototyping and review. The official site is coming soon."
+          aria-label="Preview Mode: This site is a prototype under active development for review and feedback. If you have a question, suggestions, or would like to collaborate, we'd love to hear from you. Contact us."
         >
-          <span className="prototype-banner-title">Preview mode:</span>
+          <span className="prototype-banner-title">Preview Mode:</span>
           <span className="prototype-banner-copy">
-            This site is a mockup for prototyping and review. The official site
-            is coming soon.
+            This site is a prototype under active development for review and
+            feedback. If you have a question, suggestions, or would like to
+            collaborate, we'd love to hear from you.
           </span>
+          <Link className="prototype-banner-link" to={pathForView('contact')}>
+            Contact us -&gt;
+          </Link>
         </div>
         <div className="header-top">
           <div
