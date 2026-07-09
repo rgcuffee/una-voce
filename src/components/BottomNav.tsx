@@ -1,10 +1,12 @@
 import { NavLink } from 'react-router-dom';
 
 const NAV_ITEMS = [
-  { path: '/', icon: '☰', label: 'Today' },
-  { path: '/pray', icon: '▶', label: 'Pray' },
-  { path: '/communities', icon: '✦', label: 'Communities' },
-  { path: '/more', icon: '☩', label: 'More' },
+  { path: '/', icon: '⌂', label: 'Home' },
+  { path: '/pray', icon: '☰', label: 'Pray' },
+  { path: '/start', icon: '⚑', label: 'Start' },
+  { path: '/discover', icon: '✦', label: 'Discover' },
+  { path: '/parishes', icon: '⌂', label: 'Parish' },
+  { path: '/about', icon: '☩', label: 'About' },
 ];
 
 export function BottomNav() {

@@ -16,6 +16,8 @@ type MediaCard = {
   href?: string;
   communitySlug?: PartnerCommunitySlug;
   source: 'mock' | 'partner';
+  language?: string;
+  actionLabel?: string;
 };
 
 type StreamCard = MediaCard & { time: string };
@@ -86,61 +88,6 @@ const PRAYER_TYPE_LABELS: Record<
 
 const WORTH_ABBEY_PREVIOUS_STREAM_BUFFER_MINUTES = 45;
 
-const AUDIO: MediaCard[] = [
-  {
-    meta: 'Podcast',
-    title: 'Una Voce Daily Office Audio',
-    description:
-      'Straight-through narrated Morning Prayer with psalm pauses for personal response.',
-    image:
-      'https://images.unsplash.com/photo-1524678714210-9917a6c619c2?auto=format&fit=crop&w=1400&q=80',
-    source: 'mock',
-  },
-  {
-    meta: 'Abbey Feed',
-    title: 'Cedarwell Abbey Audio Office',
-    description:
-      'Monastic-style spoken audio with chapel ambience and structured intercessions.',
-    image:
-      'https://images.unsplash.com/photo-1478737270239-2f02b77fc618?auto=format&fit=crop&w=1400&q=80',
-    communitySlug: 'cedarwell-abbey',
-    source: 'mock',
-  },
-];
-
-const VIDEO: MediaCard[] = [
-  {
-    meta: 'Cathaholic Music',
-    title: 'Cathaholic Lauds & Vespers',
-    description:
-      'Partner Morning Prayer and Evening Prayer videos matched to the prayer date.',
-    image:
-      'https://images.unsplash.com/photo-1731258941332-844ae3f8618d?q=80&w=1887&auto=format&fit=crop',
-    communitySlug: 'cathaholic-music',
-    source: 'partner',
-  },
-  {
-    meta: 'Content Creator',
-    title: 'The Little Oratory',
-    description:
-      'Guided video office with verse overlays and clear transitions through each section.',
-    image:
-      'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?auto=format&fit=crop&w=1400&q=80',
-    communitySlug: 'the-little-oratory',
-    source: 'mock',
-  },
-  {
-    meta: 'Mock Abbey',
-    title: 'Ridgehaven Priory Video Office',
-    description:
-      'Chapel-captured Morning Prayer video with natural acoustics and full liturgical flow.',
-    image:
-      'https://images.unsplash.com/photo-1597839977601-52b29c114af5?q=80&w=2054&auto=format&fit=crop',
-    communitySlug: 'ridgehaven-priory',
-    source: 'mock',
-  },
-];
-
 const LIVE_UPCOMING: StreamCard[] = [
   {
     meta: 'Mock Community Live',
@@ -182,40 +129,40 @@ const LIVE_PREVIOUS: StreamCard[] = [
 
 const TEXT_SOURCES: StreamCard[] = [
   {
-    meta: 'Monthly Magazine',
+    meta: 'Text resource',
     title: 'Magnificat',
     description:
-      'Compact monthly booklet containing the daily Mass, Morning Prayer, Evening Prayer, meditations, and reflections.',
+      'Compact monthly booklet with daily Mass, Morning Prayer, Evening Prayer, and meditations.',
     time: 'Monthly',
     image:
       'https://images.unsplash.com/photo-1504052434569-70ad5836ab65?auto=format&fit=crop&w=1400&q=80', // open devotional on a wooden pew
     source: 'mock',
   },
   {
-    meta: 'Liturgical Books',
+    meta: 'Text resource',
     title: 'Liturgy of the Hours · Four-Volume Set',
     description:
-      'The official English edition used throughout much of the year, organized according to the liturgical calendar.',
+      'Official English edition organized according to the liturgical calendar.',
     time: 'Official Text',
     image:
       'https://images.unsplash.com/photo-1509021436665-8f07dbf5bf1d?auto=format&fit=crop&w=1400&q=80', // richly bound old books
     source: 'mock',
   },
   {
-    meta: 'Single Volume',
+    meta: 'Text resource',
     title: 'Christian Prayer',
     description:
-      'A simplified one-volume edition featuring Morning Prayer, Evening Prayer, Night Prayer, and selections for the seasons.',
+      'One-volume edition with Morning Prayer, Evening Prayer, Night Prayer, and seasonal selections.',
     time: 'Popular Edition',
     image:
       'https://images.unsplash.com/photo-1491841550275-ad7854e35ca6?auto=format&fit=crop&w=1400&q=80', // person reading beside a window
     source: 'mock',
   },
   {
-    meta: 'Pocket Edition',
+    meta: 'Text resource',
     title: 'Shorter Christian Prayer',
     description:
-      'An accessible introduction with the core daily Hours for those beginning a regular prayer routine.',
+      'Accessible introduction with core daily Hours for a beginning prayer routine.',
     time: 'Beginner',
     image:
       'https://images.unsplash.com/photo-1510936111840-65e151ad71bb?auto=format&fit=crop&w=1400&q=80', // small book with coffee and morning light
@@ -223,45 +170,63 @@ const TEXT_SOURCES: StreamCard[] = [
   },
 ];
 
-function partnerAudioCards(
-  audioItems: DiscoverPartnerPrayerAudio[],
-): MediaCard[] {
-  return audioItems
-    .filter((item) => item.prayerType)
-    .map((item) => ({
-      meta: `Spotify Audio · ${PRAYER_TYPE_LABELS[item.prayerType!]}`,
-      title: `${item.partnerName} · ${item.displayTitle}`,
-      description:
-        item.description ??
-        `Pray ${PRAYER_TYPE_LABELS[item.prayerType!]} with ${item.partnerName}.`,
-      image:
-        item.imageUrl ??
-        'https://images.unsplash.com/photo-1478737270239-2f02b77fc618?auto=format&fit=crop&w=1400&q=80',
-      href: item.canonicalUrl,
-      communitySlug: item.partnerSlug as PartnerCommunitySlug,
-      source: 'partner' as const,
-    }))
-    .slice(0, 4);
-}
+const COMMUNITY_RESOURCES: MediaCard[] = [
+  {
+    meta: 'Benedictine monastery',
+    title: 'Worth Abbey',
+    description: 'Chapel livestreams and monastic offices from a Benedictine community.',
+    image:
+      'https://yt3.googleusercontent.com/ytc/AIdro_nDVgAvWHZwb_ynblsEyXIEEU1-No0mhPCHLvkD2ZunFA=s900-c-k-c0x00ffffff-no-rj',
+    communitySlug: 'worth-abbey',
+    source: 'partner',
+    actionLabel: 'View profile',
+  },
+  {
+    meta: 'Creator ministry',
+    title: 'Cathaholic Music',
+    description: 'Sung Lauds and Vespers with clear visual prayer guides.',
+    image:
+      'https://yt3.googleusercontent.com/gnRvpLHI4h1DWvbRsssdE14PIKIUMy6afiLpMxqJRK8gBo3CD-YS925FAFwywN_62bB5ARtnL3U=s900-c-k-c0x00ffffff-no-rj',
+    communitySlug: 'cathaholic-music',
+    source: 'partner',
+    actionLabel: 'View profile',
+  },
+  {
+    meta: 'Creator ministry',
+    title: 'Sing the Hours',
+    description: 'Daily chanted Lauds and Vespers for praying with the Church.',
+    image:
+      'https://yt3.googleusercontent.com/MovqVdp8AFW-7L83SwoxAGf50Y_F9OTSdSyitDCZ-pEvBBMfy-uV27X3o6eKlnszI5weOkxO4Q=s900-c-k-c0x00ffffff-no-rj',
+    communitySlug: 'sing-the-hours',
+    source: 'partner',
+    actionLabel: 'View profile',
+  },
+];
 
-function partnerVideoCards(
-  videos: DiscoverPartnerPrayerVideo[],
-): MediaCard[] {
-  return videos
-    .filter((item) => item.prayerType)
-    .map((item) => ({
-      meta: `Guided Video · ${PRAYER_TYPE_LABELS[item.prayerType!]}`,
-      title: `${item.partnerName} · ${item.displayTitle}`,
-      description:
-        item.description ??
-        `Pray ${PRAYER_TYPE_LABELS[item.prayerType!]} with ${item.partnerName}.`,
-      image: item.thumbnailUrl,
-      href: item.canonicalUrl,
-      communitySlug: item.partnerSlug as PartnerCommunitySlug,
-      source: 'partner' as const,
-    }))
-    .slice(0, 4);
-}
+const MULTILINGUAL_RESOURCES: MediaCard[] = [
+  {
+    meta: 'Spanish video',
+    title: 'Cantor del Camino',
+    description: 'Spanish-language sung offices, including Lauds, Nona, and Vespers.',
+    image:
+      'https://yt3.googleusercontent.com/4v52x8EmtPZMYbLgeZQP5fARpbZSC55GDjUG_WCI4vjifyMy7K71cZ3aKBpL9u31_2n_H0qILYE=s900-c-k-c0x00ffffff-no-rj',
+    communitySlug: 'cantor-del-camino',
+    source: 'partner',
+    language: 'Spanish',
+    actionLabel: 'View profile',
+  },
+  {
+    meta: 'Spanish video',
+    title: 'Virtual Padre Didier',
+    description: 'Spanish daily offices with Lauds, Vespers, and Compline.',
+    image:
+      'https://yt3.googleusercontent.com/ytc/AIdro_m_4yAvVJF4QXa6umERwMDjJ31oCbQJBfAGue3bEidwEXc=s900-c-k-c0x00ffffff-no-rj',
+    communitySlug: 'padre-didier',
+    source: 'partner',
+    language: 'Spanish',
+    actionLabel: 'View profile',
+  },
+];
 
 function worthAbbeyStreamCards(
   videos: DiscoverWorthAbbeyVideo[],
@@ -399,7 +364,7 @@ function MediaGrid({
   partnerStatusOverrides?: PartnerCommunityStatusOverrides;
 }) {
   return (
-    <div className='format-options'>
+    <div className='community-grid discovery-card-grid'>
       {items.map((item) => {
         const badgeStatus = badgeStatusForItem(item, partnerStatusOverrides);
 
@@ -408,18 +373,27 @@ function MediaGrid({
             key={item.title}
             item={item}
             onOpenCommunity={onOpenCommunity}
-            gradient='linear-gradient(165deg, rgba(12, 11, 9, 0.2), rgba(12, 11, 9, 0.78))'
           >
-            <div className='option-meta'>{item.meta}</div>
-            {badgeStatus ? <PartnerBadge status={badgeStatus} /> : null}
-            <div className='option-title'>{item.title}</div>
-            <p className='option-desc'>{item.description}</p>
-            {item.communitySlug ? (
-              <div className='option-card-footer'>
-                <span />
-                <span className='option-prayer-action'>View Community</span>
-              </div>
-            ) : null}
+            <span
+              className={`community-card-image discovery-card-image${item.communitySlug ? ` community-${item.communitySlug}` : ''}`}
+              style={{ backgroundImage: `url(${item.image})` }}
+            />
+            <span className='community-card-body discovery-card-body'>
+              <span className='community-card-meta discovery-card-meta'>
+                {item.language ? `${item.meta} · ${item.language}` : item.meta}
+              </span>
+              <span className='community-card-title-row'>
+                <strong>{item.title}</strong>
+                {badgeStatus ? <PartnerBadge status={badgeStatus} /> : null}
+              </span>
+              <span className='discovery-card-description'>
+                {item.description}
+              </span>
+              <span className='discovery-card-action'>
+                {item.actionLabel ??
+                  (item.communitySlug ? 'View profile' : item.href ? 'Visit' : 'Learn more')}
+              </span>
+            </span>
           </MediaCardShell>
         );
       })}
@@ -437,7 +411,7 @@ function StreamGrid({
   partnerStatusOverrides?: PartnerCommunityStatusOverrides;
 }) {
   return (
-    <div className='format-options'>
+    <div className='community-grid discovery-card-grid'>
       {items.map((item) => {
         const badgeStatus = badgeStatusForItem(item, partnerStatusOverrides);
 
@@ -446,20 +420,29 @@ function StreamGrid({
             key={item.title}
             item={item}
             onOpenCommunity={onOpenCommunity}
-            gradient='linear-gradient(165deg, rgba(16, 13, 12, 0.26), rgba(16, 13, 12, 0.82))'
           >
-            <div className='option-meta'>{item.meta}</div>
-            {badgeStatus ? <PartnerBadge status={badgeStatus} /> : null}
-            <div className='option-title'>{item.title}</div>
-            <p className='option-desc'>{item.description}</p>
-            <div className='option-card-footer'>
-              <span className='stream-time'>{item.time}</span>
-              {item.communitySlug ? (
-                <span className='option-prayer-action'>View Community</span>
-              ) : (
-                <span />
-              )}
-            </div>
+            <span
+              className={`community-card-image discovery-card-image${item.communitySlug ? ` community-${item.communitySlug}` : ''}`}
+              style={{ backgroundImage: `url(${item.image})` }}
+            />
+            <span className='community-card-body discovery-card-body'>
+              <span className='community-card-meta discovery-card-meta'>
+                {item.meta}
+              </span>
+              <span className='community-card-title-row'>
+                <strong>{item.title}</strong>
+                {badgeStatus ? <PartnerBadge status={badgeStatus} /> : null}
+              </span>
+              <span className='discovery-card-description'>
+                {item.description}
+              </span>
+              <span className='discovery-card-footer'>
+                <span className='stream-time'>{item.time}</span>
+                <span className='discovery-card-action'>
+                  {item.communitySlug ? 'View profile' : 'Learn more'}
+                </span>
+              </span>
+            </span>
           </MediaCardShell>
         );
       })}
@@ -492,32 +475,28 @@ function badgeStatusForItem(
 
 function MediaCardShell({
   children,
-  gradient,
   item,
   onOpenCommunity,
 }: {
   children: ReactNode;
-  gradient: string;
   item: MediaCard;
   onOpenCommunity?: (slug: string) => void;
 }) {
   const className = [
-    'format-option',
-    'format-option-media',
-    item.href ? 'format-option-link' : '',
+    'community-card',
+    'discovery-card',
+    item.href || item.communitySlug
+      ? 'discovery-card-link'
+      : 'discovery-card-static',
   ]
     .filter(Boolean)
     .join(' ');
-  const style = {
-    backgroundImage: `${gradient}, url(${item.image})`,
-  };
 
   if (item.communitySlug) {
     return (
       <button
         type='button'
         className={className}
-        style={style}
         onClick={() => onOpenCommunity?.(item.communitySlug as string)}
       >
         {children}
@@ -532,7 +511,6 @@ function MediaCardShell({
         href={item.href}
         rel='noreferrer'
         target='_blank'
-        style={style}
       >
         {children}
       </a>
@@ -540,7 +518,7 @@ function MediaCardShell({
   }
 
   return (
-    <article className={className} style={style}>
+    <article className={className}>
       {children}
     </article>
   );
@@ -550,8 +528,6 @@ export function DiscoverPage({
   onNavigate,
   onOpenCommunity,
   partnerStatusOverrides,
-  partnerVideos = [],
-  partnerAudio = [],
   worthAbbeyVideos = [],
 }: {
   onNavigate: ViewNavigator;
@@ -561,8 +537,6 @@ export function DiscoverPage({
   partnerAudio?: DiscoverPartnerPrayerAudio[];
   worthAbbeyVideos?: DiscoverWorthAbbeyVideo[];
 }) {
-  const audioItems = partnerFirst(partnerAudioCards(partnerAudio), AUDIO);
-  const videoItems = partnerFirst(partnerVideoCards(partnerVideos), VIDEO);
   const upcomingStreams = partnerFirst(
     worthAbbeyStreamCards(worthAbbeyVideos, 'upcoming'),
     LIVE_UPCOMING,
@@ -576,35 +550,26 @@ export function DiscoverPage({
     <article className='page'>
       <header className='page-hero'>
         <div className='page-eyebrow'>Discover</div>
-        <h1 className='page-hero-title'>Pray with the Church, your way</h1>
+        <h1 className='page-hero-title'>Discover ways to pray the Hours</h1>
         <p className='page-lead'>
-          Explore audio, video, live prayer, and trusted resources from creators
-          and communities around the world. Whether you prefer chant, spoken
-          prayer, or quiet reading, find a rhythm that helps you return
-          tomorrow.
+          Find audio, apps, live prayer, communities, and ministries helping
+          Catholics pray the Liturgy of the Hours.
         </p>
-        <div className='prose'>
-          <p>
-            Una Voce helps Catholics discover the Liturgy of the Hours, begin
-            praying it, and connect with communities already praying throughout
-            the world.
-          </p>
-        </div>
       </header>
 
       <section className='page-section'>
-        <h2 className='page-section-title'>Listen</h2>
+        <h2 className='page-section-title'>Communities at prayer</h2>
         <MediaGrid
-          items={audioItems}
+          items={COMMUNITY_RESOURCES}
           onOpenCommunity={onOpenCommunity}
           partnerStatusOverrides={partnerStatusOverrides}
         />
       </section>
 
       <section className='page-section'>
-        <h2 className='page-section-title'>Watch</h2>
+        <h2 className='page-section-title'>Spanish and multilingual resources</h2>
         <MediaGrid
-          items={videoItems}
+          items={MULTILINGUAL_RESOURCES}
           onOpenCommunity={onOpenCommunity}
           partnerStatusOverrides={partnerStatusOverrides}
         />
@@ -633,12 +598,10 @@ export function DiscoverPage({
       </section>
 
       <section className='page-section'>
-        <h2 className='page-section-title'>Trusted texts</h2>
+        <h2 className='page-section-title'>Apps and text resources</h2>
         <p className='page-section-intro'>
-          The Liturgy of the Hours is a rich tradition with many editions and
-          formats. Here are some of the most trusted sources for the daily
-          prayer of the Church. Una Voce is not trying to replace breviary apps
-          like Universalis, iBreviary, or Divine Office.
+          Commonly used books and reading resources for people who want to
+          follow along outside Una Voce.
         </p>
         <p className='page-section-intro'>
           Una Voce is being developed with the intention of using the official

@@ -5,10 +5,12 @@ interface AppHeaderProps {
 }
 
 const NAV_ITEMS = [
-  { path: '/', label: 'Today' },
-  { path: '/pray', label: 'Pray' },
-  { path: '/communities', label: 'Communities' },
-  { path: '/more', label: 'More' },
+  { path: '/', label: 'Home' },
+  { path: '/pray', label: 'Pray Today' },
+  { path: '/start', label: 'Start Here' },
+  { path: '/discover', label: 'Discover' },
+  { path: '/parishes', label: 'For Parishes' },
+  { path: '/about', label: 'About' },
 ];
 
 export function AppHeader({ dateLabel }: AppHeaderProps) {

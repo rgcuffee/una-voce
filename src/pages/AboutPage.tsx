@@ -2,28 +2,18 @@ import type { ViewNavigator } from '../navigation';
 
 export function AboutPage({ onNavigate }: { onNavigate: ViewNavigator }) {
   return (
-    <article className="page">
-      <button
-        type="button"
-        className="page-back"
-        onClick={() => onNavigate('more')}
-      >
-        ‹ More
-      </button>
-
+    <article className="page about-page">
       <header className="page-hero">
         <div className="page-eyebrow">About</div>
-        <h1 className="page-hero-title">One voice, lifted together</h1>
+        <h1 className="page-hero-title">About Una Voce</h1>
         <p className="page-lead">
-          Una Voce, “one voice,” is a platform built for Catholics who believe
-          that prayer is not merely a private devotion, but the beating heart of
-          the Church's life in the world.
+          Una Voce exists to help Catholics join the Church's daily prayer —{' '}
+          <em>one voice</em>, lifted throughout the world.
         </p>
       </header>
 
-      <section className="page-section">
-        <h2 className="page-section-title">What is Una Voce?</h2>
-        <div className="prose">
+      <section className="page-section about-opening">
+        <div className="prose about-prose">
           <p>
             The Liturgy of the Hours is the prayer of the universal Church,
             prayed seven times a day, from the Office of Readings at dawn to
@@ -31,6 +21,7 @@ export function AboutPage({ onNavigate }: { onNavigate: ViewNavigator }) {
             ordered the days of monks, martyrs, mystics, and ordinary faithful
             for two thousand years.
           </p>
+
           <p>
             Una Voce helps Catholics discover the Liturgy of the Hours, begin
             praying it, and connect with communities already praying throughout
@@ -40,97 +31,74 @@ export function AboutPage({ onNavigate }: { onNavigate: ViewNavigator }) {
         </div>
       </section>
 
-      <section className="page-section">
-        <h2 className="page-section-title">Why this exists</h2>
-        <div className="prose">
+      <section className="page-section about-section">
+        <h2 className="page-section-title">What we are building</h2>
+        <div className="prose about-prose">
           <p>
-            The Church has always prayed with one voice. From the Benedictine
-            monasteries of the early Middle Ages to the Franciscan friars in the
-            streets of medieval cities, the Divine Office, the Breviary, has
-            been the daily prayer of the Church, rooted primarily in the Psalms
-            and woven through with Scripture, canticle, hymn, and intercession.
-          </p>
-          <p className="prose-emphasis">
-            That tradition is not a relic. It is alive.
+            Una Voce is beginning as a discovery platform for the Church's daily
+            prayer.
           </p>
           <p>
-            Una Voce promotes the sacred liturgical tradition of the Roman Rite,
-            along with Latin Prayer, Gregorian Chant, Monastic Prayer, and
-            Traditional Sacred Music. This platform brings that tradition into
-            the digital age, not to modernize it, but to remove every obstacle
-            between the faithful and their inheritance.
+            We help Catholics find trusted resources for the Liturgy of the
+            Hours, sacred music, monastic prayer, Gregorian chant, Latin prayer,
+            and other expressions of the Church's living tradition of prayer.
+          </p>
+          <p>
+            Some resources help you read and follow the texts. Others let you
+            pray along through audio, video, chant, or livestreams. Others
+            introduce you to communities and ministries who are already helping
+            the faithful pray.
+          </p>
+          <p>
+            Our hope is simple: that more Catholics would not only learn about
+            the Hours, but begin praying them.
           </p>
         </div>
       </section>
 
-      <section className="page-section">
-        <h2 className="page-section-title">What you'll find here</h2>
-        <ul className="feature-list">
-          <li>
-            <span className="feature-name">The Daily Hours.</span> The full
-            Liturgy of the Hours in English, updated daily, structured for the
-            current liturgical day.
-          </li>
-          <li>
-            <span className="feature-name">Audio &amp; Video.</span> Discover
-            creators praying, chanting, and teaching the Hours. Gregorian chant,
-            sacred hymnody, lectio divina, all in one place.
-          </li>
-          <li>
-            <span className="feature-name">Live Streams.</span> Join live
-            celebrations of Vespers, Compline, Benediction, and more from
-            communities around the world.
-          </li>
-          <li>
-            <span className="feature-name">Community.</span> A gathering place
-            for those who want to pray more, know more, and live the liturgical
-            life more fully.
-          </li>
-        </ul>
-      </section>
-
-      <section className="page-section">
-        <h2 className="page-section-title">Built on something ancient</h2>
-        <div className="prose">
+      <section className="page-section about-section about-closing">
+        <h2 className="page-section-title">Our larger hope</h2>
+        <div className="prose about-prose">
           <p>
-            The Hours are not a program or a productivity hack. They are a
-            participation in the eternal prayer of Christ Himself, the High
-            Priest who ever lives to make intercession (Hebrews 7:25). When the
-            Church prays the Hours, she prays in Him, through Him, and with Him.
+            Over time, Una Voce hopes to collaborate with ministries, religious
+            communities, parishes, and Catholic creators to make the Church's
+            daily prayer more accessible in many languages and many forms.
           </p>
           <p>
-            Una Voce is an invitation to join that prayer, wherever you are,
-            whatever your day looks like.
+            The Church has been praying this way for centuries. She is praying
+            now, all over the world, in cathedrals, monasteries, chapels, homes,
+            hospitals, workplaces, and hidden rooms.
+          </p>
+          <p>She will be praying long after we are gone.</p>
+          <p className="prose-emphasis">Come pray with her.</p>
+        </div>
+      </section>
+
+      <section className="page-section about-section about-note">
+        <h2 className="page-section-title">Prototype status</h2>
+        <div className="prose about-prose">
+          <p>
+            Una Voce is currently a prototype for review and early feedback.
+            Some listings are live partner resources, while others are prototype
+            examples used to test design, navigation, and curation patterns.
           </p>
         </div>
       </section>
 
-      <section className="page-section">
-        <h2 className="page-section-title">Liturgical texts</h2>
-        <div className="prose">
-          <p>
-            Una Voce is being developed with the intention of using the official
-            approved liturgical texts for each region, subject to the proper
-            permissions and licensing. As new editions are promulgated, Una Voce
-            will follow the Church's approved texts and timelines.
-          </p>
-        </div>
-      </section>
-
-      <div className="page-cta">
+      <div className="page-cta about-cta">
         <button
           type="button"
           className="page-cta-button"
           onClick={() => onNavigate('getting-started')}
         >
-          New here? Start with Getting Started
+          Start the beginner path
         </button>
         <button
           type="button"
           className="page-cta-link"
-          onClick={() => onNavigate('today')}
+          onClick={() => onNavigate('contact')}
         >
-          Pray today's hours
+          Partner with us or suggest a ministry
         </button>
       </div>
     </article>

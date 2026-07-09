@@ -1,6 +1,14 @@
 import type { IconName } from '../navigation';
 
 const PATHS: Record<IconName, JSX.Element> = {
+  // Simple house: homepage doorway.
+  home: (
+    <>
+      <path d='M4 11 12 4l8 7' />
+      <path d='M6 10v10h12V10' />
+      <path d='M10 20v-5h4v5' />
+    </>
+  ),
   // Sunrise over the horizon: the daily round of the Hours.
   today: (
     <>
@@ -32,6 +40,16 @@ const PATHS: Record<IconName, JSX.Element> = {
     <>
       <path d='M6 21V4' />
       <path d='M6 4h11l-2.5 3.5L17 11H6' />
+    </>
+  ),
+  // Parish doorway: a church roof with a simple door.
+  parishes: (
+    <>
+      <path d='M4 11 12 5l8 6' />
+      <path d='M6 10v10h12V10' />
+      <path d='M10 20v-5h4v5' />
+      <path d='M12 5V2' />
+      <path d='M10.5 3.5h3' />
     </>
   ),
   // Info circle: about.

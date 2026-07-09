@@ -481,19 +481,22 @@ const BADGE_META: Record<
 > = {
   curated: {
     label: 'Curated',
-    description: 'Selected by Una Voce as a recommended ministry or resource.',
+    description:
+      'Independently selected by Una Voce as a helpful resource for praying or learning the Hours.',
   },
   verified: {
     label: 'Verified',
-    description: 'This ministry has reviewed its presence on Una Voce.',
+    description:
+      'This ministry or community has reviewed its listing for basic accuracy.',
   },
   partner: {
     label: 'Partner',
-    description: 'This ministry is actively collaborating with Una Voce.',
+    description:
+      'Una Voce is in active conversation or collaboration with this ministry.',
   },
   mock: {
-    label: 'Prototype',
-    description: 'Example listing used for design and testing.',
+    label: 'Mock',
+    description: 'Prototype listing used for design and testing.',
   },
 };
 

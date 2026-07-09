@@ -33,7 +33,9 @@ import {
 import { ContactPage } from '../pages/ContactPage';
 import { DiscoverPage } from '../pages/DiscoverPage';
 import { GettingStartedPage } from '../pages/GettingStartedPage';
+import { HomePage } from '../pages/HomePage';
 import { MorePage } from '../pages/MorePage';
+import { ParishesPage } from '../pages/ParishesPage';
 import { NavIcon } from './NavIcon';
 import { PartnerBadge } from './PartnerBadge';
 import {
@@ -54,9 +56,8 @@ const showPendingPartnerContent =
   import.meta.env.VITE_SHOW_PENDING_PARTNER_CONTENT === 'true' ||
   (import.meta.env.DEV &&
     import.meta.env.VITE_SHOW_PENDING_PARTNER_CONTENT !== 'false');
-const partnerContentOnboardingStatuses: PartnerOnboardingStatus[] = showPendingPartnerContent
-  ? ['active', 'pending']
-  : ['active'];
+const partnerContentOnboardingStatuses: PartnerOnboardingStatus[] =
+  showPendingPartnerContent ? ['active', 'pending'] : ['active'];
 const partnerContentPrayerTypes: LiturgicalHour[] = [
   'office_of_readings',
   'lauds',
@@ -72,7 +73,7 @@ const PARTNER_PRAYER_TYPE_LABELS: Record<LiturgicalHour, string> = {
   compline: 'Compline',
 };
 
-type FormatKey = 'text' | 'audio' | 'video' | 'live';
+type FormatKey = 'text' | 'media';
 
 type LiturgyBlock = {
   variant: 'rubric' | 'speaker' | 'verse' | 'prayer' | 'reading';
@@ -1300,12 +1301,21 @@ const SEGMENT_SUBTITLES: Record<string, string> = {
 };
 
 const MOBILE_SEGMENT_ORDER = [
-  'segment-office',
   'segment-morning',
-  'segment-midday',
-  'segment-evening',
   'segment-night',
+  'segment-evening',
+  'segment-midday',
+  'segment-office',
 ];
+
+const DEFAULT_TODAY_SEGMENT_ID = 'segment-morning';
+
+function segmentIdFromHash(hash: string) {
+  const segmentId = hash.replace(/^#/, '');
+  return SEGMENTS.some((segment) => segment.id === segmentId)
+    ? segmentId
+    : null;
+}
 
 const SIDEBAR_ITEMS: SidebarEntry[] = [
   {
@@ -1355,25 +1365,11 @@ const FORMATS: {
     className: 'text',
   },
   {
-    key: 'audio',
-    label: 'Audio',
-    description: 'Listen and pray along wherever the day finds you.',
-    icon: '♪',
-    className: 'audio',
-  },
-  {
-    key: 'video',
-    label: 'Video',
+    key: 'media',
+    label: 'Pray Along',
     description: 'Follow sung and spoken offices from partner communities.',
-    icon: '▶',
-    className: 'video',
-  },
-  {
-    key: 'live',
-    label: 'Community',
-    description: 'Join the Hours as they are prayed in real time.',
-    icon: '✦',
-    className: 'live',
+    icon: '♪ | ▶',
+    className: 'pray-along',
   },
 ];
 
@@ -1407,9 +1403,7 @@ const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 function titleCase(format: FormatKey) {
   const labels: Record<FormatKey, string> = {
     text: 'Text',
-    audio: 'Audio',
-    video: 'Video',
-    live: 'Community',
+    media: 'Pray Along',
   };
 
   return labels[format];
@@ -1482,7 +1476,12 @@ type PartnerPrayerVideoRow = {
   prayer_type: PartnerPrayerVideoType | null;
   partners:
     | { slug: string; name: string; active: boolean; onboarding_status: string }
-    | { slug: string; name: string; active: boolean; onboarding_status: string }[];
+    | {
+        slug: string;
+        name: string;
+        active: boolean;
+        onboarding_status: string;
+      }[];
 };
 
 function displayPartnerPrayerVideoTitle(title: string) {
@@ -1543,7 +1542,12 @@ type PartnerPrayerAudioRow = {
   duration_seconds: number | null;
   partners:
     | { slug: string; name: string; active: boolean; onboarding_status: string }
-    | { slug: string; name: string; active: boolean; onboarding_status: string }[];
+    | {
+        slug: string;
+        name: string;
+        active: boolean;
+        onboarding_status: string;
+      }[];
 };
 
 type PartnerContentPreviewResponse = {
@@ -1559,7 +1563,9 @@ function displayPartnerPrayerAudioTitle(title: string) {
     .trim();
 }
 
-function normalizePartnerPrayerAudio(row: PartnerPrayerAudioRow): PartnerPrayerAudio {
+function normalizePartnerPrayerAudio(
+  row: PartnerPrayerAudioRow,
+): PartnerPrayerAudio {
   const partner = Array.isArray(row.partners) ? row.partners[0] : row.partners;
 
   return {
@@ -1571,7 +1577,8 @@ function normalizePartnerPrayerAudio(row: PartnerPrayerAudioRow): PartnerPrayerA
     displayTitle: displayPartnerPrayerAudioTitle(row.title),
     description: row.description,
     episodeId: row.spotify_episode_id ?? row.apple_episode_id ?? null,
-    provider: row.provider ?? (row.apple_episode_id ? 'apple-podcast' : 'spotify'),
+    provider:
+      row.provider ?? (row.apple_episode_id ? 'apple-podcast' : 'spotify'),
     imageUrl: row.image_url,
     canonicalUrl: row.canonical_url,
     embedUrl: row.embed_url,
@@ -1843,8 +1850,7 @@ function createPreviewCommunitiesFromPartnerMedia(
     }
 
     const existing = mediaBySlug.get(item.partnerSlug);
-    const imageUrl =
-      'thumbnailUrl' in item ? item.thumbnailUrl : item.imageUrl;
+    const imageUrl = 'thumbnailUrl' in item ? item.thumbnailUrl : item.imageUrl;
     const prayerTypes = existing?.prayerTypes ?? new Set<LiturgicalHour>();
     if (item.prayerType) {
       prayerTypes.add(item.prayerType);
@@ -1879,8 +1885,7 @@ function createPreviewCommunitiesFromPartnerMedia(
         'This preview profile is generated locally until the community page is published.',
       imageUrl: source.imageUrl,
       accent: rhythmLabel,
-      prayerRhythm:
-        prayerRhythm.length > 0 ? prayerRhythm : ['Daily prayer'],
+      prayerRhythm: prayerRhythm.length > 0 ? prayerRhythm : ['Daily prayer'],
       links: [
         {
           label: 'Source episode',
@@ -2469,7 +2474,7 @@ function renderPrayerTemplate(segmentId: string) {
 
 function renderPage(
   view: ViewKey,
-  onNavigate: (view: ViewKey) => void,
+  onNavigate: (view: ViewKey, options?: { segmentId?: string }) => void,
   options: {
     selectedCommunitySlug?: string | null;
     onOpenCommunity?: (slug: string) => void;
@@ -2482,6 +2487,8 @@ function renderPage(
   } = {},
 ) {
   switch (view) {
+    case 'home':
+      return <HomePage onNavigate={onNavigate} />;
     case 'discover':
       return (
         <DiscoverPage
@@ -2510,6 +2517,8 @@ function renderPage(
       return <AboutPage onNavigate={onNavigate} />;
     case 'getting-started':
       return <GettingStartedPage onNavigate={onNavigate} />;
+    case 'parishes':
+      return <ParishesPage onNavigate={onNavigate} />;
     case 'contact':
       return <ContactPage onNavigate={onNavigate} />;
     default:
@@ -2536,7 +2545,7 @@ export function PrayerOfficeMockup() {
   >(
     () =>
       Object.fromEntries(
-        SEGMENTS.map((segment) => [segment.id, 'audio']),
+        SEGMENTS.map((segment) => [segment.id, 'media']),
       ) as Record<string, FormatKey>,
   );
   const [collapsedSegments, setCollapsedSegments] = useState<
@@ -2544,19 +2553,21 @@ export function PrayerOfficeMockup() {
   >(
     () =>
       Object.fromEntries(
-        SEGMENTS.map((segment, index) => [segment.id, index !== 0]),
+        SEGMENTS.map((segment) => [
+          segment.id,
+          segment.id !==
+            (segmentIdFromHash(location.hash) ?? DEFAULT_TODAY_SEGMENT_ID),
+        ]),
       ) as Record<string, boolean>,
   );
   const [activeDesktopSegment, setActiveDesktopSegment] = useState(
-    SEGMENTS[0].id,
+    () => segmentIdFromHash(location.hash) ?? DEFAULT_TODAY_SEGMENT_ID,
   );
   const activeView = viewForPath(location.pathname);
+  const normalizedPath = location.pathname.toLowerCase().replace(/\/+$/, '');
   const selectedCommunitySlug =
     activeView === 'community'
-      ? (location.pathname
-          .toLowerCase()
-          .replace(/\/+$/, '')
-          .split('/community/')[1] ?? null)
+      ? (normalizedPath.match(/^\/communit(?:y|ies)\/(.+)$/)?.[1] ?? null)
       : null;
   const [onrampDismissed, setOnrampDismissed] = useState(() => {
     if (typeof window === 'undefined') {
@@ -2577,11 +2588,36 @@ export function PrayerOfficeMockup() {
   const [worthAbbeyVideos, setWorthAbbeyVideos] = useState<WorthAbbeyVideo[]>(
     [],
   );
-  const [partnerStatusOverrides, setPartnerStatusOverrides] =
-    useState<PartnerCommunityStatusOverrides | undefined>();
+  const [partnerStatusOverrides, setPartnerStatusOverrides] = useState<
+    PartnerCommunityStatusOverrides | undefined
+  >();
 
-  const navigateTo = (view: ViewKey) => {
+  const selectTodaySegment = (segmentId: string) => {
+    setActiveDesktopSegment(segmentId);
+    setCollapsedSegments(
+      Object.fromEntries(
+        SEGMENTS.map((segment) => [segment.id, segment.id !== segmentId]),
+      ) as Record<string, boolean>,
+    );
+  };
+
+  const navigateTo = (view: ViewKey, options?: { segmentId?: string }) => {
     const targetPath = pathForView(view);
+
+    if (options?.segmentId) {
+      selectTodaySegment(options.segmentId);
+      routerNavigate({
+        pathname: targetPath,
+        hash: options.segmentId,
+      });
+      window.setTimeout(() => {
+        document
+          .getElementById(options.segmentId!)
+          ?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+      }, 80);
+      return;
+    }
+
     if (location.pathname !== targetPath) {
       routerNavigate(targetPath);
     }
@@ -2591,7 +2627,7 @@ export function PrayerOfficeMockup() {
   };
 
   const openCommunity = (slug: string) => {
-    const targetPath = slug ? communityPath(slug) : pathForView('community');
+    const targetPath = slug ? communityPath(slug) : pathForView('discover');
     if (location.pathname !== targetPath) {
       routerNavigate(targetPath);
     }
@@ -2665,7 +2701,11 @@ export function PrayerOfficeMockup() {
       setIsDesktopLayout(false);
       setCollapsedSegments(
         Object.fromEntries(
-          SEGMENTS.map((segment, index) => [segment.id, index !== 0]),
+          SEGMENTS.map((segment) => [
+            segment.id,
+            segment.id !==
+              (segmentIdFromHash(location.hash) ?? DEFAULT_TODAY_SEGMENT_ID),
+          ]),
         ) as Record<string, boolean>,
       );
     };
@@ -2700,6 +2740,16 @@ export function PrayerOfficeMockup() {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  useEffect(() => {
+    if (activeView !== 'today') {
+      return;
+    }
+
+    selectTodaySegment(
+      segmentIdFromHash(location.hash) ?? DEFAULT_TODAY_SEGMENT_ID,
+    );
+  }, [activeView, location.hash]);
 
   useEffect(() => {
     if (!isDatePickerOpen) {
@@ -2795,10 +2845,9 @@ export function PrayerOfficeMockup() {
                 communityPageEnabled: partner.community_page_enabled,
                 communityPageSlug: partner.community_page_slug,
               };
-              const keys = [
-                partner.slug,
-                partner.community_page_slug,
-              ].filter(Boolean);
+              const keys = [partner.slug, partner.community_page_slug].filter(
+                Boolean,
+              );
 
               return keys.map((key) => [key, override]);
             }),
@@ -2842,7 +2891,10 @@ export function PrayerOfficeMockup() {
           )
           .eq('display_status', 'approved' satisfies YoutubeVideoDisplayStatus)
           .eq('partners.active', true)
-          .eq('partners.onboarding_status', 'active' satisfies PartnerOnboardingStatus)
+          .eq(
+            'partners.onboarding_status',
+            'active' satisfies PartnerOnboardingStatus,
+          )
           .eq('prayer_date', selectedDate)
           .eq('video_kind', 'video')
           .in('prayer_type', partnerContentPrayerTypes)
@@ -2862,9 +2914,7 @@ export function PrayerOfficeMockup() {
           preview?.videos,
         );
 
-        setPartnerVideos(
-          rows.map(normalizePartnerPrayerVideo),
-        );
+        setPartnerVideos(rows.map(normalizePartnerPrayerVideo));
       } catch (error) {
         if (controller.signal.aborted) {
           return;
@@ -2908,9 +2958,15 @@ export function PrayerOfficeMockup() {
                 'partners!inner(slug,name,active,onboarding_status)',
               ].join(','),
             )
-            .eq('display_status', 'approved' satisfies YoutubeVideoDisplayStatus)
+            .eq(
+              'display_status',
+              'approved' satisfies YoutubeVideoDisplayStatus,
+            )
             .eq('partners.active', true)
-            .eq('partners.onboarding_status', 'active' satisfies PartnerOnboardingStatus)
+            .eq(
+              'partners.onboarding_status',
+              'active' satisfies PartnerOnboardingStatus,
+            )
             .eq('prayer_date', selectedDate)
             .in('prayer_type', partnerContentPrayerTypes)
             .order('published_at', { ascending: false })
@@ -2932,9 +2988,15 @@ export function PrayerOfficeMockup() {
                 'partners!inner(slug,name,active,onboarding_status)',
               ].join(','),
             )
-            .eq('display_status', 'approved' satisfies YoutubeVideoDisplayStatus)
+            .eq(
+              'display_status',
+              'approved' satisfies YoutubeVideoDisplayStatus,
+            )
             .eq('partners.active', true)
-            .eq('partners.onboarding_status', 'active' satisfies PartnerOnboardingStatus)
+            .eq(
+              'partners.onboarding_status',
+              'active' satisfies PartnerOnboardingStatus,
+            )
             .eq('prayer_date', selectedDate)
             .in('prayer_type', partnerContentPrayerTypes)
             .order('published_at', { ascending: false })
@@ -2955,19 +3017,20 @@ export function PrayerOfficeMockup() {
         );
         const rows = mergePartnerRows(
           [
-            ...((spotifyResult.data ?? []) as unknown as PartnerPrayerAudioRow[]).map(
-              (episode) => ({ ...episode, provider: 'spotify' as const }),
-            ),
-            ...((appleResult.data ?? []) as unknown as PartnerPrayerAudioRow[]).map(
-              (episode) => ({ ...episode, provider: 'apple-podcast' as const }),
-            ),
+            ...(
+              (spotifyResult.data ?? []) as unknown as PartnerPrayerAudioRow[]
+            ).map((episode) => ({ ...episode, provider: 'spotify' as const })),
+            ...(
+              (appleResult.data ?? []) as unknown as PartnerPrayerAudioRow[]
+            ).map((episode) => ({
+              ...episode,
+              provider: 'apple-podcast' as const,
+            })),
           ],
           preview?.audio,
         );
 
-        setPartnerAudio(
-          rows.map(normalizePartnerPrayerAudio),
-        );
+        setPartnerAudio(rows.map(normalizePartnerPrayerAudio));
       } catch (error) {
         if (controller.signal.aborted) {
           return;
@@ -3066,16 +3129,17 @@ export function PrayerOfficeMockup() {
         <div
           className="prototype-banner"
           role="status"
-          aria-label="Preview Mode: This site is a prototype under active development for review and feedback. If you have a question, suggestions, or would like to collaborate, we'd love to hear from you. Contact us."
+          aria-label="Preview Mode: Una Voce is currently a prototype for review and early feedback. The official site is coming soon. If you lead a ministry, know of a helpful Liturgy of the Hours resource, or would like to share feedback, please reach out."
         >
           <span className="prototype-banner-title">Preview Mode:</span>
           <span className="prototype-banner-copy">
-            This site is a prototype under active development for review and
-            feedback. If you have a question, suggestions, or would like to
-            collaborate, we'd love to hear from you.
+            Una Voce is currently a prototype for review and early feedback. The
+            official site is coming soon. If you lead a ministry, know of a
+            helpful Liturgy of the Hours resource, or would like to share
+            feedback, please reach out.
           </span>
           <Link className="prototype-banner-link" to={pathForView('contact')}>
-            Contact us -&gt;
+            Contact Una Voce -&gt;
           </Link>
         </div>
         <div className="header-top">
@@ -3083,11 +3147,11 @@ export function PrayerOfficeMockup() {
             className="logo"
             role="button"
             tabIndex={0}
-            onClick={() => navigateTo('today')}
+            onClick={() => navigateTo('home')}
             onKeyDown={(event) => {
               if (event.key === 'Enter' || event.key === ' ') {
                 event.preventDefault();
-                navigateTo('today');
+                navigateTo('home');
               }
             }}
           >
@@ -3255,8 +3319,8 @@ export function PrayerOfficeMockup() {
                 </button>
                 <div className="onramp-eyebrow">New to the Hours?</div>
                 <p className="onramp-text">
-                  Many lay Catholics start with Morning Prayer to consecrate
-                  the day and Night Prayer, or Compline, to close it. Once that
+                  Many lay Catholics start with Morning Prayer to consecrate the
+                  day and Night Prayer, or Compline, to close it. Once that
                   rhythm becomes natural, Evening Prayer is often the next step.
                 </p>
                 <button
@@ -3269,7 +3333,7 @@ export function PrayerOfficeMockup() {
               </section>
             ) : null}
             {segmentsToRender.map((segment) => {
-              const selectedFormat = selectedFormats[segment.id] ?? 'audio';
+              const selectedFormat = selectedFormats[segment.id] ?? 'media';
               const isCollapsed = collapsedSegments[segment.id];
               const isActiveDesktop = activeDesktopSegment === segment.id;
               const segmentSubtitle = SEGMENT_SUBTITLES[segment.id];
@@ -3391,7 +3455,7 @@ export function PrayerOfficeMockup() {
                     </div>
 
                     <div
-                      className={`format-output${selectedFormat === 'audio' ? '' : ' hidden'}`}
+                      className={`format-output${selectedFormat === 'media' ? '' : ' hidden'}`}
                     >
                       <h4>Listen</h4>
                       <div className="format-options">
@@ -3428,7 +3492,7 @@ export function PrayerOfficeMockup() {
                     </div>
 
                     <div
-                      className={`format-output${selectedFormat === 'video' ? '' : ' hidden'}`}
+                      className={`format-output${selectedFormat === 'media' ? '' : ' hidden'}`}
                     >
                       <h4>Watch</h4>
                       <div className="format-options">
@@ -3470,7 +3534,7 @@ export function PrayerOfficeMockup() {
                     </div>
 
                     <div
-                      className={`format-output${selectedFormat === 'live' ? '' : ' hidden'}`}
+                      className={`format-output${selectedFormat === 'media' ? '' : ' hidden'}`}
                     >
                       <h4>Live</h4>
                       {liveGroups.map((group, groupIndex) => (

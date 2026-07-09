@@ -56,7 +56,7 @@ export function CommunityPage({
         community={selectedCommunity}
         prayerCards={prayerCards}
         onPrayToday={() => onNavigate('today')}
-        onBack={() => onOpenCommunity?.('')}
+        onBack={() => onNavigate('discover')}
       />
     );
   }
@@ -64,8 +64,8 @@ export function CommunityPage({
   return (
     <article className="page">
       <header className="page-hero">
-        <div className="page-eyebrow">Community</div>
-        <h1 className="page-hero-title">Pray more, know more, together</h1>
+        <div className="page-eyebrow">Discover</div>
+        <h1 className="page-hero-title">Communities at prayer</h1>
         <p className="page-lead">
           A gathering place for those who want to live the liturgical life more
           fully, alongside creators, ministers, and fellow faithful.
@@ -131,7 +131,7 @@ export function CommunityPage({
           className="page-cta-button"
           onClick={() => onNavigate('getting-started')}
         >
-          Start with Getting Started
+          Start Here
         </button>
       </div>
     </article>
@@ -152,7 +152,7 @@ function CommunityDetail({
   return (
     <article className="page community-detail-page">
       <button type="button" className="page-back" onClick={onBack}>
-        Back to Community
+        Back to Discover
       </button>
 
       <header

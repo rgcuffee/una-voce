@@ -11,10 +11,17 @@ export function MorePage({ onNavigate }: { onNavigate: ViewNavigator }) {
   const links: MenuLink[] = [
     {
       view: 'getting-started',
-      title: 'Getting Started',
+      title: 'Start Here',
       description:
-        'New to the Hours? A simple, five-step path into the prayer of the Church.',
+        'New to the Hours? Begin with one simple Hour of prayer.',
       icon: '✣',
+    },
+    {
+      view: 'parishes',
+      title: 'For Parishes',
+      description:
+        'Use Una Voce with OCIA, adult formation, ministry groups, and parish invitations.',
+      icon: '⌂',
     },
     {
       view: 'about',
@@ -36,7 +43,7 @@ export function MorePage({ onNavigate }: { onNavigate: ViewNavigator }) {
     <article className='page'>
       <header className='page-hero'>
         <div className='page-eyebrow'>More</div>
-        <h1 className='page-hero-title'>Guidance, story, and support</h1>
+        <h1 className='page-hero-title'>Guidance, parishes, and support</h1>
         <p className='page-lead'>
           Start with the Hours or learn why Una Voce exists.
         </p>
