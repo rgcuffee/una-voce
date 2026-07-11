@@ -9,6 +9,7 @@ import {
 } from '../data/partnerCommunities';
 import type { ViewNavigator } from '../navigation';
 import { PartnerBadge } from '../components/PartnerBadge';
+import { trackAnalyticsEvent } from '../lib/prayerAnalytics';
 
 type MediaCard = {
   meta: string;
@@ -478,7 +479,20 @@ function MediaCardShell({
       <button
         type='button'
         className={className}
-        onClick={() => onOpenCommunity?.(item.communitySlug as string)}
+        onClick={() => {
+          trackAnalyticsEvent('content_card_clicked', {
+            pageContext: 'discover_community_card',
+            communitySlug: item.communitySlug,
+            contentId: item.communitySlug,
+            contentType: 'community_card',
+            metadata: {
+              cardTitle: item.title,
+              cardMeta: item.meta,
+              source: item.source,
+            },
+          });
+          onOpenCommunity?.(item.communitySlug as string);
+        }}
       >
         {children}
       </button>
@@ -486,12 +500,27 @@ function MediaCardShell({
   }
 
   if (item.href) {
+    const href = item.href;
+
     return (
       <a
         className={className}
-        href={item.href}
+        href={href}
         rel='noreferrer'
         target='_blank'
+        onClick={() =>
+          trackAnalyticsEvent('community_outbound_clicked', {
+            pageContext: 'discover_external_card',
+            contentId: item.title,
+            contentType: discoverOutboundType(href),
+            sourceUrl: href,
+            metadata: {
+              cardTitle: item.title,
+              cardMeta: item.meta,
+              source: item.source,
+            },
+          })
+        }
       >
         {children}
       </a>
@@ -503,6 +532,24 @@ function MediaCardShell({
       {children}
     </article>
   );
+}
+
+function discoverOutboundType(href: string) {
+  const value = href.toLowerCase();
+
+  if (value.includes('youtube.com') || value.includes('youtu.be')) {
+    return 'youtube';
+  }
+  if (value.includes('spotify.com')) {
+    return 'spotify';
+  }
+  if (value.includes('podcasts.apple.com')) {
+    return 'apple_podcast';
+  }
+  if (value.includes('rss')) {
+    return 'rss';
+  }
+  return 'external_resource';
 }
 
 export function DiscoverPage({

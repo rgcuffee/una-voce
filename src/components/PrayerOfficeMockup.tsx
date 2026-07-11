@@ -19,6 +19,7 @@ import {
   getLiturgicalDayWithHours,
   type LiturgicalDayOption,
 } from '../lib/liturgicalCalendar';
+import { trackAnalyticsEvent } from '../lib/prayerAnalytics';
 import type {
   LiturgicalHour,
   LiturgicalSeason,
@@ -2605,8 +2606,30 @@ export function PrayerOfficeMockup() {
     );
   };
 
+  useEffect(() => {
+    trackAnalyticsEvent('page_viewed', {
+      pageContext: activeView,
+      communitySlug: selectedCommunitySlug ?? undefined,
+      metadata: {
+        view: activeView,
+        selectedDate,
+      },
+    });
+  }, [activeView, selectedCommunitySlug, selectedDate]);
+
   const navigateTo = (view: ViewKey, options?: { segmentId?: string }) => {
     const targetPath = pathForView(view);
+
+    trackAnalyticsEvent('navigation_clicked', {
+      pageContext: 'primary_navigation',
+      contentId: view,
+      contentType: 'app_view',
+      metadata: {
+        fromView: activeView,
+        toView: view,
+        segmentId: options?.segmentId,
+      },
+    });
 
     if (options?.segmentId) {
       selectTodaySegment(options.segmentId);
@@ -2632,6 +2655,15 @@ export function PrayerOfficeMockup() {
 
   const openCommunity = (slug: string) => {
     const targetPath = slug ? communityPath(slug) : pathForView('discover');
+    trackAnalyticsEvent('navigation_clicked', {
+      pageContext: 'community_navigation',
+      communitySlug: slug,
+      contentId: slug,
+      contentType: 'community_profile',
+      metadata: {
+        fromView: activeView,
+      },
+    });
     if (location.pathname !== targetPath) {
       routerNavigate(targetPath);
     }
@@ -3132,6 +3164,26 @@ export function PrayerOfficeMockup() {
   };
 
   const openPrayerPlayer = (session: PrayerPlayerSession) => {
+    if (!session.pageContext.startsWith('community_profile')) {
+      trackAnalyticsEvent('content_card_clicked', {
+        pageContext: session.pageContext,
+        communitySlug: session.communityPageUrl?.split('/').pop(),
+        contentId: session.videoId,
+        contentType: session.sourceType,
+        provider: session.provider,
+        sourceUrl: session.sourceUrl,
+        hour: session.hour,
+        ministryId: session.ministryId,
+        prayerId: session.prayerId,
+        sourceName: session.sourceName,
+        sourceType: session.sourceType,
+        metadata: {
+          title: session.title,
+          prayerType: session.prayerType,
+          communityName: session.communityName,
+        },
+      });
+    }
     setPrayerPlayerSession(session);
   };
 

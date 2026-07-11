@@ -1,6 +1,13 @@
 import { createClient } from '@supabase/supabase-js';
 
 const EVENT_NAMES = new Set([
+  'app_opened',
+  'page_viewed',
+  'navigation_clicked',
+  'community_page_viewed',
+  'community_outbound_clicked',
+  'content_card_viewed',
+  'content_card_clicked',
   'prayer_session_started',
   'prayer_play_started',
   'prayer_play_paused',
@@ -9,11 +16,16 @@ const EVENT_NAMES = new Set([
   'prayer_completed',
   'prayer_session_ended',
   'source_opened',
+  'share_clicked',
+  'search_performed',
+  'filter_changed',
+  'utm_landing_recorded',
 ]);
 
 const JSON_HEADERS = {
   'content-type': 'application/json',
 };
+const UNSUPPORTED_EVENT_WITHOUT_MIGRATION = Symbol('unsupported_event_without_migration');
 
 const supabaseUrl = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -61,10 +73,22 @@ export async function handler(event) {
     provider: detail.provider,
     videoId: detail.videoId,
     pageContext: detail.pageContext,
+    pagePath: detail.pagePath,
+    referrer: detail.referrer,
+    utmSource: detail.utmSource,
+    utmMedium: detail.utmMedium,
+    utmCampaign: detail.utmCampaign,
+    utmContent: detail.utmContent,
+    deviceClass: detail.deviceClass,
+    partnerId: detail.partnerId,
+    communitySlug: detail.communitySlug,
+    contentId: detail.contentId,
+    contentType: detail.contentType,
+    sourceUrl: detail.sourceUrl,
     ...detail.metadata,
   });
 
-  const { error: eventError } = await supabase.from('analytics_events').insert({
+  const eventError = await insertAnalyticsEvent({
     occurred_at: occurredAt,
     session_id: detail.sessionId,
     event_name: detail.eventName,
@@ -76,8 +100,30 @@ export async function handler(event) {
     anonymous_id: anonymousId,
     progress_percent: detail.progressPercent,
     playback_seconds: detail.playbackSeconds,
+    page_path: detail.pagePath,
+    page_context: detail.pageContext,
+    referrer: detail.referrer,
+    utm_source: detail.utmSource,
+    utm_medium: detail.utmMedium,
+    utm_campaign: detail.utmCampaign,
+    utm_content: detail.utmContent,
+    device_class: detail.deviceClass,
+    partner_id: detail.partnerId ?? null,
+    community_slug: detail.communitySlug,
+    content_id: detail.contentId,
+    content_type: detail.contentType,
+    provider: detail.provider,
+    source_url: detail.sourceUrl,
     metadata,
   });
+
+  if (eventError === UNSUPPORTED_EVENT_WITHOUT_MIGRATION) {
+    return response(202, {
+      ok: true,
+      skipped: true,
+      reason: 'Analytics schema migration is required for this event.',
+    });
+  }
 
   if (eventError) {
     return response(500, { error: 'Unable to record analytics event' });
@@ -95,6 +141,48 @@ export async function handler(event) {
   }
 
   return response(202, { ok: true });
+}
+
+async function insertAnalyticsEvent(row) {
+  const { error } = await supabase.from('analytics_events').insert(row);
+
+  if (!error) {
+    return null;
+  }
+
+  if (isUnsupportedEventNameError(error)) {
+    return UNSUPPORTED_EVENT_WITHOUT_MIGRATION;
+  }
+
+  if (!isMissingAnalyticsMigrationError(error)) {
+    return error;
+  }
+
+  const legacyRow = {
+    occurred_at: row.occurred_at,
+    session_id: row.session_id,
+    event_name: row.event_name,
+    prayer_id: row.prayer_id,
+    ministry_id: row.ministry_id,
+    hour: row.hour,
+    locale: row.locale,
+    user_id: row.user_id,
+    anonymous_id: row.anonymous_id,
+    progress_percent: row.progress_percent,
+    playback_seconds: row.playback_seconds,
+    metadata: row.metadata,
+  };
+  const { error: legacyError } = await supabase.from('analytics_events').insert(legacyRow);
+
+  if (!legacyError) {
+    return null;
+  }
+
+  if (isUnsupportedEventNameError(legacyError)) {
+    return UNSUPPORTED_EVENT_WITHOUT_MIGRATION;
+  }
+
+  return legacyError;
 }
 
 function parsePayload(body) {
@@ -132,6 +220,10 @@ function validateAnalyticsEvent(detail) {
 
   if (!isNonEmptyString(detail.anonymousId)) {
     return 'Invalid anonymousId';
+  }
+
+  if (detail.partnerId !== undefined && detail.partnerId !== null && !isUuid(detail.partnerId)) {
+    return 'Invalid partnerId';
   }
 
   if (
@@ -259,6 +351,22 @@ function isUuid(value) {
 
 function isIsoDate(value) {
   return typeof value === 'string' && !Number.isNaN(Date.parse(value));
+}
+
+function isMissingAnalyticsMigrationError(error) {
+  return (
+    error?.code === '42703' ||
+    error?.code === 'PGRST204' ||
+    /column .* does not exist/i.test(error?.message ?? '') ||
+    /could not find the .* column/i.test(error?.message ?? '')
+  );
+}
+
+function isUnsupportedEventNameError(error) {
+  return (
+    error?.code === '22P02' ||
+    /invalid input value for enum/i.test(error?.message ?? '')
+  );
 }
 
 function isNonEmptyString(value) {

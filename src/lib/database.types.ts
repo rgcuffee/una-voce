@@ -62,6 +62,13 @@ export type CalendarConflictReason =
 export type CalendarReviewSeverity = 'low' | 'medium' | 'high';
 export type CalendarReviewStatus = 'open' | 'resolved' | 'ignored';
 export type PrayerAnalyticsEventName =
+    | 'app_opened'
+    | 'page_viewed'
+    | 'navigation_clicked'
+    | 'community_page_viewed'
+    | 'community_outbound_clicked'
+    | 'content_card_viewed'
+    | 'content_card_clicked'
     | 'prayer_session_started'
     | 'prayer_play_started'
     | 'prayer_play_paused'
@@ -69,7 +76,11 @@ export type PrayerAnalyticsEventName =
     | 'prayer_progress'
     | 'prayer_completed'
     | 'prayer_session_ended'
-    | 'source_opened';
+    | 'source_opened'
+    | 'share_clicked'
+    | 'search_performed'
+    | 'filter_changed'
+    | 'utm_landing_recorded';
 export type PartnerOnboardingStatus = 'pending' | 'active' | 'archived';
 export type PartnerRelationshipStatus = 'curated' | 'verified' | 'partner';
 export type PartnerYoutubeFeedType = 'channel' | 'playlist';
@@ -640,6 +651,20 @@ export type Database = {
                     anonymous_id: string;
                     progress_percent: number | null;
                     playback_seconds: number | null;
+                    page_path: string | null;
+                    page_context: string | null;
+                    referrer: string | null;
+                    utm_source: string | null;
+                    utm_medium: string | null;
+                    utm_campaign: string | null;
+                    utm_content: string | null;
+                    device_class: string | null;
+                    partner_id: string | null;
+                    community_slug: string | null;
+                    content_id: string | null;
+                    content_type: string | null;
+                    provider: string | null;
+                    source_url: string | null;
                     metadata: Json;
                 };
                 Insert: {
@@ -655,6 +680,20 @@ export type Database = {
                     anonymous_id: string;
                     progress_percent?: number | null;
                     playback_seconds?: number | null;
+                    page_path?: string | null;
+                    page_context?: string | null;
+                    referrer?: string | null;
+                    utm_source?: string | null;
+                    utm_medium?: string | null;
+                    utm_campaign?: string | null;
+                    utm_content?: string | null;
+                    device_class?: string | null;
+                    partner_id?: string | null;
+                    community_slug?: string | null;
+                    content_id?: string | null;
+                    content_type?: string | null;
+                    provider?: string | null;
+                    source_url?: string | null;
                     metadata?: Json;
                 };
                 Update: {
@@ -670,6 +709,20 @@ export type Database = {
                     anonymous_id?: string;
                     progress_percent?: number | null;
                     playback_seconds?: number | null;
+                    page_path?: string | null;
+                    page_context?: string | null;
+                    referrer?: string | null;
+                    utm_source?: string | null;
+                    utm_medium?: string | null;
+                    utm_campaign?: string | null;
+                    utm_content?: string | null;
+                    device_class?: string | null;
+                    partner_id?: string | null;
+                    community_slug?: string | null;
+                    content_id?: string | null;
+                    content_type?: string | null;
+                    provider?: string | null;
+                    source_url?: string | null;
                     metadata?: Json;
                 };
                 Relationships: [];

@@ -82,6 +82,7 @@ function trackPrayerPlayerAnalytics(
     provider: session.provider,
     videoId: session.videoId,
     pageContext: session.pageContext,
+    sourceUrl: session.sourceUrl,
     panelOpenSeconds:
       typeof extra.panelOpenSeconds === 'number'
         ? extra.panelOpenSeconds

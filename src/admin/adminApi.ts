@@ -167,6 +167,60 @@ export type PartnerSummary = {
   missingTodayHours: LiturgicalHour[];
 };
 
+export type AnalyticsCount = {
+  label: string;
+  value: number;
+};
+
+export type AnalyticsDailyRow = {
+  date: string;
+  events: number;
+  activeUsers: number;
+  pageViews: number;
+  communityPageViews: number;
+  outboundClicks: number;
+  contentCardClicks: number;
+  prayerSessions: number;
+};
+
+export type AnalyticsCommunityRow = {
+  communitySlug: string;
+  partnerId: string | null;
+  partnerName: string;
+  activeUsers: number;
+  pageViews: number;
+  outboundClicks: number;
+  contentClicks: number;
+};
+
+export type AdminAnalyticsData = {
+  windowDays: number;
+  generatedAt: string;
+  schemaStatus?: 'ready' | 'migration_required';
+  schemaMessage?: string;
+  totals: {
+    events: number;
+    prayerSessions: number;
+    activeUsers: number;
+    pageViews: number;
+    communityPageViews: number;
+    outboundClicks: number;
+    contentCardClicks: number;
+    sourceOpens: number;
+    completions: number;
+    averagePanelOpenSeconds: number;
+    averageHighestProgress: number;
+  };
+  daily: AnalyticsDailyRow[];
+  topPages: AnalyticsCount[];
+  acquisitionSources: AnalyticsCount[];
+  deviceClasses: AnalyticsCount[];
+  prayerByProvider: AnalyticsCount[];
+  prayerByHour: AnalyticsCount[];
+  outboundByDestination: AnalyticsCount[];
+  communityPerformance: AnalyticsCommunityRow[];
+};
+
 export type AdminDashboardData = {
   ok: true;
   generatedAt: string;
@@ -179,6 +233,7 @@ export type AdminDashboardData = {
   videos: AdminYoutubeVideo[];
   episodes: AdminAudioEpisode[];
   summaries: PartnerSummary[];
+  analytics: AdminAnalyticsData;
   totals: {
     partners: number;
     activePartners: number;

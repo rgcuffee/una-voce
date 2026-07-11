@@ -1,8 +1,17 @@
 const ANALYTICS_EVENT_NAME = 'una-voce:prayer-analytics';
 const ANONYMOUS_ID_KEY = 'una-voce-anonymous-id';
+const SESSION_ID_KEY = 'una-voce-session-id';
+const SESSION_STARTED_AT_KEY = 'una-voce-session-started-at';
 const ANALYTICS_ENDPOINT = '/api/analytics';
 
 export type PrayerAnalyticsEventName =
+  | 'app_opened'
+  | 'page_viewed'
+  | 'navigation_clicked'
+  | 'community_page_viewed'
+  | 'community_outbound_clicked'
+  | 'content_card_viewed'
+  | 'content_card_clicked'
   | 'prayer_session_started'
   | 'prayer_play_started'
   | 'prayer_play_paused'
@@ -10,7 +19,11 @@ export type PrayerAnalyticsEventName =
   | 'prayer_progress'
   | 'prayer_completed'
   | 'prayer_session_ended'
-  | 'source_opened';
+  | 'source_opened'
+  | 'share_clicked'
+  | 'search_performed'
+  | 'filter_changed'
+  | 'utm_landing_recorded';
 
 export interface PrayerAnalyticsEventDetail {
   sessionId: string;
@@ -32,6 +45,18 @@ export interface PrayerAnalyticsEventDetail {
   provider?: string;
   videoId?: string;
   pageContext?: string;
+  pagePath?: string;
+  referrer?: string;
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+  utmContent?: string;
+  deviceClass?: string;
+  partnerId?: string | null;
+  communitySlug?: string;
+  contentId?: string;
+  contentType?: string;
+  sourceUrl?: string;
   metadata?: Record<string, unknown>;
 }
 
@@ -54,6 +79,22 @@ export function installPrayerAnalytics() {
     return () => {};
   }
 
+  window.setTimeout(() => {
+    trackAnalyticsEvent('app_opened', { pageContext: 'app' });
+    const attribution = currentAttribution();
+    if (
+      attribution.utmSource ||
+      attribution.utmMedium ||
+      attribution.utmCampaign ||
+      attribution.utmContent
+    ) {
+      trackAnalyticsEvent('utm_landing_recorded', {
+        pageContext: 'app',
+        ...attribution,
+      });
+    }
+  }, 0);
+
   const handlePrayerAnalytics = (event: Event) => {
     const detail = (event as CustomEvent<PrayerAnalyticsEventDetail>).detail;
     void recordPrayerAnalyticsEvent(detail);
@@ -63,6 +104,53 @@ export function installPrayerAnalytics() {
   return () => {
     window.removeEventListener(ANALYTICS_EVENT_NAME, handlePrayerAnalytics);
   };
+}
+
+export function trackAnalyticsEvent(
+  eventName: PrayerAnalyticsEventName,
+  detail: Partial<PrayerAnalyticsEventDetail> = {},
+) {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  const attribution = currentAttribution();
+  const pagePath = detail.pagePath ?? `${window.location.pathname}${window.location.search}`;
+
+  void recordPrayerAnalyticsEvent({
+    sessionId: detail.sessionId ?? getClientSessionId(),
+    eventName,
+    startedAt: detail.startedAt ?? getClientSessionStartedAt(),
+    occurredAt: detail.occurredAt,
+    prayerId: detail.prayerId,
+    ministryId: detail.ministryId,
+    hour: detail.hour,
+    locale: detail.locale,
+    userId: detail.userId,
+    anonymousId: detail.anonymousId,
+    progressPercent: detail.progressPercent,
+    playbackSeconds: detail.playbackSeconds,
+    activePlaySeconds: detail.activePlaySeconds,
+    panelOpenSeconds: detail.panelOpenSeconds,
+    sourceName: detail.sourceName,
+    sourceType: detail.sourceType,
+    provider: detail.provider,
+    videoId: detail.videoId,
+    pageContext: detail.pageContext,
+    pagePath,
+    referrer: detail.referrer ?? (document.referrer || undefined),
+    utmSource: detail.utmSource ?? attribution.utmSource,
+    utmMedium: detail.utmMedium ?? attribution.utmMedium,
+    utmCampaign: detail.utmCampaign ?? attribution.utmCampaign,
+    utmContent: detail.utmContent ?? attribution.utmContent,
+    deviceClass: detail.deviceClass ?? deviceClass(),
+    partnerId: detail.partnerId,
+    communitySlug: detail.communitySlug,
+    contentId: detail.contentId,
+    contentType: detail.contentType,
+    sourceUrl: detail.sourceUrl,
+    metadata: detail.metadata,
+  });
 }
 
 function getAnonymousId() {
@@ -80,6 +168,28 @@ function getAnonymousId() {
   return anonymousId;
 }
 
+function getClientSessionId() {
+  const storedId = window.sessionStorage.getItem(SESSION_ID_KEY);
+  if (storedId) {
+    return storedId;
+  }
+
+  const sessionId = createAnalyticsId();
+  window.sessionStorage.setItem(SESSION_ID_KEY, sessionId);
+  return sessionId;
+}
+
+function getClientSessionStartedAt() {
+  const storedStartedAt = window.sessionStorage.getItem(SESSION_STARTED_AT_KEY);
+  if (storedStartedAt) {
+    return storedStartedAt;
+  }
+
+  const startedAt = new Date().toISOString();
+  window.sessionStorage.setItem(SESSION_STARTED_AT_KEY, startedAt);
+  return startedAt;
+}
+
 function createAnalyticsId() {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
     return crypto.randomUUID();
@@ -91,6 +201,31 @@ function createAnalyticsId() {
       (Math.random() * 16) >> (Number(char) / 4)
     ).toString(16),
   );
+}
+
+function currentAttribution() {
+  if (typeof window === 'undefined') {
+    return {};
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  return {
+    utmSource: params.get('utm_source') ?? undefined,
+    utmMedium: params.get('utm_medium') ?? undefined,
+    utmCampaign: params.get('utm_campaign') ?? undefined,
+    utmContent: params.get('utm_content') ?? undefined,
+  };
+}
+
+function deviceClass() {
+  const width = window.innerWidth;
+  if (width < 700) {
+    return 'mobile';
+  }
+  if (width < 1024) {
+    return 'tablet';
+  }
+  return 'desktop';
 }
 
 async function recordPrayerAnalyticsEvent(detail: PrayerAnalyticsEventDetail) {

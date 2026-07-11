@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import type { ViewNavigator } from '../navigation';
 import {
   communityPath,
@@ -7,6 +8,7 @@ import {
   type PartnerCommunityStatusOverrides,
 } from '../data/partnerCommunities';
 import { PartnerBadge } from '../components/PartnerBadge';
+import { trackAnalyticsEvent } from '../lib/prayerAnalytics';
 
 type CommunityPageProps = {
   onNavigate: ViewNavigator;
@@ -98,7 +100,19 @@ export function CommunityPage({
               key={community.slug}
               type="button"
               className="community-card"
-              onClick={() => onOpenCommunity?.(community.slug)}
+              onClick={() => {
+                trackAnalyticsEvent('content_card_clicked', {
+                  pageContext: 'community_index',
+                  communitySlug: community.slug,
+                  contentId: community.slug,
+                  contentType: 'community_card',
+                  metadata: {
+                    communityName: community.name,
+                    relationshipStatus: community.relationshipStatus,
+                  },
+                });
+                onOpenCommunity?.(community.slug);
+              }}
             >
               <span
                 className={`community-card-image community-${community.slug}${community.imageUrl ? '' : ' empty'}`}
@@ -149,6 +163,18 @@ function CommunityDetail({
   onPrayToday: () => void;
   onBack: () => void;
 }) {
+  useEffect(() => {
+    trackAnalyticsEvent('community_page_viewed', {
+      pageContext: 'community_profile',
+      communitySlug: community.slug,
+      contentType: 'community_profile',
+      metadata: {
+        communityName: community.name,
+        relationshipStatus: community.relationshipStatus,
+      },
+    });
+  }, [community]);
+
   return (
     <article className="page community-detail-page">
       <button type="button" className="page-back" onClick={onBack}>
@@ -224,7 +250,20 @@ function CommunityDetail({
                 key={item.id}
                 type="button"
                 className="community-feature-card community-prayer-card"
-                onClick={item.onSelect}
+                onClick={() => {
+                  trackAnalyticsEvent('content_card_clicked', {
+                    pageContext: 'community_profile_prayer_card',
+                    communitySlug: community.slug,
+                    contentId: item.id,
+                    contentType: 'community_prayer_card',
+                    metadata: {
+                      communityName: community.name,
+                      cardLabel: item.label,
+                      cardTitle: item.title,
+                    },
+                  });
+                  item.onSelect();
+                }}
               >
                 <span>{item.label}</span>
                 <strong>{item.title}</strong>
@@ -277,11 +316,39 @@ function CommunityDetail({
               href={link.href}
               target="_blank"
               rel="noreferrer"
+              onClick={() =>
+                trackAnalyticsEvent('community_outbound_clicked', {
+                  pageContext: 'community_profile_links',
+                  communitySlug: community.slug,
+                  contentType: outboundLinkType(link.href, link.label),
+                  sourceUrl: link.href,
+                  metadata: {
+                    communityName: community.name,
+                    linkLabel: link.label,
+                  },
+                })
+              }
             >
               {link.label}
             </a>
           ))}
-          <a href={communityPath(community.slug)}>Local profile link</a>
+          <a
+            href={communityPath(community.slug)}
+            onClick={() =>
+              trackAnalyticsEvent('share_clicked', {
+                pageContext: 'community_profile_links',
+                communitySlug: community.slug,
+                contentType: 'local_profile_link',
+                sourceUrl: communityPath(community.slug),
+                metadata: {
+                  communityName: community.name,
+                  linkLabel: 'Local profile link',
+                },
+              })
+            }
+          >
+            Local profile link
+          </a>
         </div>
       </section>
 
@@ -290,6 +357,24 @@ function CommunityDetail({
       ) : null}
     </article>
   );
+}
+
+function outboundLinkType(href: string, label: string) {
+  const value = `${href} ${label}`.toLowerCase();
+
+  if (value.includes('youtube.com') || value.includes('youtu.be')) {
+    return 'youtube';
+  }
+  if (value.includes('spotify.com')) {
+    return 'spotify';
+  }
+  if (value.includes('podcasts.apple.com')) {
+    return 'apple_podcast';
+  }
+  if (value.includes('rss')) {
+    return 'rss';
+  }
+  return 'official_site';
 }
 
 function CommunityDisclaimer() {

@@ -11,6 +11,7 @@ import {
   upsertRule,
   upsertSpotifyFeed,
   type AdminClassificationRule,
+  type AdminAnalyticsData,
   type AdminApplePodcastFeed,
   type AdminDashboardData,
   type AdminPartner,
@@ -37,7 +38,7 @@ import type {
 } from '../lib/database.types';
 
 type LoadState = 'idle' | 'loading' | 'ready' | 'error';
-type AdminSection = 'overview' | 'partners' | 'videos' | 'audio' | 'feeds' | 'rules';
+type AdminSection = 'overview' | 'analytics' | 'partners' | 'videos' | 'audio' | 'feeds' | 'rules';
 
 const HOUR_OPTIONS: { value: LiturgicalHour; label: string }[] = [
   { value: 'office_of_readings', label: 'Office of Readings' },
@@ -433,6 +434,7 @@ export function AdminDashboardPage() {
       <AdminSidebar title="Admin Hub">
         <nav>
           <button className={section === 'overview' ? 'active' : ''} type="button" onClick={() => setSection('overview')}>Overview</button>
+          <button className={section === 'analytics' ? 'active' : ''} type="button" onClick={() => setSection('analytics')}>Analytics</button>
           <button className={section === 'partners' ? 'active' : ''} type="button" onClick={() => setSection('partners')}>Partners</button>
           <button className={section === 'videos' ? 'active' : ''} type="button" onClick={() => setSection('videos')}>Video Review</button>
           <button className={section === 'audio' ? 'active' : ''} type="button" onClick={() => setSection('audio')}>Audio Review</button>
@@ -473,6 +475,7 @@ export function AdminDashboardPage() {
             </section>
 
             {section === 'overview' && <Overview data={data} onSelectPartner={setSelectedPartnerId} onOpenSection={setSection} />}
+            {section === 'analytics' && <AnalyticsSection analytics={data.analytics} />}
             {section === 'partners' && (
               <PartnersSection
                 data={data}
@@ -559,6 +562,169 @@ function PartnerPicker({
       </select>
     </label>
   );
+}
+
+function AnalyticsSection({ analytics }: { analytics: AdminAnalyticsData }) {
+  const latestDays = analytics.daily.slice(-14);
+
+  return (
+    <section className="engine-section">
+      <div className="engine-section-heading">
+        <div>
+          <p>Last {analytics.windowDays} days</p>
+          <h2>Audience Analytics</h2>
+        </div>
+        <span>Generated {formatDateTime(analytics.generatedAt)}</span>
+      </div>
+
+      {analytics.schemaStatus === 'migration_required' ? (
+        <div className="admin-analytics-warning">
+          Analytics schema migration is pending. Prayer-session metrics are shown;
+          page, community, and outbound events will appear after the migration is applied.
+        </div>
+      ) : null}
+
+      <section className="engine-metrics admin-analytics-metrics" aria-label="Audience analytics summary">
+        <Metric label="Active Users" value={analytics.totals.activeUsers} detail="Anonymous browsers" />
+        <Metric label="Page Views" value={analytics.totals.pageViews} detail="All app routes" />
+        <Metric label="Prayer Sessions" value={analytics.totals.prayerSessions} detail="Player opens" />
+        <Metric label="Community Views" value={analytics.totals.communityPageViews} detail="Profile pages" />
+        <Metric label="Partner Clicks" value={analytics.totals.outboundClicks} detail="Outbound links" />
+        <Metric label="Avg Open" value={`${analytics.totals.averagePanelOpenSeconds}s`} detail="Player panel" />
+      </section>
+
+      <div className="admin-analytics-grid">
+        <AnalyticsList title="Top Pages" items={analytics.topPages} />
+        <AnalyticsList title="Acquisition" items={analytics.acquisitionSources} />
+        <AnalyticsList title="Devices" items={analytics.deviceClasses} />
+        <AnalyticsList title="Prayer Providers" items={analytics.prayerByProvider} />
+        <AnalyticsList title="Prayer Hours" items={analytics.prayerByHour} />
+        <AnalyticsList title="Outbound Destinations" items={analytics.outboundByDestination} />
+      </div>
+
+      <div className="admin-analytics-two-column">
+        <div>
+          <div className="engine-section-heading compact">
+            <div>
+              <p>Partner impact</p>
+              <h2>Community Performance</h2>
+            </div>
+          </div>
+          <div className="engine-table-wrap">
+            <table className="engine-table">
+              <thead>
+                <tr>
+                  <th>Community</th>
+                  <th>Users</th>
+                  <th>Views</th>
+                  <th>Prayer Clicks</th>
+                  <th>Outbound</th>
+                </tr>
+              </thead>
+              <tbody>
+                {analytics.communityPerformance.length === 0 ? (
+                  <tr>
+                    <td colSpan={5}>No community analytics recorded yet.</td>
+                  </tr>
+                ) : (
+                  analytics.communityPerformance.map((community) => (
+                    <tr key={community.communitySlug}>
+                      <td>
+                        <strong>{community.partnerName}</strong>
+                        <span>{community.communitySlug}</span>
+                      </td>
+                      <td>{community.activeUsers}</td>
+                      <td>{community.pageViews}</td>
+                      <td>{community.contentClicks}</td>
+                      <td>{community.outboundClicks}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div>
+          <div className="engine-section-heading compact">
+            <div>
+              <p>Trend</p>
+              <h2>Daily Activity</h2>
+            </div>
+          </div>
+          <div className="engine-table-wrap">
+            <table className="engine-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Users</th>
+                  <th>Pages</th>
+                  <th>Community</th>
+                  <th>Prayer</th>
+                  <th>Outbound</th>
+                </tr>
+              </thead>
+              <tbody>
+                {latestDays.length === 0 ? (
+                  <tr>
+                    <td colSpan={6}>No daily analytics recorded yet.</td>
+                  </tr>
+                ) : (
+                  latestDays.map((day) => (
+                    <tr key={day.date}>
+                      <td>{day.date}</td>
+                      <td>{day.activeUsers}</td>
+                      <td>{day.pageViews}</td>
+                      <td>{day.communityPageViews}</td>
+                      <td>{day.prayerSessions}</td>
+                      <td>{day.outboundClicks}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function AnalyticsList({
+  title,
+  items,
+}: {
+  title: string;
+  items: { label: string; value: number }[];
+}) {
+  const maxValue = Math.max(...items.map((item) => item.value), 1);
+
+  return (
+    <div className="admin-analytics-card">
+      <h3>{title}</h3>
+      {items.length === 0 ? (
+        <p>No data yet.</p>
+      ) : (
+        <div className="admin-analytics-list">
+          {items.map((item) => (
+            <div key={item.label} className="admin-analytics-row">
+              <span>{humanizeAnalyticsLabel(item.label)}</span>
+              <strong>{item.value}</strong>
+              <div className="admin-analytics-bar">
+                <span style={{ width: `${Math.max((item.value / maxValue) * 100, 4)}%` }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function humanizeAnalyticsLabel(value: string) {
+  return value
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
 function Overview({

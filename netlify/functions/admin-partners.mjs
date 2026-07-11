@@ -204,6 +204,7 @@ async function dashboardResponse() {
   const summaries = partners.map((partner) =>
     partnerSummary(partner.id, feeds, spotifyFeeds, applePodcastFeeds, rules, videos, episodes, today),
   );
+  const analytics = await analyticsSummary(partners);
 
   return {
     ok: true,
@@ -217,6 +218,7 @@ async function dashboardResponse() {
     videos,
     episodes,
     summaries,
+    analytics,
     totals: {
       partners: partners.length,
       activePartners: partners.filter(
@@ -236,6 +238,285 @@ async function dashboardResponse() {
       staleFeeds: [...feeds, ...spotifyFeeds, ...applePodcastFeeds].filter((feed) => isStaleFeed(feed)).length,
     },
   };
+}
+
+async function analyticsSummary(partners) {
+  const windowDays = 30;
+  const since = new Date(Date.now() - windowDays * 24 * 60 * 60 * 1000).toISOString();
+  const [eventsResult, sessionsResult] = await Promise.all([
+    supabase
+      .from('analytics_events')
+      .select(
+        [
+          'occurred_at',
+          'event_name',
+          'anonymous_id',
+          'page_path',
+          'page_context',
+          'utm_source',
+          'utm_medium',
+          'utm_campaign',
+          'device_class',
+          'partner_id',
+          'community_slug',
+          'content_id',
+          'content_type',
+          'provider',
+          'source_url',
+          'ministry_id',
+          'hour',
+        ].join(','),
+      )
+      .gte('occurred_at', since)
+      .order('occurred_at', { ascending: true })
+      .limit(10000),
+    supabase
+      .from('analytics_sessions')
+      .select(
+        [
+          'started_at',
+          'anonymous_id',
+          'completed',
+          'opened_source',
+          'panel_open_seconds',
+          'highest_progress',
+          'provider',
+          'hour',
+          'ministry_id',
+          'source_type',
+          'page_context',
+        ].join(','),
+      )
+      .gte('started_at', since)
+      .order('started_at', { ascending: true })
+      .limit(10000),
+  ]);
+
+  throwIfError(sessionsResult.error);
+
+  if (eventsResult.error) {
+    console.warn('[admin-partners] analytics_events_extended_query_failed', {
+      code: eventsResult.error.code,
+      message: eventsResult.error.message,
+    });
+    return legacyAnalyticsSummary(windowDays, sessionsResult.data ?? [], eventsResult.error);
+  }
+
+  const events = eventsResult.data ?? [];
+  const sessions = sessionsResult.data ?? [];
+  const communityPartners = new Map();
+
+  for (const partner of partners) {
+    communityPartners.set(partner.slug, partner);
+    if (partner.community_page_slug) {
+      communityPartners.set(partner.community_page_slug, partner);
+    }
+  }
+
+  const pageViews = events.filter((event) => event.event_name === 'page_viewed');
+  const communityPageViews = events.filter((event) => event.event_name === 'community_page_viewed');
+  const outboundClicks = events.filter((event) => event.event_name === 'community_outbound_clicked');
+  const contentCardClicks = events.filter((event) => event.event_name === 'content_card_clicked');
+  const activeUsers = new Set(
+    [...events, ...sessions].map((item) => item.anonymous_id).filter(Boolean),
+  );
+
+  return {
+    windowDays,
+    generatedAt: new Date().toISOString(),
+    totals: {
+      events: events.length,
+      prayerSessions: sessions.length,
+      activeUsers: activeUsers.size,
+      pageViews: pageViews.length,
+      communityPageViews: communityPageViews.length,
+      outboundClicks: outboundClicks.length,
+      contentCardClicks: contentCardClicks.length,
+      sourceOpens: sessions.filter((session) => session.opened_source).length,
+      completions: sessions.filter((session) => session.completed).length,
+      averagePanelOpenSeconds: average(
+        sessions.map((session) => session.panel_open_seconds),
+      ),
+      averageHighestProgress: average(
+        sessions.map((session) => session.highest_progress),
+      ),
+    },
+    daily: dailyAnalytics(events, sessions),
+    topPages: topCounts(pageViews, (event) => event.page_path || 'unknown', 8),
+    acquisitionSources: topCounts(events, (event) => event.utm_source || 'direct', 8),
+    deviceClasses: topCounts(events, (event) => event.device_class || 'unknown', 8),
+    prayerByProvider: topCounts(sessions, (session) => session.provider || 'unknown', 8),
+    prayerByHour: topCounts(sessions, (session) => session.hour || 'unknown', 8),
+    outboundByDestination: topCounts(
+      outboundClicks,
+      (event) => event.content_type || destinationType(event.source_url),
+      8,
+    ),
+    communityPerformance: communityAnalytics(
+      communityPageViews,
+      outboundClicks,
+      contentCardClicks,
+      communityPartners,
+    ),
+  };
+}
+
+function legacyAnalyticsSummary(windowDays, sessions, eventsError) {
+  const activeUsers = new Set(sessions.map((session) => session.anonymous_id).filter(Boolean));
+
+  return {
+    windowDays,
+    generatedAt: new Date().toISOString(),
+    schemaStatus: 'migration_required',
+    schemaMessage: eventsError?.message ?? 'Analytics event columns are not available yet.',
+    totals: {
+      events: 0,
+      prayerSessions: sessions.length,
+      activeUsers: activeUsers.size,
+      pageViews: 0,
+      communityPageViews: 0,
+      outboundClicks: 0,
+      contentCardClicks: 0,
+      sourceOpens: sessions.filter((session) => session.opened_source).length,
+      completions: sessions.filter((session) => session.completed).length,
+      averagePanelOpenSeconds: average(
+        sessions.map((session) => session.panel_open_seconds),
+      ),
+      averageHighestProgress: average(
+        sessions.map((session) => session.highest_progress),
+      ),
+    },
+    daily: dailyAnalytics([], sessions),
+    topPages: [],
+    acquisitionSources: [],
+    deviceClasses: [],
+    prayerByProvider: topCounts(sessions, (session) => session.provider || 'unknown', 8),
+    prayerByHour: topCounts(sessions, (session) => session.hour || 'unknown', 8),
+    outboundByDestination: [],
+    communityPerformance: [],
+  };
+}
+
+function dailyAnalytics(events, sessions) {
+  const days = new Map();
+
+  for (const event of events) {
+    const day = event.occurred_at.slice(0, 10);
+    const row = dailyRow(days, day);
+    row.events += 1;
+    if (event.event_name === 'page_viewed') row.pageViews += 1;
+    if (event.event_name === 'community_page_viewed') row.communityPageViews += 1;
+    if (event.event_name === 'community_outbound_clicked') row.outboundClicks += 1;
+    if (event.event_name === 'content_card_clicked') row.contentCardClicks += 1;
+    if (event.anonymous_id) row.activeUsers.add(event.anonymous_id);
+  }
+
+  for (const session of sessions) {
+    const day = session.started_at.slice(0, 10);
+    const row = dailyRow(days, day);
+    row.prayerSessions += 1;
+    if (session.anonymous_id) row.activeUsers.add(session.anonymous_id);
+  }
+
+  return [...days.values()]
+    .sort((left, right) => left.date.localeCompare(right.date))
+    .map((row) => ({
+      ...row,
+      activeUsers: row.activeUsers.size,
+    }));
+}
+
+function dailyRow(days, date) {
+  if (!days.has(date)) {
+    days.set(date, {
+      date,
+      events: 0,
+      activeUsers: new Set(),
+      pageViews: 0,
+      communityPageViews: 0,
+      outboundClicks: 0,
+      contentCardClicks: 0,
+      prayerSessions: 0,
+    });
+  }
+
+  return days.get(date);
+}
+
+function communityAnalytics(pageViews, outboundClicks, contentCardClicks, communityPartners) {
+  const rows = new Map();
+
+  for (const event of [...pageViews, ...outboundClicks, ...contentCardClicks]) {
+    const slug = event.community_slug || 'unknown';
+    const row = communityRow(rows, slug, communityPartners.get(slug));
+
+    if (event.event_name === 'community_page_viewed') row.pageViews += 1;
+    if (event.event_name === 'community_outbound_clicked') row.outboundClicks += 1;
+    if (event.event_name === 'content_card_clicked') row.contentClicks += 1;
+    if (event.anonymous_id) row.activeUsers.add(event.anonymous_id);
+  }
+
+  return [...rows.values()]
+    .sort((left, right) => {
+      const rightScore = right.pageViews + right.outboundClicks + right.contentClicks;
+      const leftScore = left.pageViews + left.outboundClicks + left.contentClicks;
+      return rightScore - leftScore;
+    })
+    .slice(0, 12)
+    .map((row) => ({
+      ...row,
+      activeUsers: row.activeUsers.size,
+    }));
+}
+
+function communityRow(rows, slug, partner) {
+  if (!rows.has(slug)) {
+    rows.set(slug, {
+      communitySlug: slug,
+      partnerId: partner?.id ?? null,
+      partnerName: partner?.name ?? slug,
+      activeUsers: new Set(),
+      pageViews: 0,
+      outboundClicks: 0,
+      contentClicks: 0,
+    });
+  }
+
+  return rows.get(slug);
+}
+
+function topCounts(items, keyForItem, limit) {
+  const counts = new Map();
+
+  for (const item of items) {
+    const key = keyForItem(item);
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+
+  return [...counts.entries()]
+    .sort((left, right) => right[1] - left[1])
+    .slice(0, limit)
+    .map(([label, value]) => ({ label, value }));
+}
+
+function average(values) {
+  const numbers = values.filter((value) => Number.isFinite(value));
+
+  if (numbers.length === 0) {
+    return 0;
+  }
+
+  return Math.round(numbers.reduce((sum, value) => sum + value, 0) / numbers.length);
+}
+
+function destinationType(url) {
+  const value = (url ?? '').toLowerCase();
+
+  if (value.includes('youtube.com') || value.includes('youtu.be')) return 'youtube';
+  if (value.includes('spotify.com')) return 'spotify';
+  if (value.includes('podcasts.apple.com')) return 'apple_podcast';
+  if (value.includes('rss')) return 'rss';
+  return 'official_site';
 }
 
 function partnerSummary(partnerId, feeds, spotifyFeeds, applePodcastFeeds, rules, videos, episodes, today) {

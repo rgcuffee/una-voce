@@ -4943,6 +4943,100 @@ body {
     line-height: 1.45;
 }
 
+.admin-analytics-metrics {
+    padding: 16px;
+    margin-bottom: 0;
+    border-bottom: 1px solid #eef1ec;
+}
+
+.admin-analytics-warning {
+    margin: 16px 16px 0;
+    padding: 12px 14px;
+    border: 1px solid #eadab5;
+    border-radius: 8px;
+    background: #fff8e8;
+    color: #6b5120;
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 1.4;
+}
+
+.admin-analytics-grid,
+.admin-analytics-two-column {
+    display: grid;
+    gap: 12px;
+    padding: 16px;
+}
+
+.admin-analytics-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    border-bottom: 1px solid #eef1ec;
+}
+
+.admin-analytics-two-column {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.admin-analytics-card {
+    min-width: 0;
+    padding: 14px;
+    border: 1px solid #e3e8df;
+    border-radius: 8px;
+    background: #fbfcfa;
+}
+
+.admin-analytics-card h3 {
+    margin-bottom: 12px;
+    font-size: 14px;
+    letter-spacing: 0;
+}
+
+.admin-analytics-card p {
+    color: #697064;
+    font-size: 13px;
+}
+
+.admin-analytics-list {
+    display: grid;
+    gap: 10px;
+}
+
+.admin-analytics-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 6px 10px;
+    align-items: center;
+}
+
+.admin-analytics-row span {
+    overflow: hidden;
+    color: #41483e;
+    font-size: 13px;
+    font-weight: 800;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.admin-analytics-row strong {
+    color: #20231f;
+    font-size: 13px;
+}
+
+.admin-analytics-bar {
+    grid-column: 1 / -1;
+    overflow: hidden;
+    height: 7px;
+    border-radius: 999px;
+    background: #e6ebe2;
+}
+
+.admin-analytics-bar span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: #546b47;
+}
+
 .admin-video-list {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -5085,8 +5179,13 @@ body {
 
     .engine-conflict-grid,
     .engine-two-col,
-    .admin-editor-grid {
+    .admin-editor-grid,
+    .admin-analytics-two-column {
         grid-template-columns: 1fr;
+    }
+
+    .admin-analytics-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .engine-conflict-panel,
@@ -5180,6 +5279,17 @@ body {
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 10px;
         margin-bottom: 16px;
+    }
+
+    .admin-analytics-grid,
+    .admin-analytics-two-column {
+        grid-template-columns: 1fr;
+        padding: 12px;
+    }
+
+    .admin-analytics-metrics {
+        margin-bottom: 0;
+        padding: 12px;
     }
 
     .engine-metric {
