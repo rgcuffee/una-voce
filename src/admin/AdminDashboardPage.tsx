@@ -2,7 +2,9 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   loadAdminDashboard,
   updateVideo,
+  updateVideos,
   updateEpisode,
+  updateEpisodes,
   upsertApplePodcastFeed,
   upsertFeed,
   upsertPartner,
@@ -71,6 +73,15 @@ const WEEKDAY_OPTIONS = [
   { value: 6, label: 'Saturday' },
 ];
 const MIDDAY_TITLE_PATTERN = /\b(midmorning|midday|midafternoon)\b/i;
+const REVIEW_STATUS_ORDER: Record<YoutubeVideoDisplayStatus, number> = {
+  pending: 0,
+  approved: 1,
+  hidden: 2,
+  expired: 3,
+};
+
+type ReviewItem = Pick<AdminAudioEpisode | AdminYoutubeVideo, 'display_status' | 'prayer_date' | 'published_at' | 'title'>;
+const SEASONAL_AVAILABILITY_PARTNER_SLUG = 'word-on-fire';
 
 const emptyPartner: PartnerDraft = {
   slug: '',
@@ -274,6 +285,25 @@ function suggestedReviewHour(item: Pick<AdminAudioEpisode | AdminYoutubeVideo, '
   }
 
   return item.prayer_type ?? '';
+}
+
+function reviewQueueSort(left: ReviewItem, right: ReviewItem) {
+  const statusDifference =
+    REVIEW_STATUS_ORDER[left.display_status] - REVIEW_STATUS_ORDER[right.display_status];
+
+  if (statusDifference !== 0) {
+    return statusDifference;
+  }
+
+  return Date.parse(right.published_at) - Date.parse(left.published_at);
+}
+
+function isSeasonalAvailabilityPartner(partner?: Pick<AdminPartner, 'slug'> | null) {
+  return partner?.slug === SEASONAL_AVAILABILITY_PARTNER_SLUG;
+}
+
+function isCurrentOrFutureReviewItem(item: Pick<AdminAudioEpisode | AdminYoutubeVideo, 'prayer_date'>, today: string) {
+  return !item.prayer_date || item.prayer_date >= today;
 }
 
 function seasonLabels(seasons: LiturgicalSeason[] | undefined) {
@@ -753,7 +783,66 @@ function VideosSection({
   onSaved: () => Promise<void>;
 }) {
   const [statusFilter, setStatusFilter] = useState<YoutubeVideoDisplayStatus | 'all'>('pending');
-  const shownVideos = videos.filter((video) => statusFilter === 'all' || video.display_status === statusFilter);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
+  const [bulkSaving, setBulkSaving] = useState(false);
+  const shownVideos = useMemo(
+    () =>
+      videos
+        .filter(
+          (video) =>
+            isCurrentOrFutureReviewItem(video, data.today) &&
+            (statusFilter === 'all' || video.display_status === statusFilter),
+        )
+        .sort(reviewQueueSort),
+    [data.today, statusFilter, videos],
+  );
+  const shownVideoIds = shownVideos.map((video) => video.id);
+  const shownVideoIdKey = shownVideoIds.join('|');
+  const selectedShownCount = shownVideoIds.filter((id) => selectedIds.has(id)).length;
+  const allShownSelected = shownVideoIds.length > 0 && selectedShownCount === shownVideoIds.length;
+
+  useEffect(() => {
+    const validIds = new Set(shownVideoIds);
+    setSelectedIds((current) => new Set([...current].filter((id) => validIds.has(id))));
+  }, [shownVideoIdKey]);
+
+  function toggleVideo(id: string) {
+    setSelectedIds((current) => {
+      const next = new Set(current);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }
+
+  function toggleAllShown() {
+    setSelectedIds((current) => {
+      if (allShownSelected) {
+        return new Set([...current].filter((id) => !shownVideoIds.includes(id)));
+      }
+
+      return new Set([...current, ...shownVideoIds]);
+    });
+  }
+
+  async function bulkSetStatus(displayStatus: YoutubeVideoDisplayStatus) {
+    const ids = [...selectedIds].filter((id) => shownVideoIds.includes(id));
+    if (ids.length === 0) {
+      return;
+    }
+
+    setBulkSaving(true);
+    try {
+      await updateVideos({ ids, display_status: displayStatus });
+      setSelectedIds(new Set());
+      await onSaved();
+    } finally {
+      setBulkSaving(false);
+    }
+  }
 
   return (
     <section className="engine-section">
@@ -773,12 +862,49 @@ function VideosSection({
           </label>
         </div>
       </div>
+      <div className="admin-bulk-toolbar">
+        <label className="admin-bulk-select">
+          <input
+            type="checkbox"
+            checked={allShownSelected}
+            disabled={shownVideos.length === 0 || bulkSaving}
+            onChange={toggleAllShown}
+          />
+          {allShownSelected ? 'Clear visible' : 'Select visible'}
+        </label>
+        <span>{selectedShownCount} selected</span>
+        <button
+          type="button"
+          className="admin-button primary"
+          disabled={selectedShownCount === 0 || bulkSaving}
+          onClick={() => void bulkSetStatus('approved')}
+        >
+          {bulkSaving ? 'Applying...' : 'Approve selected'}
+        </button>
+        <button
+          type="button"
+          className="admin-button"
+          disabled={selectedShownCount === 0 || bulkSaving}
+          onClick={() => void bulkSetStatus('hidden')}
+        >
+          Deny selected
+        </button>
+      </div>
       <div className="admin-video-list">
         {shownVideos.length === 0 ? (
           <div className="engine-empty small">No videos match this view.</div>
         ) : (
           shownVideos.map((video) => (
-            <VideoReviewCard key={video.id} video={video} onSaved={onSaved} />
+            <VideoReviewCard
+              key={video.id}
+              video={video}
+              usesSeasonalAvailability={isSeasonalAvailabilityPartner(
+                data.partners.find((partner) => partner.id === video.partner_id),
+              )}
+              selected={selectedIds.has(video.id)}
+              onToggleSelected={toggleVideo}
+              onSaved={onSaved}
+            />
           ))
         )}
       </div>
@@ -786,7 +912,19 @@ function VideosSection({
   );
 }
 
-function VideoReviewCard({ video, onSaved }: { video: AdminYoutubeVideo; onSaved: () => Promise<void> }) {
+function VideoReviewCard({
+  video,
+  usesSeasonalAvailability,
+  selected,
+  onToggleSelected,
+  onSaved,
+}: {
+  video: AdminYoutubeVideo;
+  usesSeasonalAvailability: boolean;
+  selected: boolean;
+  onToggleSelected: (id: string) => void;
+  onSaved: () => Promise<void>;
+}) {
   const [status, setStatus] = useState(video.display_status);
   const [hour, setHour] = useState<LiturgicalHour | ''>(() => suggestedReviewHour(video));
   const [date, setDate] = useState(video.prayer_date ?? '');
@@ -812,8 +950,8 @@ function VideoReviewCard({ video, onSaved }: { video: AdminYoutubeVideo; onSaved
         display_status: nextStatus,
         prayer_type: hour || null,
         prayer_date: date || null,
-        available_liturgical_seasons: seasons,
-        available_weekdays: weekdays,
+        available_liturgical_seasons: usesSeasonalAvailability ? seasons : [],
+        available_weekdays: usesSeasonalAvailability ? weekdays : [],
       });
       await onSaved();
     } finally {
@@ -822,15 +960,27 @@ function VideoReviewCard({ video, onSaved }: { video: AdminYoutubeVideo; onSaved
   }
 
   return (
-    <article className="admin-video-card">
+    <article className={`admin-video-card${selected ? ' selected' : ''}`}>
       <a href={video.canonical_url} target="_blank" rel="noreferrer" className="admin-video-thumb">
         {video.thumbnail_url ? <img alt="" src={video.thumbnail_url} /> : <span>No image</span>}
       </a>
       <div className="admin-video-body">
-        <span className={`engine-badge ${statusClass(video.display_status)}`}>{video.display_status}</span>
+        <div className="admin-review-card-top">
+          <label className="admin-review-select">
+            <input
+              type="checkbox"
+              checked={selected}
+              onChange={() => onToggleSelected(video.id)}
+            />
+            Select
+          </label>
+          <span className={`engine-badge ${statusClass(video.display_status)}`}>{video.display_status}</span>
+        </div>
         <h3>{video.title}</h3>
         <p>{formatDateTime(video.published_at)} · {video.video_kind}</p>
-        <p>{seasonLabels(video.available_liturgical_seasons)} · {weekdayLabels(video.available_weekdays)}</p>
+        {usesSeasonalAvailability ? (
+          <p>{seasonLabels(video.available_liturgical_seasons)} · {weekdayLabels(video.available_weekdays)}</p>
+        ) : null}
         <div className="admin-inline-controls">
           <label>
             Prayer date
@@ -849,19 +999,23 @@ function VideoReviewCard({ video, onSaved }: { video: AdminYoutubeVideo; onSaved
               {STATUS_OPTIONS.map((option) => <option key={option} value={option}>{option}</option>)}
             </select>
           </label>
-          <label>
-            Seasons
-            <input value={seasonValue(seasons)} onChange={(event) => setSeasons(parseSeasons(event.target.value))} placeholder="ordinary_time" />
-          </label>
-          <label>
-            Weekdays
-            <input value={weekdayValue(weekdays)} onChange={(event) => setWeekdays(parseWeekdays(event.target.value))} placeholder="0, 1, 2" />
-          </label>
+          {usesSeasonalAvailability ? (
+            <>
+              <label>
+                Seasons
+                <input value={seasonValue(seasons)} onChange={(event) => setSeasons(parseSeasons(event.target.value))} placeholder="ordinary_time" />
+              </label>
+              <label>
+                Weekdays
+                <input value={weekdayValue(weekdays)} onChange={(event) => setWeekdays(parseWeekdays(event.target.value))} placeholder="0, 1, 2" />
+              </label>
+            </>
+          ) : null}
         </div>
         <div className="admin-action-row">
           <button type="button" className="admin-button primary" disabled={saving} onClick={() => save(status)}>Save</button>
           <button type="button" className="admin-button" disabled={saving} onClick={() => save('approved')}>Approve</button>
-          <button type="button" className="admin-button" disabled={saving} onClick={() => save('hidden')}>Hide</button>
+          <button type="button" className="admin-button" disabled={saving} onClick={() => save('hidden')}>Deny</button>
         </div>
       </div>
     </article>
@@ -882,7 +1036,75 @@ function AudioSection({
   onSaved: () => Promise<void>;
 }) {
   const [statusFilter, setStatusFilter] = useState<YoutubeVideoDisplayStatus | 'all'>('pending');
-  const shownEpisodes = episodes.filter((episode) => statusFilter === 'all' || episode.display_status === statusFilter);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
+  const [bulkSaving, setBulkSaving] = useState(false);
+  const shownEpisodes = useMemo(
+    () =>
+      episodes
+        .filter(
+          (episode) =>
+            isCurrentOrFutureReviewItem(episode, data.today) &&
+            (statusFilter === 'all' || episode.display_status === statusFilter),
+        )
+        .sort(reviewQueueSort),
+    [data.today, episodes, statusFilter],
+  );
+  const shownEpisodeIds = shownEpisodes.map((episode) => episode.id);
+  const shownEpisodeIdKey = shownEpisodeIds.join('|');
+  const selectedShownCount = shownEpisodeIds.filter((id) => selectedIds.has(id)).length;
+  const allShownSelected = shownEpisodeIds.length > 0 && selectedShownCount === shownEpisodeIds.length;
+
+  useEffect(() => {
+    const validIds = new Set(shownEpisodeIds);
+    setSelectedIds((current) => new Set([...current].filter((id) => validIds.has(id))));
+  }, [shownEpisodeIdKey]);
+
+  function toggleEpisode(id: string) {
+    setSelectedIds((current) => {
+      const next = new Set(current);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }
+
+  function toggleAllShown() {
+    setSelectedIds((current) => {
+      if (allShownSelected) {
+        return new Set([...current].filter((id) => !shownEpisodeIds.includes(id)));
+      }
+
+      return new Set([...current, ...shownEpisodeIds]);
+    });
+  }
+
+  async function bulkSetStatus(displayStatus: YoutubeVideoDisplayStatus) {
+    const selectedEpisodes = shownEpisodes
+      .filter((episode) => selectedIds.has(episode.id))
+      .map((episode) => ({
+        id: episode.id,
+        provider: episode.provider,
+      }));
+
+    if (selectedEpisodes.length === 0) {
+      return;
+    }
+
+    setBulkSaving(true);
+    try {
+      await updateEpisodes({
+        episodes: selectedEpisodes,
+        display_status: displayStatus,
+      });
+      setSelectedIds(new Set());
+      await onSaved();
+    } finally {
+      setBulkSaving(false);
+    }
+  }
 
   return (
     <section className="engine-section">
@@ -902,12 +1124,46 @@ function AudioSection({
           </label>
         </div>
       </div>
+      <div className="admin-bulk-toolbar">
+        <label className="admin-bulk-select">
+          <input
+            type="checkbox"
+            checked={allShownSelected}
+            disabled={shownEpisodes.length === 0 || bulkSaving}
+            onChange={toggleAllShown}
+          />
+          {allShownSelected ? 'Clear visible' : 'Select visible'}
+        </label>
+        <span>{selectedShownCount} selected</span>
+        <button
+          type="button"
+          className="admin-button primary"
+          disabled={selectedShownCount === 0 || bulkSaving}
+          onClick={() => void bulkSetStatus('approved')}
+        >
+          {bulkSaving ? 'Applying...' : 'Approve selected'}
+        </button>
+        <button
+          type="button"
+          className="admin-button"
+          disabled={selectedShownCount === 0 || bulkSaving}
+          onClick={() => void bulkSetStatus('hidden')}
+        >
+          Deny selected
+        </button>
+      </div>
       <div className="admin-video-list">
         {shownEpisodes.length === 0 ? (
           <div className="engine-empty small">No audio episodes match this view.</div>
         ) : (
           shownEpisodes.map((episode) => (
-            <EpisodeReviewCard key={episode.id} episode={episode} onSaved={onSaved} />
+            <EpisodeReviewCard
+              key={episode.id}
+              episode={episode}
+              selected={selectedIds.has(episode.id)}
+              onToggleSelected={toggleEpisode}
+              onSaved={onSaved}
+            />
           ))
         )}
       </div>
@@ -915,7 +1171,17 @@ function AudioSection({
   );
 }
 
-function EpisodeReviewCard({ episode, onSaved }: { episode: AdminAudioEpisode; onSaved: () => Promise<void> }) {
+function EpisodeReviewCard({
+  episode,
+  selected,
+  onToggleSelected,
+  onSaved,
+}: {
+  episode: AdminAudioEpisode;
+  selected: boolean;
+  onToggleSelected: (id: string) => void;
+  onSaved: () => Promise<void>;
+}) {
   const [status, setStatus] = useState(episode.display_status);
   const [hour, setHour] = useState<LiturgicalHour | ''>(() => suggestedReviewHour(episode));
   const [date, setDate] = useState(episode.prayer_date ?? '');
@@ -944,12 +1210,22 @@ function EpisodeReviewCard({ episode, onSaved }: { episode: AdminAudioEpisode; o
   }
 
   return (
-    <article className="admin-video-card">
+    <article className={`admin-video-card${selected ? ' selected' : ''}`}>
       <a href={episode.canonical_url} target="_blank" rel="noreferrer" className="admin-video-thumb">
         {episode.image_url ? <img alt="" src={episode.image_url} /> : <span>No image</span>}
       </a>
       <div className="admin-video-body">
-        <span className={`engine-badge ${statusClass(episode.display_status)}`}>{episode.display_status}</span>
+        <div className="admin-review-card-top">
+          <label className="admin-review-select">
+            <input
+              type="checkbox"
+              checked={selected}
+              onChange={() => onToggleSelected(episode.id)}
+            />
+            Select
+          </label>
+          <span className={`engine-badge ${statusClass(episode.display_status)}`}>{episode.display_status}</span>
+        </div>
         <h3>{episode.title}</h3>
         <p>{formatDateTime(episode.published_at)} · {episode.provider === 'apple-podcast' ? 'Apple Podcasts' : 'Spotify'} audio</p>
         <div className="admin-inline-controls">
@@ -974,7 +1250,7 @@ function EpisodeReviewCard({ episode, onSaved }: { episode: AdminAudioEpisode; o
         <div className="admin-action-row">
           <button type="button" className="admin-button primary" disabled={saving} onClick={() => save(status)}>Save</button>
           <button type="button" className="admin-button" disabled={saving} onClick={() => save('approved')}>Approve</button>
-          <button type="button" className="admin-button" disabled={saving} onClick={() => save('hidden')}>Hide</button>
+          <button type="button" className="admin-button" disabled={saving} onClick={() => save('hidden')}>Deny</button>
         </div>
       </div>
     </article>
@@ -1004,6 +1280,9 @@ function FeedsSection({
   const [saving, setSaving] = useState(false);
   const [savingSpotify, setSavingSpotify] = useState(false);
   const [savingApplePodcast, setSavingApplePodcast] = useState(false);
+  const usesSeasonalAvailability = isSeasonalAvailabilityPartner(
+    data.partners.find((partner) => partner.id === selectedPartnerId),
+  );
 
   useEffect(() => {
     setDraft(feedDraft(selectedPartnerId));
@@ -1014,7 +1293,12 @@ function FeedsSection({
   async function save() {
     setSaving(true);
     try {
-      await upsertFeed(draft);
+      await upsertFeed({
+        ...draft,
+        default_available_liturgical_seasons: usesSeasonalAvailability
+          ? draft.default_available_liturgical_seasons
+          : [],
+      });
       await onSaved();
       setDraft(feedDraft(selectedPartnerId));
     } finally {
@@ -1061,7 +1345,11 @@ function FeedsSection({
           {feeds.map((feed) => (
             <button key={feed.id} type="button" onClick={() => setDraft(feedDraft(selectedPartnerId, feed))}>
               <strong>{feed.type}: {feed.youtube_playlist_id ?? feed.youtube_channel_id}</strong>
-              <span>{feed.active ? 'active' : 'inactive'} · {feed.poll_once ? 'one-time' : `${feed.polling_interval_minutes}m`} · {seasonLabels(feed.default_available_liturgical_seasons)} · last poll {formatDateTime(feed.last_polled_at)}</span>
+              <span>
+                {feed.active ? 'active' : 'inactive'} · {feed.poll_once ? 'one-time' : `${feed.polling_interval_minutes}m`}
+                {usesSeasonalAvailability ? ` · ${seasonLabels(feed.default_available_liturgical_seasons)}` : ''}
+                {' · '}last poll {formatDateTime(feed.last_polled_at)}
+              </span>
             </button>
           ))}
           <h3 className="admin-list-heading">Spotify</h3>
@@ -1081,7 +1369,13 @@ function FeedsSection({
         </div>
       </div>
       <div className="admin-stacked-forms">
-        <FeedForm draft={draft} saving={saving} onChange={setDraft} onSave={save} />
+        <FeedForm
+          draft={draft}
+          saving={saving}
+          usesSeasonalAvailability={usesSeasonalAvailability}
+          onChange={setDraft}
+          onSave={save}
+        />
         <SpotifyFeedForm draft={spotifyDraft} saving={savingSpotify} onChange={setSpotifyDraft} onSave={saveSpotify} />
         <ApplePodcastFeedForm draft={applePodcastDraft} saving={savingApplePodcast} onChange={setApplePodcastDraft} onSave={saveApplePodcast} />
       </div>
@@ -1089,7 +1383,19 @@ function FeedsSection({
   );
 }
 
-function FeedForm({ draft, saving, onChange, onSave }: { draft: FeedDraft; saving: boolean; onChange: (draft: FeedDraft) => void; onSave: () => void }) {
+function FeedForm({
+  draft,
+  saving,
+  usesSeasonalAvailability,
+  onChange,
+  onSave,
+}: {
+  draft: FeedDraft;
+  saving: boolean;
+  usesSeasonalAvailability: boolean;
+  onChange: (draft: FeedDraft) => void;
+  onSave: () => void;
+}) {
   return (
     <div className="admin-form">
       <div className="engine-section-heading compact">
@@ -1116,7 +1422,9 @@ function FeedForm({ draft, saving, onChange, onSave }: { draft: FeedDraft; savin
         <Field label="RSS URL" value={draft.rss_url} onChange={(rss_url) => onChange({ ...draft, rss_url })} className="admin-full" />
         <Field label="Import from" value={draft.import_from_date ?? ''} onChange={(import_from_date) => onChange({ ...draft, import_from_date })} type="date" />
         <Field label="Polling minutes" value={String(draft.polling_interval_minutes)} onChange={(value) => onChange({ ...draft, polling_interval_minutes: Number(value) || 120 })} type="number" />
-        <Field label="Default seasons" value={seasonValue(draft.default_available_liturgical_seasons)} onChange={(value) => onChange({ ...draft, default_available_liturgical_seasons: parseSeasons(value) })} placeholder="ordinary_time" />
+        {usesSeasonalAvailability ? (
+          <Field label="Default seasons" value={seasonValue(draft.default_available_liturgical_seasons)} onChange={(value) => onChange({ ...draft, default_available_liturgical_seasons: parseSeasons(value) })} placeholder="ordinary_time" />
+        ) : null}
         <label className="admin-check">
           <input type="checkbox" checked={draft.poll_once} onChange={(event) => onChange({ ...draft, poll_once: event.target.checked })} />
           Poll once

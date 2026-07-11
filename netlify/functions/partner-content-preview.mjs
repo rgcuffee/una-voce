@@ -104,6 +104,7 @@ export async function handler(event) {
     baseVideoQuery().eq('prayer_date', date),
     season
       ? baseVideoQuery()
+          .eq('partners.slug', 'word-on-fire')
           .is('prayer_date', null)
           .contains('available_liturgical_seasons', [season])
       : Promise.resolve({ data: [], error: null }),

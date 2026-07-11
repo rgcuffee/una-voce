@@ -108,14 +108,14 @@ cross join (
     (
       'Hide non-office announcements',
       array[]::text[],
-      array['Announce', 'Announcement', 'Race to the Finish']::text[],
+      array['Announce', 'Announcement', 'Race to the Finish', 'About Today', 'Invitatory']::text[],
       null,
       500,
       'hidden'
     ),
     (
       'Office of Readings',
-      array['Office of Readings', 'Office of Reading']::text[],
+      array['Office of Readings', 'Office of Reading', 'Office Readings', 'Readings', 'Matins', 'Vigils']::text[],
       array[]::text[],
       'office_of_readings',
       400,

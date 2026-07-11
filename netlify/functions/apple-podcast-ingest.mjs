@@ -7,6 +7,10 @@ const JSON_HEADERS = {
 const USER_AGENT = 'Una Voce Apple Podcast RSS Ingest/1.0 (+https://unavoce.app)';
 const MAX_FEEDS_PER_RUN = 15;
 const FETCH_TIMEOUT_MS = 12000;
+const EXCLUDED_EPISODE_TITLE_PATTERNS = [
+  /\babout today\b/i,
+  /\binvitatory\b/i,
+];
 
 const supabaseUrl = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -207,11 +211,21 @@ async function ingestFeed(feed, rulesByPartnerId) {
 }
 
 function isImportableEpisode(feed, episode) {
+  if (isExcludedEpisode(episode)) {
+    return false;
+  }
+
   if (!feed.import_from_date) {
     return true;
   }
 
   return inferPrayerDate(episode) >= feed.import_from_date;
+}
+
+function isExcludedEpisode(episode) {
+  return EXCLUDED_EPISODE_TITLE_PATTERNS.some((pattern) =>
+    pattern.test(episode.title),
+  );
 }
 
 async function getExistingClassifications(guids) {

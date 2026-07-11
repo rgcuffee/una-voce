@@ -279,6 +279,16 @@ export type EpisodeUpdate = {
   display_status?: YoutubeVideoDisplayStatus;
 };
 
+export type BulkVideoUpdate = {
+  ids: string[];
+  display_status: YoutubeVideoDisplayStatus;
+};
+
+export type BulkEpisodeUpdate = {
+  episodes: { id: string; provider: 'spotify' | 'apple-podcast' }[];
+  display_status: YoutubeVideoDisplayStatus;
+};
+
 function adminSecret() {
   return window.localStorage.getItem(ADMIN_SECRET_KEY) ?? '';
 }
@@ -411,9 +421,23 @@ export function updateVideo(video: VideoUpdate) {
   });
 }
 
+export function updateVideos(video: BulkVideoUpdate) {
+  return adminFetch<{ ok: true; count: number }>('/api/admin/partners', {
+    method: 'POST',
+    body: JSON.stringify({ action: 'updateVideos', video }),
+  });
+}
+
 export function updateEpisode(episode: EpisodeUpdate) {
   return adminFetch<{ ok: true; episode: AdminAudioEpisode }>('/api/admin/partners', {
     method: 'POST',
     body: JSON.stringify({ action: 'updateEpisode', episode }),
+  });
+}
+
+export function updateEpisodes(episode: BulkEpisodeUpdate) {
+  return adminFetch<{ ok: true; count: number }>('/api/admin/partners', {
+    method: 'POST',
+    body: JSON.stringify({ action: 'updateEpisodes', episode }),
   });
 }

@@ -2912,6 +2912,7 @@ export function PrayerOfficeMockup() {
           baseVideoQuery().eq('prayer_date', selectedDate),
           liturgicalSeason
             ? baseVideoQuery()
+                .eq('partners.slug', 'word-on-fire')
                 .is('prayer_date', null)
                 .contains('available_liturgical_seasons', [liturgicalSeason])
             : Promise.resolve({ data: [], error: null }),

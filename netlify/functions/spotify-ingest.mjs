@@ -7,6 +7,10 @@ const JSON_HEADERS = {
 const USER_AGENT = 'Una Voce Spotify RSS Ingest/1.0 (+https://unavoce.app)';
 const MAX_FEEDS_PER_RUN = 15;
 const FETCH_TIMEOUT_MS = 12000;
+const EXCLUDED_EPISODE_TITLE_PATTERNS = [
+  /\babout today\b/i,
+  /\binvitatory\b/i,
+];
 
 const supabaseUrl = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -206,11 +210,21 @@ async function ingestFeed(feed, rulesByPartnerId) {
 }
 
 function isImportableEpisode(feed, episode) {
+  if (isExcludedEpisode(episode)) {
+    return false;
+  }
+
   if (!feed.import_from_date) {
     return true;
   }
 
   return inferPrayerDate(episode) >= feed.import_from_date;
+}
+
+function isExcludedEpisode(episode) {
+  return EXCLUDED_EPISODE_TITLE_PATTERNS.some((pattern) =>
+    pattern.test(episode.title),
+  );
 }
 
 async function getExistingClassifications(guids) {
@@ -574,6 +588,11 @@ function inferDateFromTitleWithYear(title, fallbackYear) {
 }
 
 function inferPrayerDate(episode) {
+  const urlDate = inferDateFromUrl(episode.guid) ?? inferDateFromUrl(episode.audioUrl);
+  if (urlDate) {
+    return urlDate;
+  }
+
   const publishedYear = new Date(episode.publishedAt).getUTCFullYear();
   const titleDate = inferDateFromTitleWithYear(episode.title, publishedYear);
   if (titleDate) {
@@ -581,6 +600,11 @@ function inferPrayerDate(episode) {
   }
 
   return new Date(episode.publishedAt).toISOString().slice(0, 10);
+}
+
+function inferDateFromUrl(value) {
+  const match = value?.match(/[?&]date=(\d{4})(\d{2})(\d{2})(?:&|$)/);
+  return match ? `${match[1]}-${match[2]}-${match[3]}` : null;
 }
 
 function decodeXml(value) {

@@ -106,7 +106,7 @@ async function getDueFeeds() {
         'poll_once',
         'default_available_liturgical_seasons',
         'last_polled_at',
-        'partners!inner(active)',
+        'partners!inner(active,slug)',
       ].join(','),
     )
     .eq('active', true)
@@ -332,10 +332,13 @@ function normalizeVideo(feed, parsedVideo, rules, existingClassification) {
   const classification =
     existingClassification ?? classifyVideo(parsedVideo, rules);
   const videoKind = inferVideoKind(feed.expected_content_mode, parsedVideo);
+  const usesSeasonalAvailability = isSeasonalAvailabilityFeed(feed);
   const availableLiturgicalSeasons =
-    classification.availableLiturgicalSeasons?.length > 0
-      ? classification.availableLiturgicalSeasons
-      : normalizeSeasons(feed.default_available_liturgical_seasons);
+    usesSeasonalAvailability
+      ? classification.availableLiturgicalSeasons?.length > 0
+        ? classification.availableLiturgicalSeasons
+        : normalizeSeasons(feed.default_available_liturgical_seasons)
+      : [];
   const inferredWeekdays =
     availableLiturgicalSeasons.length > 0
       ? inferWeekdaysFromTitle(parsedVideo.title)
@@ -364,6 +367,11 @@ function normalizeVideo(feed, parsedVideo, rules, existingClassification) {
     available_liturgical_seasons: availableLiturgicalSeasons,
     available_weekdays: availableWeekdays,
   };
+}
+
+function isSeasonalAvailabilityFeed(feed) {
+  const partner = Array.isArray(feed.partners) ? feed.partners[0] : feed.partners;
+  return partner?.slug === 'word-on-fire';
 }
 
 function classifyVideo(video, rules) {

@@ -305,8 +305,12 @@ async function handleAction(payload) {
       return upsertRule(payload.rule);
     case 'updateVideo':
       return updateVideo(payload.video);
+    case 'updateVideos':
+      return updateVideos(payload.video);
     case 'updateEpisode':
       return updateEpisode(payload.episode);
+    case 'updateEpisodes':
+      return updateEpisodes(payload.episode);
     default:
       return { ok: false, error: 'Unsupported action' };
   }
@@ -505,6 +509,23 @@ async function updateVideo(video) {
   return { ok: true, video: data };
 }
 
+async function updateVideos(video) {
+  const ids = idArray(video.ids, 'ids');
+  const displayStatus = enumValue(
+    video.display_status,
+    ['pending', 'approved', 'hidden', 'expired'],
+    'display_status',
+  );
+
+  const { error, count } = await supabase
+    .from('youtube_videos')
+    .update({ display_status: displayStatus }, { count: 'exact' })
+    .in('id', ids);
+
+  throwIfError(error);
+  return { ok: true, count: count ?? ids.length };
+}
+
 async function updateEpisode(episode) {
   const id = requiredString(episode.id, 'id');
   const provider = episode.provider === 'apple-podcast' ? 'apple-podcast' : 'spotify';
@@ -527,6 +548,57 @@ async function updateEpisode(episode) {
 
   throwIfError(error);
   return { ok: true, episode: data };
+}
+
+async function updateEpisodes(episode) {
+  const episodes = Array.isArray(episode.episodes) ? episode.episodes : [];
+  const displayStatus = enumValue(
+    episode.display_status,
+    ['pending', 'approved', 'hidden', 'expired'],
+    'display_status',
+  );
+  const spotifyIds = idArray(
+    episodes
+      .filter((item) => item.provider !== 'apple-podcast')
+      .map((item) => item.id),
+    'spotify episode ids',
+    true,
+  );
+  const applePodcastIds = idArray(
+    episodes
+      .filter((item) => item.provider === 'apple-podcast')
+      .map((item) => item.id),
+    'apple podcast episode ids',
+    true,
+  );
+
+  if (spotifyIds.length + applePodcastIds.length === 0) {
+    throw new Error('Missing episode ids');
+  }
+
+  let updatedCount = 0;
+
+  if (spotifyIds.length > 0) {
+    const { error, count } = await supabase
+      .from('spotify_episodes')
+      .update({ display_status: displayStatus }, { count: 'exact' })
+      .in('id', spotifyIds);
+
+    throwIfError(error);
+    updatedCount += count ?? spotifyIds.length;
+  }
+
+  if (applePodcastIds.length > 0) {
+    const { error, count } = await supabase
+      .from('apple_podcast_episodes')
+      .update({ display_status: displayStatus }, { count: 'exact' })
+      .in('id', applePodcastIds);
+
+    throwIfError(error);
+    updatedCount += count ?? applePodcastIds.length;
+  }
+
+  return { ok: true, count: updatedCount };
 }
 
 function isStaleFeed(feed) {
@@ -569,6 +641,20 @@ function nullableString(value) {
   if (typeof value !== 'string') return null;
   const trimmed = value.trim();
   return trimmed ? trimmed : null;
+}
+
+function idArray(values, field, allowEmpty = false) {
+  if (!Array.isArray(values)) {
+    throw new Error(`Invalid ${field}`);
+  }
+
+  const ids = [...new Set(values.map((value) => requiredString(value, field)))];
+
+  if (!allowEmpty && ids.length === 0) {
+    throw new Error(`Missing ${field}`);
+  }
+
+  return ids;
 }
 
 function nullableSlug(value, field) {
