@@ -588,6 +588,7 @@ function AnalyticsSection({ analytics }: { analytics: AdminAnalyticsData }) {
         <Metric label="Active Users" value={analytics.totals.activeUsers} detail="Anonymous browsers" />
         <Metric label="Page Views" value={analytics.totals.pageViews} detail="All app routes" />
         <Metric label="Prayer Sessions" value={analytics.totals.prayerSessions} detail="Player opens" />
+        <Metric label="Platform Opens" value={analytics.totals.platformOpens} detail="YouTube, Spotify, Apple" />
         <Metric label="Community Views" value={analytics.totals.communityPageViews} detail="Profile pages" />
         <Metric label="Partner Clicks" value={analytics.totals.outboundClicks} detail="Outbound links" />
         <Metric label="Avg Open" value={`${analytics.totals.averagePanelOpenSeconds}s`} detail="Player panel" />
@@ -598,6 +599,7 @@ function AnalyticsSection({ analytics }: { analytics: AdminAnalyticsData }) {
         <AnalyticsList title="Acquisition" items={analytics.acquisitionSources} />
         <AnalyticsList title="Devices" items={analytics.deviceClasses} />
         <AnalyticsList title="Prayer Providers" items={analytics.prayerByProvider} />
+        <AnalyticsList title="Platform Opens" items={analytics.platformOpensByProvider} />
         <AnalyticsList title="Prayer Hours" items={analytics.prayerByHour} />
         <AnalyticsList title="Outbound Destinations" items={analytics.outboundByDestination} />
       </div>
@@ -661,13 +663,14 @@ function AnalyticsSection({ analytics }: { analytics: AdminAnalyticsData }) {
                   <th>Pages</th>
                   <th>Community</th>
                   <th>Prayer</th>
+                  <th>Platform</th>
                   <th>Outbound</th>
                 </tr>
               </thead>
               <tbody>
                 {latestDays.length === 0 ? (
                   <tr>
-                    <td colSpan={6}>No daily analytics recorded yet.</td>
+                    <td colSpan={7}>No daily analytics recorded yet.</td>
                   </tr>
                 ) : (
                   latestDays.map((day) => (
@@ -677,6 +680,7 @@ function AnalyticsSection({ analytics }: { analytics: AdminAnalyticsData }) {
                       <td>{day.pageViews}</td>
                       <td>{day.communityPageViews}</td>
                       <td>{day.prayerSessions}</td>
+                      <td>{day.platformOpens}</td>
                       <td>{day.outboundClicks}</td>
                     </tr>
                   ))

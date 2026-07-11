@@ -317,6 +317,9 @@ async function analyticsSummary(partners) {
   const communityPageViews = events.filter((event) => event.event_name === 'community_page_viewed');
   const outboundClicks = events.filter((event) => event.event_name === 'community_outbound_clicked');
   const contentCardClicks = events.filter((event) => event.event_name === 'content_card_clicked');
+  const platformOpens = events.filter((event) =>
+    event.event_name === 'platform_opened' || event.event_name === 'source_opened',
+  );
   const activeUsers = new Set(
     [...events, ...sessions].map((item) => item.anonymous_id).filter(Boolean),
   );
@@ -332,6 +335,7 @@ async function analyticsSummary(partners) {
       communityPageViews: communityPageViews.length,
       outboundClicks: outboundClicks.length,
       contentCardClicks: contentCardClicks.length,
+      platformOpens: platformOpens.length,
       sourceOpens: sessions.filter((session) => session.opened_source).length,
       completions: sessions.filter((session) => session.completed).length,
       averagePanelOpenSeconds: average(
@@ -347,6 +351,7 @@ async function analyticsSummary(partners) {
     deviceClasses: topCounts(events, (event) => event.device_class || 'unknown', 8),
     prayerByProvider: topCounts(sessions, (session) => session.provider || 'unknown', 8),
     prayerByHour: topCounts(sessions, (session) => session.hour || 'unknown', 8),
+    platformOpensByProvider: topCounts(platformOpens, (event) => event.provider || 'unknown', 8),
     outboundByDestination: topCounts(
       outboundClicks,
       (event) => event.content_type || destinationType(event.source_url),
@@ -377,6 +382,7 @@ function legacyAnalyticsSummary(windowDays, sessions, eventsError) {
       communityPageViews: 0,
       outboundClicks: 0,
       contentCardClicks: 0,
+      platformOpens: 0,
       sourceOpens: sessions.filter((session) => session.opened_source).length,
       completions: sessions.filter((session) => session.completed).length,
       averagePanelOpenSeconds: average(
@@ -392,6 +398,7 @@ function legacyAnalyticsSummary(windowDays, sessions, eventsError) {
     deviceClasses: [],
     prayerByProvider: topCounts(sessions, (session) => session.provider || 'unknown', 8),
     prayerByHour: topCounts(sessions, (session) => session.hour || 'unknown', 8),
+    platformOpensByProvider: [],
     outboundByDestination: [],
     communityPerformance: [],
   };
@@ -408,6 +415,7 @@ function dailyAnalytics(events, sessions) {
     if (event.event_name === 'community_page_viewed') row.communityPageViews += 1;
     if (event.event_name === 'community_outbound_clicked') row.outboundClicks += 1;
     if (event.event_name === 'content_card_clicked') row.contentCardClicks += 1;
+    if (event.event_name === 'platform_opened' || event.event_name === 'source_opened') row.platformOpens += 1;
     if (event.anonymous_id) row.activeUsers.add(event.anonymous_id);
   }
 
@@ -436,6 +444,7 @@ function dailyRow(days, date) {
       communityPageViews: 0,
       outboundClicks: 0,
       contentCardClicks: 0,
+      platformOpens: 0,
       prayerSessions: 0,
     });
   }

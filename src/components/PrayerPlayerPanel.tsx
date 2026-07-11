@@ -51,7 +51,8 @@ function trackPrayerPlayerAnalytics(
   eventName:
     | 'prayer_session_started'
     | 'prayer_session_ended'
-    | 'source_opened',
+    | 'source_opened'
+    | 'platform_opened',
   session: PrayerPlayerSession,
   extra: Record<string, unknown> = {},
 ) {
@@ -239,9 +240,13 @@ export function PrayerPlayerPanel({
     const sessionId = analyticsSessionIdRef.current;
     const startedAt = analyticsStartedAtRef.current;
     if (sessionId && startedAt) {
-      trackPrayerPlayerAnalytics('source_opened', session, {
+      trackPrayerPlayerAnalytics('platform_opened', session, {
         sessionId,
         startedAt,
+        metadata: {
+          platform: session.provider,
+          destinationUrl: session.sourceUrl,
+        },
       });
     }
     window.open(session.sourceUrl, '_blank', 'noopener,noreferrer');
@@ -319,7 +324,7 @@ export function PrayerPlayerPanel({
             Minimize
           </button>
           <button type='button' onClick={openSource}>
-            Open Source
+            Open Platform
           </button>
           <button type='button' onClick={closePanel}>
             Close

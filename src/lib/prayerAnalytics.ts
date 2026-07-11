@@ -20,6 +20,7 @@ export type PrayerAnalyticsEventName =
   | 'prayer_completed'
   | 'prayer_session_ended'
   | 'source_opened'
+  | 'platform_opened'
   | 'share_clicked'
   | 'search_performed'
   | 'filter_changed'

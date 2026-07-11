@@ -180,6 +180,7 @@ export type AnalyticsDailyRow = {
   communityPageViews: number;
   outboundClicks: number;
   contentCardClicks: number;
+  platformOpens: number;
   prayerSessions: number;
 };
 
@@ -206,6 +207,7 @@ export type AdminAnalyticsData = {
     communityPageViews: number;
     outboundClicks: number;
     contentCardClicks: number;
+    platformOpens: number;
     sourceOpens: number;
     completions: number;
     averagePanelOpenSeconds: number;
@@ -217,6 +219,7 @@ export type AdminAnalyticsData = {
   deviceClasses: AnalyticsCount[];
   prayerByProvider: AnalyticsCount[];
   prayerByHour: AnalyticsCount[];
+  platformOpensByProvider: AnalyticsCount[];
   outboundByDestination: AnalyticsCount[];
   communityPerformance: AnalyticsCommunityRow[];
 };

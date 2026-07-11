@@ -16,6 +16,7 @@ const EVENT_NAMES = new Set([
   'prayer_completed',
   'prayer_session_ended',
   'source_opened',
+  'platform_opened',
   'share_clicked',
   'search_performed',
   'filter_changed',
@@ -303,7 +304,7 @@ function sessionUpdatesFor(detail) {
     updates.active_play_seconds = detail.activePlaySeconds ?? 0;
   }
 
-  if (detail.eventName === 'source_opened') {
+  if (detail.eventName === 'source_opened' || detail.eventName === 'platform_opened') {
     updates.opened_source = true;
   }
 
