@@ -25,6 +25,7 @@ import {
   type SpotifyFeedDraft,
 } from './adminApi';
 import { supabase } from '../lib/supabase';
+import { AdminSidebar } from './AdminSidebar';
 import type {
   LiturgicalHour,
   LiturgicalSeason,
@@ -429,11 +430,7 @@ export function AdminDashboardPage() {
 
   return (
     <main className="engine-admin admin-dashboard">
-      <aside className="engine-sidebar" aria-label="Admin sections">
-        <div className="engine-brand">
-          <span>Una Voce</span>
-          <strong>Admin Hub</strong>
-        </div>
+      <AdminSidebar title="Admin Hub">
         <nav>
           <button className={section === 'overview' ? 'active' : ''} type="button" onClick={() => setSection('overview')}>Overview</button>
           <button className={section === 'partners' ? 'active' : ''} type="button" onClick={() => setSection('partners')}>Partners</button>
@@ -443,7 +440,7 @@ export function AdminDashboardPage() {
           <button className={section === 'rules' ? 'active' : ''} type="button" onClick={() => setSection('rules')}>Rules</button>
           <a href="/admin/calendar-engine">Calendar Engine</a>
         </nav>
-      </aside>
+      </AdminSidebar>
 
       <section className="engine-workspace">
         <header className="engine-topbar">

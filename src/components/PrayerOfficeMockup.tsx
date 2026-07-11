@@ -1276,14 +1276,6 @@ const SEGMENT_SUBTITLES: Record<string, string> = {
   'segment-night': 'Compline',
 };
 
-const MOBILE_SEGMENT_ORDER = [
-  'segment-morning',
-  'segment-night',
-  'segment-evening',
-  'segment-midday',
-  'segment-office',
-];
-
 const DEFAULT_TODAY_SEGMENT_ID = 'segment-morning';
 
 function segmentIdFromHash(hash: string) {
@@ -1325,6 +1317,16 @@ const SIDEBAR_ITEMS: SidebarEntry[] = [
     segmentId: 'segment-night',
   },
 ];
+
+function sidebarSegmentOrder(items: SidebarEntry[]) {
+  return items.flatMap((item) =>
+    'children' in item
+      ? item.children.map((child) => child.segmentId)
+      : [item.segmentId],
+  );
+}
+
+const MOBILE_SEGMENT_ORDER = sidebarSegmentOrder(SIDEBAR_ITEMS);
 
 const FORMATS: {
   key: FormatKey;

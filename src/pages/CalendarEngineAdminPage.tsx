@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { AdminSidebar } from '../admin/AdminSidebar';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import type { CalendarConflictReason, CalendarConflictSeverity, Json } from '../lib/database.types';
 import type {
@@ -686,11 +687,7 @@ export function CalendarEngineAdminPage() {
 
     return (
         <main className="engine-admin">
-            <aside className="engine-sidebar" aria-label="Calendar engine sections">
-                <div className="engine-brand">
-                    <span>Una Voce</span>
-                    <strong>Calendar Engine</strong>
-                </div>
+            <AdminSidebar title="Calendar Engine">
                 <nav>
                     <a href="/admin">Admin Home</a>
                     <a href="#day-inspector">Day Inspector</a>
@@ -700,7 +697,7 @@ export function CalendarEngineAdminPage() {
                     <a href="#sources">Sources</a>
                     <a href="#runs">Runs</a>
                 </nav>
-            </aside>
+            </AdminSidebar>
 
             <section className="engine-workspace">
                 <header className="engine-topbar">
