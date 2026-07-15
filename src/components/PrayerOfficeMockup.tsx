@@ -58,8 +58,6 @@ const showPendingPartnerContent =
   import.meta.env.VITE_SHOW_PENDING_PARTNER_CONTENT === 'true' ||
   (import.meta.env.DEV &&
     import.meta.env.VITE_SHOW_PENDING_PARTNER_CONTENT !== 'false');
-const partnerContentOnboardingStatuses: PartnerOnboardingStatus[] =
-  showPendingPartnerContent ? ['active', 'pending'] : ['active'];
 const partnerContentPrayerTypes: LiturgicalHour[] = [
   'office_of_readings',
   'lauds',
@@ -2843,10 +2841,8 @@ export function PrayerOfficeMockup() {
       const { data, error } = await partnerClient
         .from('partners')
         .select(
-          'slug,relationship_status,badge_enabled,community_page_enabled,community_page_slug',
-        )
-        .eq('active', true)
-        .in('onboarding_status', partnerContentOnboardingStatuses);
+          'slug,active,onboarding_status,relationship_status,badge_enabled,community_page_enabled,community_page_slug',
+        );
 
       if (!isActive) {
         return;
@@ -2868,6 +2864,8 @@ export function PrayerOfficeMockup() {
             )
             .flatMap((partner) => {
               const override = {
+                active: partner.active,
+                onboardingStatus: partner.onboarding_status,
                 relationshipStatus: partner.relationship_status,
                 badgeEnabled: partner.badge_enabled,
                 communityPageEnabled: partner.community_page_enabled,

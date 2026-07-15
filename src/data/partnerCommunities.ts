@@ -8,6 +8,7 @@ export type PartnerCommunitySlug =
   | 'word-on-fire'
   | 'worth-abbey'
   | 'ridgehaven-priory'
+  | 'st-helena-ministries'
   | 'the-little-oratory'
   | 'psalm-and-laurel'
   | 'cedarwell-abbey'
@@ -46,6 +47,8 @@ const showPendingPartnerCommunities =
     import.meta.env.VITE_SHOW_PENDING_PARTNER_CONTENT !== 'false');
 
 export type PartnerCommunityStatusOverride = {
+  active: boolean;
+  onboardingStatus: PartnerCommunityOnboardingStatus | 'archived';
   relationshipStatus: Exclude<PartnerBadgeStatus, 'mock'>;
   badgeEnabled: boolean;
   communityPageEnabled: boolean;
@@ -353,6 +356,51 @@ export const PARTNER_COMMUNITIES: PartnerCommunity[] = [
     ],
   },
   {
+    slug: 'st-helena-ministries',
+    name: 'St Helena Ministries',
+    kind: 'Audio prayer ministry',
+    location: 'United States / online',
+    onboardingStatus: 'pending',
+    relationshipStatus: 'curated',
+    badgeEnabled: false,
+    tagline: 'Daily audio prayer with the Divine Office.',
+    description:
+      'St Helena Ministries shares Daily Prayer with the Divine Office, with podcast episodes for Office of Readings, Lauds, Vespers, and Compline.',
+    imageUrl:
+      'https://d3t3ozftmdmh3i.cloudfront.net/staging/podcast_uploaded_nologo/19574999/19574999-1783369242515-4d67106e9be45.jpg',
+    accent: 'Daily audio, Office of Readings, Lauds, Vespers, Compline',
+    prayerRhythm: [
+      'Office of Readings',
+      'Lauds',
+      'Vespers',
+      'Compline',
+    ],
+    links: [
+      {
+        label: 'Podcast',
+        href: 'https://sthelenaministries.com/office-of-readings-podcast/',
+      },
+      {
+        label: 'Spotify',
+        href: 'https://open.spotify.com/show/70YjmFQpK2AWFJ0UNeTXGE',
+      },
+    ],
+    featured: [
+      {
+        label: 'Today',
+        title: 'Daily office audio',
+        description:
+          'Podcast episodes can be matched to each prayer date and routed into the Listen tab for the relevant hour.',
+      },
+      {
+        label: 'Night',
+        title: 'Compline',
+        description:
+          'Night Prayer episodes are reviewed as pending before they are published into the prayer experience.',
+      },
+    ],
+  },
+  {
     slug: 'ridgehaven-priory',
     name: 'Ridgehaven Priory',
     kind: 'Mock prayer community',
@@ -518,8 +566,14 @@ function isPartnerCommunityPublished(
       : true;
   }
 
+  const override = overrides[community.slug];
+
+  if (!override || override.active === false) {
+    return false;
+  }
+
   return (
-    overrides[community.slug]?.communityPageEnabled === true ||
+    override.communityPageEnabled === true ||
     (community.onboardingStatus === 'pending' && showPendingPartnerCommunities)
   );
 }
@@ -536,6 +590,8 @@ const COMMUNITY_ALIASES: Record<string, PartnerCommunitySlug> = {
   'padre ruben dario garcia': 'padre-ruben-dario-garcia',
   'padre rubén darío garcía': 'padre-ruben-dario-garcia',
   'sing the hours': 'sing-the-hours',
+  'st helena ministries': 'st-helena-ministries',
+  'st. helena ministries': 'st-helena-ministries',
   'virtual padre didier': 'padre-didier',
   'word on fire': 'word-on-fire',
   'worth abbey': 'worth-abbey',
