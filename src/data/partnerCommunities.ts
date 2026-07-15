@@ -3,6 +3,7 @@ export type PartnerCommunitySlug =
   | 'cantor-del-camino'
   | 'divine-office'
   | 'padre-didier'
+  | 'padre-ruben-dario-garcia'
   | 'sing-the-hours'
   | 'word-on-fire'
   | 'worth-abbey'
@@ -316,6 +317,42 @@ export const PARTNER_COMMUNITIES: PartnerCommunity[] = [
     ],
   },
   {
+    slug: 'padre-ruben-dario-garcia',
+    name: 'Padre Ruben Dario Garcia',
+    kind: 'Creator ministry',
+    location: 'Spanish-language / online',
+    onboardingStatus: 'pending',
+    relationshipStatus: 'partner',
+    badgeEnabled: false,
+    tagline: 'Spanish Lauds and Compline videos for daily prayer.',
+    description:
+      'Padre Ruben Dario Garcia shares Spanish-language Liturgy of the Hours videos, including Lauds and Compline, through his Jesus Eucaristia YouTube channel.',
+    imageUrl:
+      'https://yt3.googleusercontent.com/nrwNSqpS89awIfmKmKLI13WkkofHiyuHe44mp2INYkFhHQjDpcSgdvKH-DMWa1FxgyNOQH8=s900-c-k-c0x00ffffff-no-rj',
+    accent: 'Spanish prayer, daily Lauds, Compline',
+    prayerRhythm: ['Lauds', 'Compline'],
+    links: [
+      {
+        label: 'YouTube channel',
+        href: 'https://www.youtube.com/@padrerubendariogarcia1513',
+      },
+    ],
+    featured: [
+      {
+        label: 'Today',
+        title: 'Laudes de hoy',
+        description:
+          'Lauds videos are matched only when titles include Lauds, Morning, or Spanish morning-prayer equivalents.',
+      },
+      {
+        label: 'Night',
+        title: 'Completas de hoy',
+        description:
+          'Compline videos are matched only when titles include Compline, Night, or Spanish night-prayer equivalents.',
+      },
+    ],
+  },
+  {
     slug: 'ridgehaven-priory',
     name: 'Ridgehaven Priory',
     kind: 'Mock prayer community',
@@ -496,6 +533,8 @@ const COMMUNITY_ALIASES: Record<string, PartnerCommunitySlug> = {
   'divine office': 'divine-office',
   'divine office (divineoffice.org)': 'divine-office',
   'padre didier': 'padre-didier',
+  'padre ruben dario garcia': 'padre-ruben-dario-garcia',
+  'padre rubén darío garcía': 'padre-ruben-dario-garcia',
   'sing the hours': 'sing-the-hours',
   'virtual padre didier': 'padre-didier',
   'word on fire': 'word-on-fire',

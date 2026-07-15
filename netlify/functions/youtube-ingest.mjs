@@ -7,6 +7,21 @@ const JSON_HEADERS = {
 const USER_AGENT = 'Una Voce RSS Ingest/1.0 (+https://unavoce.app)';
 const MAX_FEEDS_PER_RUN = 15;
 const FETCH_TIMEOUT_MS = 12000;
+const STRICT_IMPORT_KEYWORDS_BY_PARTNER_SLUG = new Map([
+  [
+    'padre-ruben-dario-garcia',
+    [
+      'lauds',
+      'morning',
+      'laudes',
+      'manana',
+      'compline',
+      'night',
+      'completas',
+      'noche',
+    ],
+  ],
+]);
 
 const supabaseUrl = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -224,11 +239,26 @@ async function ingestFeed(feed, rulesByPartnerId) {
 }
 
 function isImportableVideo(feed, video) {
+  if (!matchesStrictImportFilter(feed, video)) {
+    return false;
+  }
+
   if (!feed.import_from_date) {
     return true;
   }
 
   return inferPrayerDate(video) >= feed.import_from_date;
+}
+
+function matchesStrictImportFilter(feed, video) {
+  const partner = Array.isArray(feed.partners) ? feed.partners[0] : feed.partners;
+  const keywords = STRICT_IMPORT_KEYWORDS_BY_PARTNER_SLUG.get(partner?.slug);
+
+  if (!keywords) {
+    return true;
+  }
+
+  return hasKeyword(normalizeKeywordText(video.title), keywords);
 }
 
 async function getExistingClassifications(youtubeVideoIds) {
@@ -375,7 +405,9 @@ function isSeasonalAvailabilityFeed(feed) {
 }
 
 function classifyVideo(video, rules) {
-  const searchableText = `${video.title}\n${video.description ?? ''}`.toLowerCase();
+  const searchableText = normalizeKeywordText(
+    `${video.title}\n${video.description ?? ''}`,
+  );
 
   for (const rule of rules) {
     if (hasKeyword(searchableText, rule.exclude_keywords)) {
@@ -481,8 +513,15 @@ function hasKeyword(searchableText, keywords) {
 
 function normalizeKeywords(keywords) {
   return (keywords ?? [])
-    .map((keyword) => String(keyword).trim().toLowerCase())
+    .map((keyword) => normalizeKeywordText(String(keyword).trim()))
     .filter(Boolean);
+}
+
+function normalizeKeywordText(value) {
+  return value
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
 }
 
 function normalizeSeasons(seasons) {

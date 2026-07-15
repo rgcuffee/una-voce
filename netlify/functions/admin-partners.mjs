@@ -28,6 +28,12 @@ const LITURGICAL_SEASONS = [
   'triduum',
   'easter',
 ];
+const REVIEW_STATUS_PRIORITY = {
+  approved: 0,
+  hidden: 1,
+  expired: 2,
+  pending: 3,
+};
 
 const supabaseUrl = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -163,17 +169,17 @@ async function dashboardResponse() {
         .from('youtube_videos')
         .select('*')
         .order('published_at', { ascending: false })
-        .limit(250),
+        .limit(1000),
       supabase
         .from('spotify_episodes')
         .select('*')
         .order('published_at', { ascending: false })
-        .limit(250),
+        .limit(1000),
       supabase
         .from('apple_podcast_episodes')
         .select('*')
         .order('published_at', { ascending: false })
-        .limit(250),
+        .limit(1000),
     ]);
 
   throwIfError(partnersResult.error);
@@ -190,8 +196,8 @@ async function dashboardResponse() {
   const spotifyFeeds = spotifyFeedsResult.data ?? [];
   const applePodcastFeeds = applePodcastFeedsResult.data ?? [];
   const rules = rulesResult.data ?? [];
-  const videos = videosResult.data ?? [];
-  const episodes = [
+  const videos = dedupeReviewItems(filterCurrentReviewItems(videosResult.data ?? [], today));
+  const episodes = dedupeReviewItems(filterCurrentReviewItems([
     ...(spotifyEpisodesResult.data ?? []).map((episode) => ({
       ...episode,
       provider: 'spotify',
@@ -200,7 +206,7 @@ async function dashboardResponse() {
       ...episode,
       provider: 'apple-podcast',
     })),
-  ].sort((left, right) => Date.parse(right.published_at) - Date.parse(left.published_at));
+  ], today)).sort((left, right) => Date.parse(right.published_at) - Date.parse(left.published_at));
   const summaries = partners.map((partner) =>
     partnerSummary(partner.id, feeds, spotifyFeeds, applePodcastFeeds, rules, videos, episodes, today),
   );
@@ -238,6 +244,165 @@ async function dashboardResponse() {
       staleFeeds: [...feeds, ...spotifyFeeds, ...applePodcastFeeds].filter((feed) => isStaleFeed(feed)).length,
     },
   };
+}
+
+function filterCurrentReviewItems(items, today) {
+  return items.filter((item) => {
+    const date = reviewItemDate(item);
+    return date && date >= today;
+  });
+}
+
+function dedupeReviewItems(items) {
+  const selectedByKey = new Map();
+  const keysByItemId = new Map();
+  const duplicateIds = new Set();
+
+  for (const item of items) {
+    const keys = reviewIdentityKeys(item);
+
+    if (keys.length === 0) {
+      continue;
+    }
+
+    const existing = keys.map((key) => selectedByKey.get(key)).find(Boolean);
+
+    if (!existing) {
+      keysByItemId.set(item.id, keys);
+      for (const key of keys) {
+        selectedByKey.set(key, item);
+      }
+      continue;
+    }
+
+    const winner = preferredReviewItem(existing, item);
+    const loser = winner.id === existing.id ? item : existing;
+    const winnerKeys = new Set([
+      ...(keysByItemId.get(winner.id) ?? []),
+      ...(keysByItemId.get(loser.id) ?? []),
+      ...keys,
+    ]);
+
+    duplicateIds.add(loser.id);
+    duplicateIds.delete(winner.id);
+    keysByItemId.set(winner.id, [...winnerKeys]);
+    keysByItemId.set(loser.id, []);
+
+    for (const key of winnerKeys) {
+      selectedByKey.set(key, winner);
+    }
+  }
+
+  return items.filter((item) => !duplicateIds.has(item.id));
+}
+
+function reviewIdentityKeys(item) {
+  return [
+    reviewSourceKey(item),
+    reviewDateHourKey(item),
+    reviewTitleDateKey(item),
+  ].filter(Boolean);
+}
+
+function reviewSourceKey(item) {
+  const source = normalizeReviewUrl(item.canonical_url);
+
+  if (!source) {
+    return null;
+  }
+
+  return `${item.partner_id}|source|${source}`;
+}
+
+function reviewDateHourKey(item) {
+  const date = reviewItemDate(item);
+
+  if (!date || !item.prayer_type) {
+    return null;
+  }
+
+  return `${item.partner_id}|date-hour|${date}|${item.prayer_type}`;
+}
+
+function reviewTitleDateKey(item) {
+  const title = normalizeReviewTitle(item.title);
+  const date = reviewItemDate(item);
+
+  if (!title || !date) {
+    return null;
+  }
+
+  return `${item.partner_id}|title|${date}|${item.prayer_type ?? 'unclassified'}|${title}`;
+}
+
+function normalizeReviewUrl(value) {
+  if (!value) {
+    return '';
+  }
+
+  try {
+    const url = new URL(value);
+    url.hash = '';
+    for (const key of [...url.searchParams.keys()]) {
+      if (isTrackingParameter(key)) {
+        url.searchParams.delete(key);
+      }
+    }
+    const params = [...url.searchParams.entries()].sort(([left], [right]) =>
+      left.localeCompare(right),
+    );
+    const query = params.length > 0
+      ? `?${new URLSearchParams(params).toString()}`
+      : '';
+
+    return `${url.hostname.toLowerCase()}${url.pathname.replace(/\/+$/, '')}${query}`;
+  } catch {
+    return String(value).trim().toLowerCase().replace(/#.*$/, '').replace(/\/+$/, '');
+  }
+}
+
+function isTrackingParameter(key) {
+  return (
+    key.toLowerCase().startsWith('utm_') ||
+    ['at', 'ct', 'fbclid', 'gclid', 'igshid', 'mc_cid', 'mc_eid', 'si'].includes(
+      key.toLowerCase(),
+    )
+  );
+}
+
+function normalizeReviewTitle(value) {
+  return String(value ?? '')
+    .toLowerCase()
+    .replace(/&amp;/g, '&')
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/[\u201c\u201d]/g, '"')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/\b(apple podcasts?|spotify|episode|audio|video|official)\b/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function reviewItemDate(item) {
+  return item.prayer_date ?? item.published_at?.slice(0, 10) ?? null;
+}
+
+function preferredReviewItem(left, right) {
+  const statusDifference =
+    (REVIEW_STATUS_PRIORITY[left.display_status] ?? 99) -
+    (REVIEW_STATUS_PRIORITY[right.display_status] ?? 99);
+
+  if (statusDifference !== 0) {
+    return statusDifference < 0 ? left : right;
+  }
+
+  const leftUpdatedAt = Date.parse(left.updated_at ?? left.created_at ?? left.published_at);
+  const rightUpdatedAt = Date.parse(right.updated_at ?? right.created_at ?? right.published_at);
+
+  if (leftUpdatedAt !== rightUpdatedAt) {
+    return leftUpdatedAt > rightUpdatedAt ? left : right;
+  }
+
+  return Date.parse(left.published_at) >= Date.parse(right.published_at) ? left : right;
 }
 
 async function analyticsSummary(partners) {

@@ -551,6 +551,12 @@ body {
     font-weight: 600;
 }
 
+.media-empty {
+    color: var(--charcoal-soft);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
 .format-options {
     display: grid;
     grid-template-columns: minmax(0, 1fr);

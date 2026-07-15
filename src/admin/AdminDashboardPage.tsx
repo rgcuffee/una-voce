@@ -304,8 +304,139 @@ function isSeasonalAvailabilityPartner(partner?: Pick<AdminPartner, 'slug'> | nu
   return partner?.slug === SEASONAL_AVAILABILITY_PARTNER_SLUG;
 }
 
-function isCurrentOrFutureReviewItem(item: Pick<AdminAudioEpisode | AdminYoutubeVideo, 'prayer_date'>, today: string) {
-  return !item.prayer_date || item.prayer_date >= today;
+function isCurrentOrFutureReviewItem(item: Pick<AdminAudioEpisode | AdminYoutubeVideo, 'prayer_date' | 'published_at'>, today: string) {
+  const reviewDate = item.prayer_date ?? item.published_at?.slice(0, 10);
+  return Boolean(reviewDate && reviewDate >= today);
+}
+
+type DedupeReviewItem = Pick<
+  AdminAudioEpisode | AdminYoutubeVideo,
+  'id' | 'partner_id' | 'canonical_url' | 'display_status' | 'prayer_date' | 'prayer_type' | 'published_at' | 'title' | 'created_at' | 'updated_at'
+>;
+
+function dedupeReviewItems<T extends DedupeReviewItem>(items: T[]) {
+  const selectedByKey = new Map<string, T>();
+  const keysByItemId = new Map<string, string[]>();
+  const duplicateIds = new Set<string>();
+
+  for (const item of items) {
+    const keys = reviewIdentityKeys(item);
+
+    if (keys.length === 0) {
+      continue;
+    }
+
+    const existing = keys.map((key) => selectedByKey.get(key)).find(Boolean);
+
+    if (!existing) {
+      keysByItemId.set(item.id, keys);
+      keys.forEach((key) => selectedByKey.set(key, item));
+      continue;
+    }
+
+    const winner = preferredReviewItem(existing, item);
+    const loser = winner.id === existing.id ? item : existing;
+    const winnerKeys = new Set([
+      ...(keysByItemId.get(winner.id) ?? []),
+      ...(keysByItemId.get(loser.id) ?? []),
+      ...keys,
+    ]);
+
+    duplicateIds.add(loser.id);
+    duplicateIds.delete(winner.id);
+    keysByItemId.set(winner.id, [...winnerKeys]);
+    keysByItemId.set(loser.id, []);
+    winnerKeys.forEach((key) => selectedByKey.set(key, winner));
+  }
+
+  return items.filter((item) => !duplicateIds.has(item.id));
+}
+
+function reviewIdentityKeys(item: DedupeReviewItem) {
+  return [
+    reviewSourceKey(item),
+    reviewDateHourKey(item),
+    reviewTitleDateKey(item),
+  ].filter(Boolean) as string[];
+}
+
+function reviewSourceKey(item: DedupeReviewItem) {
+  const source = normalizeReviewUrl(item.canonical_url);
+  return source ? `${item.partner_id}|source|${source}` : null;
+}
+
+function reviewDateHourKey(item: DedupeReviewItem) {
+  const date = reviewItemDate(item);
+  return date && item.prayer_type
+    ? `${item.partner_id}|date-hour|${date}|${item.prayer_type}`
+    : null;
+}
+
+function reviewTitleDateKey(item: DedupeReviewItem) {
+  const title = normalizeReviewTitle(item.title);
+  const date = reviewItemDate(item);
+  return title && date
+    ? `${item.partner_id}|title|${date}|${item.prayer_type ?? 'unclassified'}|${title}`
+    : null;
+}
+
+function normalizeReviewUrl(value: string | null | undefined) {
+  if (!value) return '';
+
+  try {
+    const url = new URL(value);
+    url.hash = '';
+    [...url.searchParams.keys()].forEach((key) => {
+      if (isTrackingParameter(key)) {
+        url.searchParams.delete(key);
+      }
+    });
+    const params = [...url.searchParams.entries()].sort(([left], [right]) => left.localeCompare(right));
+    const query = params.length > 0 ? `?${new URLSearchParams(params).toString()}` : '';
+    return `${url.hostname.toLowerCase()}${url.pathname.replace(/\/+$/, '')}${query}`;
+  } catch {
+    return value.trim().toLowerCase().replace(/#.*$/, '').replace(/\/+$/, '');
+  }
+}
+
+function isTrackingParameter(key: string) {
+  const normalizedKey = key.toLowerCase();
+  return normalizedKey.startsWith('utm_') ||
+    ['at', 'ct', 'fbclid', 'gclid', 'igshid', 'mc_cid', 'mc_eid', 'si'].includes(normalizedKey);
+}
+
+function normalizeReviewTitle(value: string | null | undefined) {
+  return String(value ?? '')
+    .toLowerCase()
+    .replace(/&amp;/g, '&')
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/[\u201c\u201d]/g, '"')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/\b(apple podcasts?|spotify|episode|audio|video|official)\b/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function reviewItemDate(item: Pick<AdminAudioEpisode | AdminYoutubeVideo, 'prayer_date' | 'published_at'>) {
+  return item.prayer_date ?? item.published_at?.slice(0, 10) ?? null;
+}
+
+function preferredReviewItem<T extends DedupeReviewItem>(left: T, right: T) {
+  const statusDifference =
+    REVIEW_STATUS_ORDER[left.display_status] - REVIEW_STATUS_ORDER[right.display_status];
+
+  if (statusDifference !== 0) {
+    return statusDifference < 0 ? left : right;
+  }
+
+  const leftUpdatedAt = Date.parse(left.updated_at ?? left.created_at ?? left.published_at);
+  const rightUpdatedAt = Date.parse(right.updated_at ?? right.created_at ?? right.published_at);
+
+  if (leftUpdatedAt !== rightUpdatedAt) {
+    return leftUpdatedAt > rightUpdatedAt ? left : right;
+  }
+
+  return Date.parse(left.published_at) >= Date.parse(right.published_at) ? left : right;
 }
 
 function seasonLabels(seasons: LiturgicalSeason[] | undefined) {
@@ -954,10 +1085,9 @@ function VideosSection({
   const [bulkSaving, setBulkSaving] = useState(false);
   const shownVideos = useMemo(
     () =>
-      videos
+      dedupeReviewItems(videos.filter((video) => isCurrentOrFutureReviewItem(video, data.today)))
         .filter(
           (video) =>
-            isCurrentOrFutureReviewItem(video, data.today) &&
             (statusFilter === 'all' || video.display_status === statusFilter),
         )
         .sort(reviewQueueSort),
@@ -1207,10 +1337,9 @@ function AudioSection({
   const [bulkSaving, setBulkSaving] = useState(false);
   const shownEpisodes = useMemo(
     () =>
-      episodes
+      dedupeReviewItems(episodes.filter((episode) => isCurrentOrFutureReviewItem(episode, data.today)))
         .filter(
           (episode) =>
-            isCurrentOrFutureReviewItem(episode, data.today) &&
             (statusFilter === 'all' || episode.display_status === statusFilter),
         )
         .sort(reviewQueueSort),

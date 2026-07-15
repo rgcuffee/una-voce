@@ -1,7 +1,7 @@
 import { type ReactNode } from 'react';
 import {
-  PARTNER_COMMUNITIES,
   getPartnerCommunity,
+  listPartnerCommunities,
   type PartnerBadgeStatus,
   type PartnerCommunity,
   type PartnerCommunityStatusOverrides,
@@ -90,45 +90,6 @@ const PRAYER_TYPE_LABELS: Record<
 };
 
 const WORTH_ABBEY_PREVIOUS_STREAM_BUFFER_MINUTES = 45;
-
-const LIVE_UPCOMING: StreamCard[] = [
-  {
-    meta: 'Mock Community Live',
-    title: 'Ridgehaven Priory · Vespers',
-    description:
-      'Live chapel stream of Evening Prayer with shared responses and final blessing.',
-    time: 'Today, 5:00 PM',
-    image:
-      'https://plus.unsplash.com/premium_photo-1679051422153-2ea3c8cfe9ed?q=80&w=2070&auto=format&fit=crop',
-    communitySlug: 'ridgehaven-priory',
-    source: 'mock',
-  },
-  {
-    meta: 'Creator Live',
-    title: 'The Little Oratory · Compline Together',
-    description:
-      'Close the day with a guided Night Prayer and an opening hymn.',
-    time: 'Today, 9:00 PM',
-    image:
-      'https://images.unsplash.com/photo-1525874684015-58379d421a52?auto=format&fit=crop&w=1400&q=80',
-    communitySlug: 'the-little-oratory',
-    source: 'mock',
-  },
-];
-
-const LIVE_PREVIOUS: StreamCard[] = [
-  {
-    meta: 'Archived Live',
-    title: 'Sisters of Dawnfield · Lauds Replay',
-    description:
-      'Replay of a full live stream with psalm responses and intercessions.',
-    time: 'Earlier today, 6:00 AM',
-    image:
-      'https://images.unsplash.com/photo-1518895949257-7621c3c786d7?auto=format&fit=crop&w=1400&q=80',
-    communitySlug: 'sisters-of-dawnfield',
-    source: 'mock',
-  },
-];
 
 const TEXT_SOURCES: StreamCard[] = [
   {
@@ -290,19 +251,9 @@ function localDateKey(date: Date) {
   ].join('-');
 }
 
-function partnerFirst<T extends MediaCard>(
-  partnerItems: T[],
-  fallbackItems: T[],
-): T[] {
-  return partnerItems.length > 0
-    ? [...partnerItems, ...fallbackItems]
-    : fallbackItems;
-}
-
 function isDiscoverCommunity(community: PartnerCommunity) {
   return (
     community.relationshipStatus !== 'mock' &&
-    community.onboardingStatus !== 'pending' &&
     Boolean(community.imageUrl)
   );
 }
@@ -565,15 +516,11 @@ export function DiscoverPage({
   partnerAudio?: DiscoverPartnerPrayerAudio[];
   worthAbbeyVideos?: DiscoverWorthAbbeyVideo[];
 }) {
-  const upcomingStreams = partnerFirst(
-    worthAbbeyStreamCards(worthAbbeyVideos, 'upcoming'),
-    LIVE_UPCOMING,
-  );
-  const previousStreams = partnerFirst(
-    worthAbbeyStreamCards(worthAbbeyVideos, 'previous'),
-    LIVE_PREVIOUS,
-  );
-  const discoverCommunities = PARTNER_COMMUNITIES.filter(isDiscoverCommunity);
+  const upcomingStreams = worthAbbeyStreamCards(worthAbbeyVideos, 'upcoming');
+  const previousStreams = worthAbbeyStreamCards(worthAbbeyVideos, 'previous');
+  const discoverCommunities = listPartnerCommunities(
+    partnerStatusOverrides,
+  ).filter(isDiscoverCommunity);
   const multilingualResources = discoverCommunities
     .filter(isMultilingualCommunity)
     .map((community) => discoverCardFromCommunity(community, 'Spanish'));
@@ -610,27 +557,31 @@ export function DiscoverPage({
         />
       </section>
 
-      <section className='page-section'>
-        <h2 className='page-section-title'>Live now &amp; upcoming</h2>
-        <p className='page-section-intro'>
-          Don't pray alone. Join monasteries, parishes, ministries, and
-          Catholics around the world who are already praying the Hours live.
-        </p>
-        <StreamGrid
-          items={upcomingStreams}
-          onOpenCommunity={onOpenCommunity}
-          partnerStatusOverrides={partnerStatusOverrides}
-        />
-      </section>
+      {upcomingStreams.length > 0 ? (
+        <section className='page-section'>
+          <h2 className='page-section-title'>Live now &amp; upcoming</h2>
+          <p className='page-section-intro'>
+            Don't pray alone. Join monasteries, parishes, ministries, and
+            Catholics around the world who are already praying the Hours live.
+          </p>
+          <StreamGrid
+            items={upcomingStreams}
+            onOpenCommunity={onOpenCommunity}
+            partnerStatusOverrides={partnerStatusOverrides}
+          />
+        </section>
+      ) : null}
 
-      <section className='page-section'>
-        <h2 className='page-section-title'>Recent streams</h2>
-        <StreamGrid
-          items={previousStreams}
-          onOpenCommunity={onOpenCommunity}
-          partnerStatusOverrides={partnerStatusOverrides}
-        />
-      </section>
+      {previousStreams.length > 0 ? (
+        <section className='page-section'>
+          <h2 className='page-section-title'>Recent streams</h2>
+          <StreamGrid
+            items={previousStreams}
+            onOpenCommunity={onOpenCommunity}
+            partnerStatusOverrides={partnerStatusOverrides}
+          />
+        </section>
+      ) : null}
 
       <section className='page-section'>
         <h2 className='page-section-title'>Apps and text resources</h2>
