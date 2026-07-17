@@ -70,6 +70,10 @@ export function viewForPath(pathname: string): ViewKey {
         return 'today';
     }
 
+    if (normalized === '/for-parishes' || normalized.startsWith('/parishes/')) {
+        return 'parishes';
+    }
+
     if (
         normalized === '/community' ||
         normalized.startsWith('/community/') ||

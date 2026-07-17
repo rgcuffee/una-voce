@@ -3076,6 +3076,473 @@ body {
     color: var(--charcoal);
 }
 
+.parish-hero {
+    display: grid;
+    gap: 22px;
+}
+
+.parish-hero-copy {
+    min-width: 0;
+}
+
+.parish-hero-visual {
+    display: grid;
+    gap: 14px;
+    border: 1px solid rgba(224, 221, 213, 0.9);
+    border-radius: 16px;
+    background: #ffffff;
+    padding: 16px;
+    box-shadow: 0 16px 36px rgba(28, 28, 30, 0.08);
+}
+
+.parish-hero-visual-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: center;
+    font-size: 12px;
+    color: var(--charcoal-soft);
+}
+
+.parish-hero-visual-header b {
+    color: var(--charcoal);
+    font-size: 13px;
+}
+
+.parish-hero-calendar {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 6px;
+}
+
+.parish-hero-calendar span {
+    min-height: 52px;
+    border: 1px solid rgba(184, 151, 58, 0.2);
+    border-radius: 8px;
+    background: #fffaf0;
+    color: var(--charcoal-mid);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.parish-widget-mini {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+    border: 1px solid rgba(86, 111, 103, 0.18);
+    border-radius: 12px;
+    background: #f4f7f5;
+    padding: 12px;
+}
+
+.parish-widget-mini span {
+    color: #566f67;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.parish-widget-mini button {
+    min-height: 38px;
+    border: 1px solid rgba(86, 111, 103, 0.2);
+    border-radius: 8px;
+    background: #ffffff;
+    color: var(--charcoal);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.parish-path-grid,
+.resource-card-grid,
+.copy-template-grid,
+.daily-reminder-list,
+.resource-guide-list {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+}
+
+.parish-path-card,
+.resource-card,
+.copy-template-card,
+.daily-reminder-list article {
+    border: 1px solid rgba(224, 221, 213, 0.86);
+    border-radius: 14px;
+    background: #ffffff;
+    padding: 18px;
+}
+
+.parish-path-card {
+    display: flex;
+    min-height: 280px;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.parish-path-card>span,
+.resource-card>span,
+.daily-reminder-list article>span,
+.resource-card-topline>span:first-child {
+    color: #566f67;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.parish-path-card h3,
+.resource-card h3,
+.copy-template-card h3 {
+    margin-top: 8px;
+    color: var(--charcoal);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 23px;
+    font-weight: 500;
+    line-height: 1.1;
+}
+
+.parish-path-card p,
+.resource-card p,
+.copy-template-card p,
+.daily-reminder-list p,
+.resource-guide-list p {
+    margin-top: 10px;
+    color: var(--charcoal-mid);
+    font-size: 14px;
+    line-height: 1.58;
+}
+
+.parish-path-card ul,
+.parish-feature-list,
+.parish-pilot ul {
+    display: grid;
+    gap: 8px;
+    margin-top: 14px;
+    padding-left: 18px;
+    color: var(--charcoal-mid);
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.parish-feature-list {
+    color: rgba(250, 250, 248, 0.86);
+}
+
+.parish-path-detail {
+    border-top: 1px solid rgba(224, 221, 213, 0.8);
+    padding-top: 12px;
+}
+
+.parish-path-card button,
+.resource-card button,
+.copy-template-actions button,
+.daily-reminder-list button {
+    margin-top: auto;
+    border: 0;
+    background: transparent;
+    color: var(--gold);
+    cursor: pointer;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+    padding: 14px 0 0;
+}
+
+.resource-card button:disabled {
+    color: var(--charcoal-soft);
+    cursor: default;
+    opacity: 0.72;
+}
+
+.parish-feature-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+}
+
+.page-cta-link.inverse {
+    color: var(--gold-light);
+    font-weight: 700;
+}
+
+.page-cta-link.quiet {
+    color: var(--charcoal-soft);
+}
+
+.resource-toolbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.resource-search,
+.resource-type-filter {
+    display: grid;
+    gap: 6px;
+}
+
+.resource-search span,
+.resource-type-filter span {
+    color: var(--charcoal-soft);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.resource-search input,
+.resource-type-filter select {
+    width: 100%;
+    min-height: 44px;
+    border: 1px solid rgba(224, 221, 213, 0.96);
+    border-radius: 10px;
+    background: #ffffff;
+    color: var(--charcoal);
+    font: inherit;
+    font-size: 14px;
+    padding: 0 12px;
+}
+
+.resource-filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.resource-filter-row button {
+    border: 1px solid rgba(224, 221, 213, 0.96);
+    border-radius: 999px;
+    background: #ffffff;
+    color: var(--charcoal-mid);
+    cursor: pointer;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.2;
+    padding: 9px 12px;
+}
+
+.resource-filter-row button.selected {
+    border-color: rgba(184, 151, 58, 0.5);
+    background: #fff8e8;
+    color: var(--charcoal);
+}
+
+.resource-card {
+    display: flex;
+    min-height: 260px;
+    flex-direction: column;
+}
+
+.resource-card-topline,
+.resource-card-meta,
+.copy-template-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.resource-card-topline {
+    justify-content: space-between;
+}
+
+.resource-status {
+    border-radius: 999px;
+    padding: 4px 8px;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.resource-status.available {
+    background: #eef6f0;
+    color: #466658;
+}
+
+.resource-status.coming-soon {
+    background: #f5edd6;
+    color: #7d672c;
+}
+
+.resource-card-meta {
+    margin-top: 14px;
+    color: var(--charcoal-soft);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.resource-card-meta span+span::before {
+    content: '/';
+    margin-right: 8px;
+    color: rgba(108, 108, 112, 0.5);
+}
+
+.resource-audience,
+.placeholder-row,
+.challenge-meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 12px;
+}
+
+.resource-audience span,
+.placeholder-row span,
+.challenge-meta-row span {
+    border: 1px solid rgba(86, 111, 103, 0.14);
+    border-radius: 999px;
+    background: #f4f7f5;
+    color: #566f67;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.25;
+    padding: 5px 8px;
+}
+
+.copy-template-card {
+    display: grid;
+    gap: 12px;
+}
+
+.copy-template-card pre,
+.embed-code {
+    max-height: 280px;
+    overflow: auto;
+    white-space: pre-wrap;
+    border: 1px solid rgba(224, 221, 213, 0.86);
+    border-radius: 10px;
+    background: #fafaf8;
+    color: var(--charcoal-mid);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 12px;
+    line-height: 1.55;
+    padding: 14px;
+}
+
+.copy-template-actions {
+    justify-content: flex-start;
+}
+
+.copy-template-actions button,
+.daily-reminder-list button {
+    margin-top: 0;
+    padding-top: 0;
+}
+
+.widget-preview-section,
+.parish-pilot,
+.challenge-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+    align-items: center;
+}
+
+.parish-pilot {
+    border: 1px solid rgba(224, 221, 213, 0.86);
+    border-radius: 16px;
+    background: #ffffff;
+    padding: 22px;
+}
+
+.challenge-step-list {
+    display: grid;
+    gap: 10px;
+    padding-left: 22px;
+    color: var(--charcoal-mid);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.challenge-checklist {
+    display: grid;
+    gap: 10px;
+}
+
+.challenge-checklist details {
+    border: 1px solid rgba(224, 221, 213, 0.86);
+    border-radius: 12px;
+    background: #ffffff;
+    overflow: hidden;
+}
+
+.challenge-checklist summary {
+    cursor: pointer;
+    color: var(--charcoal);
+    font-weight: 800;
+    padding: 14px 16px;
+}
+
+.challenge-checklist-items {
+    display: grid;
+    gap: 10px;
+    border-top: 1px solid rgba(224, 221, 213, 0.8);
+    padding: 14px 16px 16px;
+}
+
+.challenge-checklist-items label {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 10px;
+    align-items: start;
+    color: var(--charcoal-mid);
+    font-size: 14px;
+    line-height: 1.45;
+}
+
+.challenge-checklist-items input {
+    margin-top: 3px;
+}
+
+.daily-reminder-list article {
+    display: grid;
+    gap: 8px;
+}
+
+.resource-guide-list .quiet-panel {
+    margin-bottom: 0;
+}
+
+@media (min-width: 760px) {
+    .parish-hero {
+        grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
+        align-items: center;
+    }
+
+    .parish-path-grid,
+    .resource-card-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .copy-template-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .resource-toolbar {
+        grid-template-columns: minmax(0, 1fr) 180px;
+        align-items: end;
+    }
+
+    .widget-preview-section,
+    .parish-pilot,
+    .challenge-hero {
+        grid-template-columns: minmax(0, 1fr) auto;
+    }
+}
+
 .menu-list {
     display: flex;
     flex-direction: column;

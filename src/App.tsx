@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AdminAuthGate } from './admin/AdminAuthGate';
 import { AdminDashboardPage } from './admin/AdminDashboardPage';
 import { PrayerOfficeMockup } from './components/PrayerOfficeMockup';
@@ -15,6 +15,7 @@ export default function App() {
         <Route path='/admin' element={<AdminAuthGate><AdminDashboardPage /></AdminAuthGate>} />
         <Route path='/admin/partners' element={<AdminAuthGate><AdminDashboardPage /></AdminAuthGate>} />
         <Route path='/admin/calendar-engine' element={<AdminAuthGate><CalendarEngineAdminPage /></AdminAuthGate>} />
+        <Route path='/for-parishes' element={<Navigate to='/parishes' replace />} />
         <Route path='*' element={<PrayerOfficeMockup />} />
       </Routes>
     </BrowserRouter>
