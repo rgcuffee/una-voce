@@ -3,6 +3,7 @@ import {
   PARTNER_COMMUNITIES,
   type PartnerBadgeStatus,
   type PartnerCommunity,
+  type PartnerCommunityStatusOverrides,
 } from '../data/partnerCommunities';
 import type { ViewNavigator } from '../navigation';
 
@@ -30,11 +31,17 @@ const CURATED_FEATURED_RESOURCE_FALLBACKS: FeaturedResource[] = [
   },
 ];
 
-const FEATURED_RESOURCES = partnerFeaturedResources()
-  .concat(CURATED_FEATURED_RESOURCE_FALLBACKS)
-  .slice(0, 3);
+function featuredResourcesFor(
+  partnerStatusOverrides?: PartnerCommunityStatusOverrides,
+) {
+  return partnerFeaturedResources(partnerStatusOverrides)
+    .concat(CURATED_FEATURED_RESOURCE_FALLBACKS)
+    .slice(0, 3);
+}
 
-function partnerFeaturedResources() {
+function partnerFeaturedResources(
+  partnerStatusOverrides?: PartnerCommunityStatusOverrides,
+) {
   return [
     ...PREFERRED_FEATURED_RESOURCE_SLUGS.map((slug) =>
       PARTNER_COMMUNITIES.find((community) => community.slug === slug),
@@ -43,19 +50,27 @@ function partnerFeaturedResources() {
       (community) => !PREFERRED_FEATURED_RESOURCE_SLUGS.includes(community.slug),
     ),
   ]
-    .map(featuredResourceFromCommunity)
+    .map((community) =>
+      featuredResourceFromCommunity(community, partnerStatusOverrides),
+    )
     .filter((resource): resource is FeaturedResource => Boolean(resource));
 }
 
 function featuredResourceFromCommunity(
   community: PartnerCommunity | undefined,
+  partnerStatusOverrides?: PartnerCommunityStatusOverrides,
 ): FeaturedResource | null {
+  const statusOverride = community
+    ? partnerStatusOverrides?.[community.slug]
+    : undefined;
   const isPreferred = Boolean(
     community && PREFERRED_FEATURED_RESOURCE_SLUGS.includes(community.slug),
   );
 
   if (
     !community ||
+    statusOverride?.active === false ||
+    statusOverride?.onboardingStatus === 'archived' ||
     (!isPreferred &&
       (community.onboardingStatus === 'pending' ||
         !['curated', 'verified'].includes(community.relationshipStatus))) ||
@@ -69,11 +84,22 @@ function featuredResourceFromCommunity(
     name: community.name,
     description: community.tagline,
     image: community.imageUrl,
-    badge: community.badgeEnabled ? community.relationshipStatus : null,
+    badge:
+      (statusOverride?.badgeEnabled ?? community.badgeEnabled)
+        ? (statusOverride?.relationshipStatus ?? community.relationshipStatus)
+        : null,
   };
 }
 
-export function HomePage({ onNavigate }: { onNavigate: ViewNavigator }) {
+export function HomePage({
+  onNavigate,
+  partnerStatusOverrides,
+}: {
+  onNavigate: ViewNavigator;
+  partnerStatusOverrides?: PartnerCommunityStatusOverrides;
+}) {
+  const featuredResources = featuredResourcesFor(partnerStatusOverrides);
+
   return (
     <article className="home-page">
       <section className="home-hero" aria-labelledby="home-hero-title">
@@ -182,7 +208,7 @@ export function HomePage({ onNavigate }: { onNavigate: ViewNavigator }) {
           </button>
         </div>
         <div className="home-featured-grid">
-          {FEATURED_RESOURCES.map((resource) => (
+          {featuredResources.map((resource) => (
             <article key={resource.name} className="home-featured-card">
               <span
                 className={`home-featured-image${resource.slug ? ` community-${resource.slug}` : ''}`}

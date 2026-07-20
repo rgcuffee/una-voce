@@ -16,7 +16,7 @@ export function PartnerBadge({
     .join(' ');
 
   return (
-    <span className={classes} title={meta.description} aria-label={meta.description}>
+    <span className={classes} aria-label={meta.description}>
       <span className='partner-badge-label'>{meta.label}</span>
       <span className='partner-badge-tooltip' role='tooltip' aria-hidden='true'>
         {meta.description}

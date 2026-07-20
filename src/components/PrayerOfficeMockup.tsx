@@ -2484,7 +2484,12 @@ function renderPage(
 ) {
   switch (view) {
     case 'home':
-      return <HomePage onNavigate={onNavigate} />;
+      return (
+        <HomePage
+          onNavigate={onNavigate}
+          partnerStatusOverrides={options.partnerStatusOverrides}
+        />
+      );
     case 'discover':
       return (
         <DiscoverPage
