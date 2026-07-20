@@ -108,19 +108,19 @@ cross join (
   values
     (
       'Lauds',
-      array['Lauds', 'Morning Catholic Prayer', 'Morning Prayer']::text[],
+      array['Lauds', 'Morning Catholic Prayer', 'Morning Prayer', 'Morning']::text[],
       array['Shorts']::text[],
       'lauds',
       220,
-      'pending'
+      'approved'
     ),
     (
       'Vespers',
-      array['Vespers', 'Evening Catholic Prayer', 'Evening Prayer']::text[],
+      array['Vespers', 'Evening Catholic Prayer', 'Evening Prayer', 'Evening']::text[],
       array['Shorts']::text[],
       'vespers',
       210,
-      'pending'
+      'approved'
     )
 ) as rule(
   name,

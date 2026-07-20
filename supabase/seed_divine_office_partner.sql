@@ -123,11 +123,11 @@ cross join (
     ),
     (
       'Lauds',
-      array['Morning Prayer', 'Lauds']::text[],
+      array['Morning Prayer', 'Morning', 'Lauds']::text[],
       array[]::text[],
       'lauds',
       390,
-      'pending'
+      'approved'
     ),
     (
       'Daytime Prayer',
@@ -139,11 +139,11 @@ cross join (
     ),
     (
       'Vespers',
-      array['Evening Prayer', 'Vespers']::text[],
+      array['Evening Prayer', 'Evening', 'Vespers']::text[],
       array[]::text[],
       'vespers',
       370,
-      'pending'
+      'approved'
     ),
     (
       'Compline',
@@ -151,7 +151,7 @@ cross join (
       array[]::text[],
       'compline',
       360,
-      'pending'
+      'approved'
     )
 ) as rule(
   name,

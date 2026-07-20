@@ -190,7 +190,7 @@ cross join (
     ),
     (
       'Lauds',
-      array['Lauds', 'Morning Prayer']::text[],
+      array['Lauds', 'Morning Prayer', 'Morning']::text[],
       array[]::text[],
       'lauds',
       290,
@@ -206,7 +206,7 @@ cross join (
     ),
     (
       'Vespers',
-      array['Vespers', 'Evening Prayer']::text[],
+      array['Vespers', 'Evening Prayer', 'Evening']::text[],
       array[]::text[],
       'vespers',
       270,

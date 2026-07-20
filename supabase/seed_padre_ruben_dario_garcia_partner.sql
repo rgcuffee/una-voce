@@ -112,7 +112,7 @@ cross join (
       array[]::text[],
       'lauds',
       220,
-      'pending'
+      'approved'
     ),
     (
       'Compline and Night Prayer',
@@ -120,7 +120,7 @@ cross join (
       array[]::text[],
       'compline',
       210,
-      'pending'
+      'approved'
     )
 ) as rule(
   name,

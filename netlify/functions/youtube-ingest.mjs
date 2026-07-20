@@ -360,7 +360,9 @@ function parseYouTubeAtom(xml) {
 
 function normalizeVideo(feed, parsedVideo, rules, existingClassification) {
   const classification =
-    existingClassification ?? classifyVideo(parsedVideo, rules);
+    existingClassification && existingClassification.displayStatus !== 'pending'
+      ? existingClassification
+      : classifyVideo(parsedVideo, rules);
   const videoKind = inferVideoKind(feed.expected_content_mode, parsedVideo);
   const usesSeasonalAvailability = isSeasonalAvailabilityFeed(feed);
   const availableLiturgicalSeasons =
@@ -502,13 +504,22 @@ function hasRequiredKeywords(searchableText, keywords) {
     return false;
   }
 
-  return normalizedKeywords.some((keyword) => searchableText.includes(keyword));
+  return normalizedKeywords.some((keyword) =>
+    containsWholeKeyword(searchableText, keyword),
+  );
 }
 
 function hasKeyword(searchableText, keywords) {
   return normalizeKeywords(keywords).some((keyword) =>
-    searchableText.includes(keyword),
+    containsWholeKeyword(searchableText, keyword),
   );
+}
+
+function containsWholeKeyword(searchableText, keyword) {
+  return new RegExp(
+    `(?:^|[^\\p{L}\\p{N}])${escapeRegExp(keyword)}(?=$|[^\\p{L}\\p{N}])`,
+    'iu',
+  ).test(searchableText);
 }
 
 function normalizeKeywords(keywords) {

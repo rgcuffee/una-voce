@@ -28,7 +28,7 @@ with partner as (
     'active',
     'curated',
     'Seeded from public YouTube playlist request',
-    'Public curated seed for the Word on Fire Night Prayer playlist led by Bishop Robert Barron. Import once; keep account pending while the source is reviewed.',
+    'Public curated seed for the Word on Fire Night Prayer playlist led by Bishop Robert Barron. Import once and automatically approve matching Compline videos.',
     true,
     true,
     'word-on-fire'
@@ -115,7 +115,7 @@ select
   'compline'::public.liturgical_hour,
   'en',
   260,
-  'pending'::public.youtube_video_display_status,
+  'approved'::public.youtube_video_display_status,
   array['ordinary_time']::public.liturgical_season[],
   true
 from partner

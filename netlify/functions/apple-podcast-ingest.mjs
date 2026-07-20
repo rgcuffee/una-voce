@@ -397,7 +397,9 @@ function normalizeEpisodeGuid(value) {
 
 function normalizeEpisode(feed, parsedEpisode, rules, existingClassification) {
   const classification =
-    existingClassification ?? classifyEpisode(parsedEpisode, rules);
+    existingClassification && existingClassification.displayStatus !== 'pending'
+      ? existingClassification
+      : classifyEpisode(parsedEpisode, rules);
   const appleEpisodeId = parsedEpisode.appleEpisodeId;
 
   return {
@@ -477,13 +479,22 @@ function hasRequiredKeywords(searchableText, keywords) {
     return false;
   }
 
-  return normalizedKeywords.some((keyword) => searchableText.includes(keyword));
+  return normalizedKeywords.some((keyword) =>
+    containsWholeKeyword(searchableText, keyword),
+  );
 }
 
 function hasKeyword(searchableText, keywords) {
   return normalizeKeywords(keywords).some((keyword) =>
-    searchableText.includes(keyword),
+    containsWholeKeyword(searchableText, keyword),
   );
+}
+
+function containsWholeKeyword(searchableText, keyword) {
+  return new RegExp(
+    `(?:^|[^\\p{L}\\p{N}])${escapeRegExp(keyword)}(?=$|[^\\p{L}\\p{N}])`,
+    'iu',
+  ).test(searchableText);
 }
 
 function normalizeKeywords(keywords) {

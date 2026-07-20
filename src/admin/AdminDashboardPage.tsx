@@ -309,6 +309,16 @@ function isCurrentOrFutureReviewItem(item: Pick<AdminAudioEpisode | AdminYoutube
   return Boolean(reviewDate && reviewDate >= today);
 }
 
+function matchesReviewDate(
+  item: Pick<AdminAudioEpisode | AdminYoutubeVideo, 'prayer_date' | 'published_at'>,
+  selectedDate: string,
+  today: string,
+) {
+  return selectedDate
+    ? reviewItemDate(item) === selectedDate
+    : isCurrentOrFutureReviewItem(item, today);
+}
+
 type DedupeReviewItem = Pick<
   AdminAudioEpisode | AdminYoutubeVideo,
   'id' | 'partner_id' | 'canonical_url' | 'display_status' | 'prayer_date' | 'prayer_type' | 'published_at' | 'title' | 'created_at' | 'updated_at'
@@ -490,6 +500,7 @@ export function AdminDashboardPage() {
   const [section, setSection] = useState<AdminSection>('overview');
   const [selectedPartnerId, setSelectedPartnerId] = useState<string>('');
   const [reviewPartnerId, setReviewPartnerId] = useState<string>('all');
+  const [reviewDate, setReviewDate] = useState('');
 
   async function refresh() {
     setState('loading');
@@ -622,6 +633,8 @@ export function AdminDashboardPage() {
                 videos={partnerVideos}
                 selectedPartnerId={reviewPartnerId}
                 onSelectPartner={setReviewPartnerId}
+                reviewDate={reviewDate}
+                onReviewDateChange={setReviewDate}
                 onSaved={refresh}
               />
             )}
@@ -631,6 +644,8 @@ export function AdminDashboardPage() {
                 episodes={partnerEpisodes}
                 selectedPartnerId={reviewPartnerId}
                 onSelectPartner={setReviewPartnerId}
+                reviewDate={reviewDate}
+                onReviewDateChange={setReviewDate}
                 onSaved={refresh}
               />
             )}
@@ -691,6 +706,25 @@ function PartnerPicker({
           <option key={partner.id} value={partner.id}>{partner.name}</option>
         ))}
       </select>
+    </label>
+  );
+}
+
+function ReviewDatePicker({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <label>
+      Prayer date
+      <input
+        type="date"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+      />
     </label>
   );
 }
@@ -1072,12 +1106,16 @@ function VideosSection({
   videos,
   selectedPartnerId,
   onSelectPartner,
+  reviewDate,
+  onReviewDateChange,
   onSaved,
 }: {
   data: AdminDashboardData;
   videos: AdminYoutubeVideo[];
   selectedPartnerId: string;
   onSelectPartner: (id: string) => void;
+  reviewDate: string;
+  onReviewDateChange: (value: string) => void;
   onSaved: () => Promise<void>;
 }) {
   const [statusFilter, setStatusFilter] = useState<YoutubeVideoDisplayStatus | 'all'>('pending');
@@ -1085,13 +1123,13 @@ function VideosSection({
   const [bulkSaving, setBulkSaving] = useState(false);
   const shownVideos = useMemo(
     () =>
-      dedupeReviewItems(videos.filter((video) => isCurrentOrFutureReviewItem(video, data.today)))
+      dedupeReviewItems(videos.filter((video) => matchesReviewDate(video, reviewDate, data.today)))
         .filter(
           (video) =>
             (statusFilter === 'all' || video.display_status === statusFilter),
         )
         .sort(reviewQueueSort),
-    [data.today, statusFilter, videos],
+    [data.today, reviewDate, statusFilter, videos],
   );
   const shownVideoIds = shownVideos.map((video) => video.id);
   const shownVideoIdKey = shownVideoIds.join('|');
@@ -1150,6 +1188,7 @@ function VideosSection({
         </div>
         <div className="engine-controls">
           <PartnerPicker data={data} value={selectedPartnerId} onChange={onSelectPartner} includeAll />
+          <ReviewDatePicker value={reviewDate} onChange={onReviewDateChange} />
           <label>
             Status
             <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as YoutubeVideoDisplayStatus | 'all')}>
@@ -1324,12 +1363,16 @@ function AudioSection({
   episodes,
   selectedPartnerId,
   onSelectPartner,
+  reviewDate,
+  onReviewDateChange,
   onSaved,
 }: {
   data: AdminDashboardData;
   episodes: AdminAudioEpisode[];
   selectedPartnerId: string;
   onSelectPartner: (id: string) => void;
+  reviewDate: string;
+  onReviewDateChange: (value: string) => void;
   onSaved: () => Promise<void>;
 }) {
   const [statusFilter, setStatusFilter] = useState<YoutubeVideoDisplayStatus | 'all'>('pending');
@@ -1337,13 +1380,13 @@ function AudioSection({
   const [bulkSaving, setBulkSaving] = useState(false);
   const shownEpisodes = useMemo(
     () =>
-      dedupeReviewItems(episodes.filter((episode) => isCurrentOrFutureReviewItem(episode, data.today)))
+      dedupeReviewItems(episodes.filter((episode) => matchesReviewDate(episode, reviewDate, data.today)))
         .filter(
           (episode) =>
             (statusFilter === 'all' || episode.display_status === statusFilter),
         )
         .sort(reviewQueueSort),
-    [data.today, episodes, statusFilter],
+    [data.today, episodes, reviewDate, statusFilter],
   );
   const shownEpisodeIds = shownEpisodes.map((episode) => episode.id);
   const shownEpisodeIdKey = shownEpisodeIds.join('|');
@@ -1411,6 +1454,7 @@ function AudioSection({
         </div>
         <div className="engine-controls">
           <PartnerPicker data={data} value={selectedPartnerId} onChange={onSelectPartner} includeAll />
+          <ReviewDatePicker value={reviewDate} onChange={onReviewDateChange} />
           <label>
             Status
             <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as YoutubeVideoDisplayStatus | 'all')}>
