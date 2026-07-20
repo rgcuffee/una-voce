@@ -15,7 +15,7 @@ type FeaturedResource = {
 };
 
 const PREFERRED_FEATURED_RESOURCE_SLUGS = [
-  'worth-abbey',
+  'padre-ruben-dario-garcia',
   'sing-the-hours',
   'divine-office',
 ];
