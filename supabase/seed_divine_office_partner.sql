@@ -135,7 +135,7 @@ cross join (
       array[]::text[],
       'midday_prayer',
       380,
-      'pending'
+      'approved'
     ),
     (
       'Vespers',
