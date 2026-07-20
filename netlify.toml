@@ -40,9 +40,34 @@
   status = 200
 
 [[redirects]]
-  from = "/api/admin/partners"
-  to = "/.netlify/functions/admin-partners"
-  status = 200
+from = "/api/admin/partners"
+to = "/.netlify/functions/admin-partners"
+status = 200
+
+[[redirects]]
+from = "/api/zoom/test-room"
+to = "/.netlify/functions/zoom-room"
+status = 200
+
+[[redirects]]
+from = "/api/zoom/oauth/start"
+to = "/.netlify/functions/zoom-oauth-start"
+status = 200
+
+[[redirects]]
+from = "/api/zoom/oauth/callback"
+to = "/.netlify/functions/zoom-oauth-callback"
+status = 200
+
+[[redirects]]
+from = "/api/zoom/session"
+to = "/.netlify/functions/zoom-session"
+status = 200
+
+[[redirects]]
+from = "/api/zoom/meeting-signature"
+to = "/.netlify/functions/zoom-meeting-signature"
+status = 200
 
 [[redirects]]
   from = "/src/*"

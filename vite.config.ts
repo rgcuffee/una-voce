@@ -22,6 +22,8 @@ type LocalFunctionEvent = {
     headers: Record<string, string>
     body: string
     queryStringParameters: Record<string, string>
+    path?: string
+    rawUrl?: string
 }
 
 function readRequestBody(request: {
@@ -58,6 +60,65 @@ export default defineConfig({
         {
             name: 'una-voce-local-functions',
             configureServer(server) {
+                server.middlewares.use(
+                    '/api/zoom',
+                    async (request, response) => {
+                        const zoomFunctions: Record<string, string> = {
+                            '/test-room': 'zoom-room.mjs',
+                            '/oauth/start': 'zoom-oauth-start.mjs',
+                            '/oauth/callback': 'zoom-oauth-callback.mjs',
+                            '/session': 'zoom-session.mjs',
+                            '/meeting-signature': 'zoom-meeting-signature.mjs',
+                        }
+                        try {
+                            const requestPath = (request as { url?: string }).url ?? '/'
+                            const pathname = requestPath.split('?')[0]
+                            const functionName = zoomFunctions[pathname]
+                            if (!functionName) {
+                                response.statusCode = 404
+                                response.end(JSON.stringify({ error: 'Zoom endpoint not found' }))
+                                return
+                            }
+                            const headers = headersFrom(
+                                request as {
+                                    headers?: Record<string, string | string[] | undefined>
+                                },
+                            )
+                            const rawUrl = `http://${headers.host ?? 'localhost:5173'}/api/zoom${requestPath}`
+                            const functionModulePath = `file://${process.cwd()}/netlify/functions/${functionName}?dev=${Date.now()}`
+                            const { handler } = await import(functionModulePath)
+                            const event: LocalFunctionEvent = {
+                                httpMethod: (request as { method?: string }).method ?? 'GET',
+                                headers,
+                                body: (request as { method?: string }).method === 'POST'
+                                    ? await readRequestBody(request as {
+                                        on(event: 'data', callback: (chunk: unknown) => void): void
+                                        on(event: 'end', callback: () => void): void
+                                        on(event: 'error', callback: (error: Error) => void): void
+                                    })
+                                    : '',
+                                queryStringParameters: queryParams(requestPath),
+                                path: `/api/zoom${pathname}`,
+                                rawUrl,
+                            }
+                            const result = await handler(event)
+                            response.statusCode = result.statusCode
+                            for (const [key, value] of Object.entries(result.headers ?? {})) {
+                                response.setHeader(key, value as string)
+                            }
+                            for (const [key, value] of Object.entries(result.multiValueHeaders ?? {})) {
+                                response.setHeader(key, value as string[])
+                            }
+                            response.end(result.body ?? '')
+                        } catch (error) {
+                            response.statusCode = 500
+                            response.setHeader('content-type', 'application/json')
+                            response.end(JSON.stringify({
+                                error: error instanceof Error ? error.message : 'Unable to load Zoom endpoint',
+                            }))
+                        }
+                    },
+                )
                 server.middlewares.use(
                     '/api/admin/partners',
                     async (request, response) => {
@@ -248,6 +309,9 @@ export default defineConfig({
             },
             workbox: {
                 globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+                // The Zoom Meeting SDK is loaded only after a visitor chooses to join.
+                // It is intentionally not part of the app's offline precache.
+                globIgnores: ['assets/embedded-*.js'],
                 runtimeCaching: [
                     {
                         urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
