@@ -99,6 +99,7 @@ type OptionItem = {
   videoId?: string;
   sourceUrl?: string;
   embedUrl?: string;
+  audioUrl?: string;
   provider?: 'youtube' | 'spotify' | 'apple-podcast';
   communitySlug?: PartnerCommunitySlug;
   liveStartAt?: string | null;
@@ -149,6 +150,7 @@ type PartnerPrayerAudio = {
   imageUrl: string | null;
   canonicalUrl: string;
   embedUrl: string;
+  audioUrl: string | null;
   publishedAt: string;
   durationSeconds: number | null;
 };
@@ -1532,6 +1534,7 @@ type PartnerPrayerAudioRow = {
   image_url: string | null;
   canonical_url: string;
   embed_url: string;
+  audio_url?: string | null;
   published_at: string;
   prayer_date: string | null;
   prayer_type: PartnerPrayerAudioType | null;
@@ -1578,6 +1581,7 @@ function normalizePartnerPrayerAudio(
     imageUrl: row.image_url,
     canonicalUrl: row.canonical_url,
     embedUrl: row.embed_url,
+    audioUrl: row.audio_url ?? null,
     publishedAt: row.published_at,
     durationSeconds: row.duration_seconds,
   };
@@ -1801,6 +1805,7 @@ function partnerAudioOptionForSegment(
     videoId: audio.episodeId ?? undefined,
     sourceUrl: audio.canonicalUrl,
     embedUrl: audio.embedUrl,
+    audioUrl: audio.audioUrl ?? undefined,
     provider: audio.provider === 'apple-podcast' ? 'apple-podcast' : 'spotify',
     communitySlug: audio.partnerSlug as PartnerCommunitySlug,
   };
@@ -2147,6 +2152,7 @@ function createPrayerPlayerSession({
       item.sourceUrl ??
       `https://www.youtube.com/watch?v=${item.videoId ?? MOCK_YOUTUBE_VIDEO_ID}`,
     embedUrl: item.embedUrl,
+    audioUrl: item.audioUrl,
   };
 }
 
@@ -3031,6 +3037,7 @@ export function PrayerOfficeMockup() {
                 'image_url',
                 'canonical_url',
                 'embed_url',
+                'audio_url',
                 'published_at',
                 'prayer_date',
                 'prayer_type',

@@ -141,6 +141,7 @@ export async function handler(event) {
           'image_url',
           'canonical_url',
           'embed_url',
+          'audio_url',
           'published_at',
           'prayer_date',
           'prayer_type',

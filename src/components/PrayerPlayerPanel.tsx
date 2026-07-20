@@ -25,6 +25,7 @@ export interface PrayerPlayerSession {
   pageContext: string;
   sourceUrl: string;
   embedUrl?: string;
+  audioUrl?: string;
 }
 
 interface PrayerPlayerPanelProps {
@@ -288,30 +289,43 @@ export function PrayerPlayerPanel({
           </button>
         </header>
 
-        <div className='prayer-player-frame-wrap'>
+        <div
+          className={`prayer-player-frame-wrap${session.audioUrl ? ' has-direct-audio' : ''}`}
+        >
           {iframeHasLoaded ? (
-            <iframe
-              className='prayer-player-frame'
-              src={embedUrl}
-              title={`${session.sourceName} ${session.title}`}
-              allow={
-                session.provider === 'apple-podcast'
-                  ? 'autoplay *; encrypted-media *; fullscreen *; clipboard-write'
-                  : 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share'
-              }
-              sandbox={
-                session.provider === 'apple-podcast'
-                  ? 'allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation-by-user-activation'
-                  : undefined
-              }
-              allowFullScreen
-            />
+            session.audioUrl ? (
+              <audio className='prayer-player-audio' controls autoPlay>
+                <source src={session.audioUrl} type='audio/mpeg' />
+                Your browser does not support audio playback.
+              </audio>
+            ) : (
+              <iframe
+                className='prayer-player-frame'
+                src={embedUrl}
+                title={`${session.sourceName} ${session.title}`}
+                allow={
+                  session.provider === 'apple-podcast'
+                    ? 'autoplay *; encrypted-media *; fullscreen *; clipboard-write'
+                    : 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share'
+                }
+                sandbox={
+                  session.provider === 'apple-podcast'
+                    ? 'allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation-by-user-activation'
+                    : undefined
+                }
+                allowFullScreen
+              />
+            )
           ) : null}
         </div>
 
         {session.provider === 'apple-podcast' ? (
           <div className='prayer-player-provider-fallback'>
-            <span>Apple player not loading?</span>
+            <span>
+              {session.audioUrl
+                ? 'Prefer Apple Podcasts?'
+                : 'Apple player not loading?'}
+            </span>
             <button type='button' onClick={openSource}>
               Open in Apple Podcasts
             </button>
