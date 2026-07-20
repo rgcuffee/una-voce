@@ -294,11 +294,29 @@ export function PrayerPlayerPanel({
               className='prayer-player-frame'
               src={embedUrl}
               title={`${session.sourceName} ${session.title}`}
-              allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share'
+              allow={
+                session.provider === 'apple-podcast'
+                  ? 'autoplay *; encrypted-media *; fullscreen *; clipboard-write'
+                  : 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share'
+              }
+              sandbox={
+                session.provider === 'apple-podcast'
+                  ? 'allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation-by-user-activation'
+                  : undefined
+              }
               allowFullScreen
             />
           ) : null}
         </div>
+
+        {session.provider === 'apple-podcast' ? (
+          <div className='prayer-player-provider-fallback'>
+            <span>Apple player not loading?</span>
+            <button type='button' onClick={openSource}>
+              Open in Apple Podcasts
+            </button>
+          </div>
+        ) : null}
 
         <p className='prayer-player-devotional'>
           {session.devotionalLine ?? 'You are joining the Church at prayer.'}
@@ -323,9 +341,11 @@ export function PrayerPlayerPanel({
           <button type='button' onClick={minimizePanel}>
             Minimize
           </button>
-          <button type='button' onClick={openSource}>
-            Open Platform
-          </button>
+          {session.provider !== 'apple-podcast' ? (
+            <button type='button' onClick={openSource}>
+              Open Platform
+            </button>
+          ) : null}
           <button type='button' onClick={closePanel}>
             Close
           </button>
