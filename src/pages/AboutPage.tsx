@@ -23,6 +23,15 @@ export function AboutPage({ onNavigate }: { onNavigate: ViewNavigator }) {
           </p>
 
           <p>
+            Each day is distinct. The Hours move through the Psalms in a
+            four-week rhythm while the prayers, readings, antiphons, feasts,
+            and seasons change throughout the year. By praying them, Catholics
+            enter more deeply into the life of the Church, allowing Advent,
+            Christmas, Lent, Easter, ordinary days, and the witness of the
+            saints to shape the rhythm of daily life.
+          </p>
+
+          <p>
             Una Voce helps Catholics discover the Liturgy of the Hours, begin
             praying it, and connect with communities already praying throughout
             the world. It is not trying to replace breviary apps; it is built
@@ -35,23 +44,22 @@ export function AboutPage({ onNavigate }: { onNavigate: ViewNavigator }) {
         <h2 className="page-section-title">What we are building</h2>
         <div className="prose about-prose">
           <p>
-            Una Voce is beginning as a discovery platform for the Church's daily
-            prayer.
+            Una Voce is beginning as a discovery platform for the daily prayer
+            of the Church.
           </p>
           <p>
-            We help Catholics find trusted resources for the Liturgy of the
-            Hours, sacred music, monastic prayer, Gregorian chant, Latin prayer,
-            and other expressions of the Church's living tradition of prayer.
+            We help Catholics find trusted audio and video resources for praying
+            the Liturgy of the Hours, including guided prayer, sung forms, and
+            livestreams in English and Spanish.
           </p>
           <p>
-            Some resources help you read and follow the texts. Others let you
-            pray along through audio, video, chant, or livestreams. Others
-            introduce you to communities and ministries who are already helping
-            the faithful pray.
+            Some resources make it easier to begin and follow along. Others
+            allow you to pray with monasteries, ministries, musicians, and
+            communities already sharing the Hours with the faithful.
           </p>
           <p>
             Our hope is simple: that more Catholics would not only learn about
-            the Hours, but begin praying them.
+            the Liturgy of the Hours, but begin praying it.
           </p>
         </div>
       </section>

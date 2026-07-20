@@ -16,7 +16,8 @@ type FeaturedResource = {
 
 const PREFERRED_FEATURED_RESOURCE_SLUGS = [
   'worth-abbey',
-  'cathaholic-music',
+  'sing-the-hours',
+  'divine-office',
 ];
 
 const CURATED_FEATURED_RESOURCE_FALLBACKS: FeaturedResource[] = [
@@ -49,10 +50,15 @@ function partnerFeaturedResources() {
 function featuredResourceFromCommunity(
   community: PartnerCommunity | undefined,
 ): FeaturedResource | null {
+  const isPreferred = Boolean(
+    community && PREFERRED_FEATURED_RESOURCE_SLUGS.includes(community.slug),
+  );
+
   if (
     !community ||
-    community.onboardingStatus === 'pending' ||
-    !['curated', 'verified'].includes(community.relationshipStatus) ||
+    (!isPreferred &&
+      (community.onboardingStatus === 'pending' ||
+        !['curated', 'verified'].includes(community.relationshipStatus))) ||
     !community.imageUrl
   ) {
     return null;

@@ -2468,7 +2468,7 @@ body {
     border: 1px solid rgba(28, 28, 30, 0.12);
     background:
         linear-gradient(90deg, rgba(20, 24, 23, 0.92), rgba(20, 24, 23, 0.68), rgba(20, 24, 23, 0.28)),
-        url('https://images.unsplash.com/photo-1504052434569-70ad5836ab65?auto=format&fit=crop&w=1800&q=82');
+        url('https://images.openai.com/static-rsc-4/1Lcx2v7pvNNkrdlI1hy_xIf4dCcyNP0FFN67C14C-CKMSjSLIcUn_hzrViGKS6EGygQE2TaFMUpWKlT8uwiqjMh5L1j3j97OlVt2UqoZjptQl4RdZKT10vLNM1jhPqHMfL_sWvBxLwbXK5ddWIOuaIH-PqdDquC9YilML9Z2UPpYhTJgVGHturkYDQHWs7kx?purpose=fullsize');
     background-position: center;
     background-size: cover;
     color: var(--white);
@@ -2596,12 +2596,12 @@ body {
     background-size: cover;
 }
 
-.home-featured-image.community-cathaholic-music {
-    background-position: top center;
+.home-featured-image.community-sing-the-hours {
+    background-position: center;
 }
 
-.home-featured-image.community-word-on-fire {
-    background-position: center 10%;
+.home-featured-image.community-divine-office {
+    background-position: top center;
 }
 
 .home-featured-body {

@@ -5,7 +5,6 @@ const NAV_ITEMS = [
   { path: '/pray', icon: '☰', label: 'Pray' },
   { path: '/start', icon: '⚑', label: 'Start' },
   { path: '/discover', icon: '✦', label: 'Discover' },
-  { path: '/parishes', icon: '⌂', label: 'Parish' },
   { path: '/about', icon: '☩', label: 'About' },
 ];
 

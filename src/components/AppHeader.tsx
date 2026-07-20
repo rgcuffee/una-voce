@@ -9,7 +9,6 @@ const NAV_ITEMS = [
   { path: '/pray', label: 'Pray Today' },
   { path: '/start', label: 'Start Here' },
   { path: '/discover', label: 'Discover' },
-  { path: '/parishes', label: 'For Parishes' },
   { path: '/about', label: 'About' },
 ];
 

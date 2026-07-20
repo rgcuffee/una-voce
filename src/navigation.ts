@@ -33,7 +33,6 @@ export const PRIMARY_NAV: NavItem[] = [
     { key: 'today', label: 'Pray Today', shortLabel: 'Pray', icon: 'today' },
     { key: 'getting-started', label: 'Start Here', shortLabel: 'Start', icon: 'getting-started' },
     { key: 'discover', label: 'Discover', icon: 'discover' },
-    { key: 'parishes', label: 'For Parishes', shortLabel: 'Parishes', icon: 'parishes' },
     { key: 'about', label: 'About', icon: 'about' },
 ];
 
