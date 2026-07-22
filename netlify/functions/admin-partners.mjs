@@ -299,7 +299,6 @@ function dedupeReviewItems(items) {
 function reviewIdentityKeys(item) {
   return [
     reviewSourceKey(item),
-    reviewDateHourKey(item),
     reviewTitleDateKey(item),
   ].filter(Boolean);
 }
@@ -312,16 +311,6 @@ function reviewSourceKey(item) {
   }
 
   return `${item.partner_id}|source|${source}`;
-}
-
-function reviewDateHourKey(item) {
-  const date = reviewItemDate(item);
-
-  if (!date || !item.prayer_type) {
-    return null;
-  }
-
-  return `${item.partner_id}|date-hour|${date}|${item.prayer_type}`;
 }
 
 function reviewTitleDateKey(item) {

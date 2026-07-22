@@ -421,7 +421,10 @@ function classifyEpisode(episode, rules) {
 
     return {
       prayerType: rule.prayer_type,
-      displayStatus: rule.default_display_status,
+      // A matched prayer type is ready to test in the prayer experience.
+      // Rules without a prayer type (for example, exclusion rules) retain
+      // their explicit display status instead.
+      displayStatus: rule.prayer_type ? 'approved' : rule.default_display_status,
     };
   }
 

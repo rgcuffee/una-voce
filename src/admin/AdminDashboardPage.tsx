@@ -365,7 +365,6 @@ function dedupeReviewItems<T extends DedupeReviewItem>(items: T[]) {
 function reviewIdentityKeys(item: DedupeReviewItem) {
   return [
     reviewSourceKey(item),
-    reviewDateHourKey(item),
     reviewTitleDateKey(item),
   ].filter(Boolean) as string[];
 }
@@ -373,13 +372,6 @@ function reviewIdentityKeys(item: DedupeReviewItem) {
 function reviewSourceKey(item: DedupeReviewItem) {
   const source = normalizeReviewUrl(item.canonical_url);
   return source ? `${item.partner_id}|source|${source}` : null;
-}
-
-function reviewDateHourKey(item: DedupeReviewItem) {
-  const date = reviewItemDate(item);
-  return date && item.prayer_type
-    ? `${item.partner_id}|date-hour|${date}|${item.prayer_type}`
-    : null;
 }
 
 function reviewTitleDateKey(item: DedupeReviewItem) {
