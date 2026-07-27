@@ -1587,19 +1587,71 @@ function normalizePartnerPrayerAudio(
   };
 }
 
-function mergePartnerRows<Row extends { canonical_url: string }>(
+type PartnerContentRowIdentity = {
+  apple_episode_id?: string | null;
+  canonical_url: string;
+  partners?:
+    | { slug?: string | null }
+    | { slug?: string | null }[]
+    | null;
+  prayer_date?: string | null;
+  prayer_type?: string | null;
+  spotify_episode_id?: string | null;
+  title?: string | null;
+  youtube_video_id?: string | null;
+};
+
+function partnerContentIdentity(row: PartnerContentRowIdentity) {
+  const partner = Array.isArray(row.partners) ? row.partners[0] : row.partners;
+  const normalizedTitle = String(row.title ?? '')
+    .toLowerCase()
+    .replace(/&amp;/g, '&')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (
+    partner?.slug &&
+    row.prayer_date &&
+    row.prayer_type &&
+    normalizedTitle
+  ) {
+    return [
+      partner.slug,
+      row.prayer_date,
+      row.prayer_type,
+      normalizedTitle,
+    ].join('|');
+  }
+
+  return (
+    row.youtube_video_id ??
+    row.spotify_episode_id ??
+    row.apple_episode_id ??
+    row.canonical_url
+  );
+}
+
+function mergePartnerRows<Row extends PartnerContentRowIdentity>(
   publicRows: Row[],
   previewRows: Row[] | undefined,
 ) {
-  const rowsByCanonicalUrl = new Map(
-    publicRows.map((row) => [row.canonical_url, row]),
-  );
+  const rowsByIdentity = new Map<string, Row>();
 
-  for (const row of previewRows ?? []) {
-    rowsByCanonicalUrl.set(row.canonical_url, row);
+  // Public queries are newest-first, so retain the first copy when an upstream
+  // feed republishes the same titled Hour with a different provider ID.
+  for (const row of publicRows) {
+    const identity = partnerContentIdentity(row);
+    if (!rowsByIdentity.has(identity)) {
+      rowsByIdentity.set(identity, row);
+    }
   }
 
-  return [...rowsByCanonicalUrl.values()];
+  for (const row of previewRows ?? []) {
+    rowsByIdentity.set(partnerContentIdentity(row), row);
+  }
+
+  return [...rowsByIdentity.values()];
 }
 
 async function loadPartnerContentPreview(
@@ -3549,7 +3601,11 @@ export function PrayerOfficeMockup() {
                         <div className="format-options">
                           {audioOptions.map((item, index) => (
                             <button
-                              key={item.title}
+                              key={
+                                item.videoId ??
+                                item.sourceUrl ??
+                                item.title
+                              }
                               type="button"
                               className="format-option format-option-media"
                               style={{
@@ -3588,7 +3644,11 @@ export function PrayerOfficeMockup() {
                         <div className="format-options">
                           {videoOptions.map((item, index) => (
                             <button
-                              key={item.title}
+                              key={
+                                item.videoId ??
+                                item.sourceUrl ??
+                                item.title
+                              }
                               type="button"
                               className="format-option format-option-media"
                               style={{

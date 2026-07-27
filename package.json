@@ -10,6 +10,7 @@
     "seed:ew-calendar": "node scripts/seed-ew-calendar-supabase.mjs",
     "seed:us-calendar-canonical": "node scripts/seed-us-calendar-canonicalization.mjs",
     "generate:calendar-conflicts": "node scripts/generate-calendar-conflicts.mjs",
+    "test": "node --test",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview"

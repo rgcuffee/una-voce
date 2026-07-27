@@ -22,6 +22,16 @@ const STRICT_IMPORT_KEYWORDS_BY_PARTNER_SLUG = new Map([
     ],
   ],
 ]);
+const TITLE_ONLY_CLASSIFICATION_PARTNER_SLUGS = new Set([
+  'cathaholic-music',
+]);
+const HIDE_UNMATCHED_PARTNER_SLUGS = new Set(['cathaholic-music']);
+const RECLASSIFY_TITLE_MATCH_PARTNER_SLUGS = new Set([
+  'cathaholic-music',
+  'sing-the-hours',
+]);
+const CANTOR_DEL_CAMINO_FULL_OFFICE_TITLE =
+  /^(?:🟢\s*)?(?:LAUDES DE HOY|V[IÍ]SPERAS(?: DE HOY)?|NONA(?: DE HOY)?|COMPLETAS(?: DE HOY)?|OFICIO DE LECTURAS(?: DE HOY)?)\s*[·|—-]/iu;
 
 const supabaseUrl = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -358,11 +368,26 @@ function parseYouTubeAtom(xml) {
   });
 }
 
-function normalizeVideo(feed, parsedVideo, rules, existingClassification) {
+export function normalizeVideo(
+  feed,
+  parsedVideo,
+  rules,
+  existingClassification,
+) {
+  const newClassification = classifyVideo(feed, parsedVideo, rules);
+  // Reliable exclusions and an explicit title classification supersede stale
+  // automatic approvals. Otherwise preserve a non-pending manual decision.
   const classification =
-    existingClassification && existingClassification.displayStatus !== 'pending'
-      ? existingClassification
-      : classifyVideo(parsedVideo, rules);
+    newClassification.displayStatus === 'hidden'
+      ? newClassification
+      : RECLASSIFY_TITLE_MATCH_PARTNER_SLUGS.has(partnerSlugForFeed(feed)) &&
+          newClassification.prayerType &&
+          newClassification.prayerType !== existingClassification?.prayerType
+        ? newClassification
+        : existingClassification &&
+            existingClassification.displayStatus !== 'pending'
+          ? existingClassification
+          : newClassification;
   const videoKind = inferVideoKind(feed.expected_content_mode, parsedVideo);
   const usesSeasonalAvailability = isSeasonalAvailabilityFeed(feed);
   const availableLiturgicalSeasons =
@@ -406,46 +431,90 @@ function isSeasonalAvailabilityFeed(feed) {
   return partner?.slug === 'word-on-fire';
 }
 
-function classifyVideo(video, rules) {
+export function classifyVideo(feed, video, rules) {
+  if (isExcludedPartnerVideo(feed, video)) {
+    return hiddenClassification();
+  }
+
+  const titleText = normalizeKeywordText(video.title);
   const searchableText = normalizeKeywordText(
     `${video.title}\n${video.description ?? ''}`,
   );
 
   for (const rule of rules) {
     if (hasKeyword(searchableText, rule.exclude_keywords)) {
+      return hiddenClassification();
+    }
+  }
+
+  const partnerSlug = partnerSlugForFeed(feed);
+  const classificationTexts = TITLE_ONLY_CLASSIFICATION_PARTNER_SLUGS.has(
+    partnerSlug,
+  )
+    ? [titleText]
+    : [titleText, searchableText];
+
+  for (const classificationText of classificationTexts) {
+    for (const rule of rules) {
+      if (!hasRequiredKeywords(classificationText, rule.include_keywords)) {
+        continue;
+      }
+
       return {
-        prayerType: null,
-        displayStatus: 'hidden',
-        availableLiturgicalSeasons: [],
+        prayerType: rule.prayer_type,
+        // A matched prayer type is ready to test in the prayer experience.
+        // Rules without a prayer type (for example, exclusion rules) retain
+        // their explicit display status instead.
+        displayStatus: rule.prayer_type ? 'approved' : rule.default_display_status,
+        availableLiturgicalSeasons: normalizeSeasons(
+          rule.default_available_liturgical_seasons,
+        ),
         availableWeekdays: [],
       };
     }
   }
 
-  for (const rule of rules) {
-    if (!hasRequiredKeywords(searchableText, rule.include_keywords)) {
-      continue;
-    }
+  return HIDE_UNMATCHED_PARTNER_SLUGS.has(partnerSlug)
+    ? hiddenClassification()
+    : pendingClassification();
+}
 
-    return {
-      prayerType: rule.prayer_type,
-      // A matched prayer type is ready to test in the prayer experience.
-      // Rules without a prayer type (for example, exclusion rules) retain
-      // their explicit display status instead.
-      displayStatus: rule.prayer_type ? 'approved' : rule.default_display_status,
-      availableLiturgicalSeasons: normalizeSeasons(
-        rule.default_available_liturgical_seasons,
-      ),
-      availableWeekdays: [],
-    };
-  }
-
+function pendingClassification() {
   return {
     prayerType: null,
     displayStatus: 'pending',
     availableLiturgicalSeasons: [],
     availableWeekdays: [],
   };
+}
+
+function hiddenClassification() {
+  return {
+    prayerType: null,
+    displayStatus: 'hidden',
+    availableLiturgicalSeasons: [],
+    availableWeekdays: [],
+  };
+}
+
+function partnerSlugForFeed(feed) {
+  const partner = Array.isArray(feed.partners) ? feed.partners[0] : feed.partners;
+  return partner?.slug ?? null;
+}
+
+function isExcludedPartnerVideo(feed, video) {
+  if (partnerSlugForFeed(feed) !== 'cantor-del-camino') {
+    return false;
+  }
+
+  // YouTube's Atom feed rewrites Shorts links to watch URLs and omits duration.
+  // Cantor's full offices use a stable "OFFICE · day/date" title; short-form
+  // posts do not. Do not inspect the description because full offices use
+  // hashtags there too.
+  return (
+    /youtube\.com\/shorts\//i.test(video.canonicalUrl ?? '') ||
+    !CANTOR_DEL_CAMINO_FULL_OFFICE_TITLE.test(video.title)
+  );
 }
 
 function inferVideoKind(expectedContentMode, video) {

@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { hideDuplicateClassifiedItems } from './lib/partner-content-dedupe.mjs';
 
 const JSON_HEADERS = {
   'content-type': 'application/json',
@@ -179,12 +180,14 @@ async function ingestFeed(feed, rulesByPartnerId) {
     const existingClassifications = await getExistingClassifications(
       episodesWithAppleMetadata.map((episode) => episode.guid),
     );
-    const episodes = episodesWithAppleMetadata.map((episode) =>
-      normalizeEpisode(
-        feed,
-        episode,
-        rulesByPartnerId.get(feed.partner_id) ?? [],
-        existingClassifications.get(episode.guid),
+    const episodes = hideDuplicateClassifiedItems(
+      episodesWithAppleMetadata.map((episode) =>
+        normalizeEpisode(
+          feed,
+          episode,
+          rulesByPartnerId.get(feed.partner_id) ?? [],
+          existingClassifications.get(episode.guid),
+        ),
       ),
     );
     result.skipped = parsedEpisodes.length - importableEpisodes.length;
