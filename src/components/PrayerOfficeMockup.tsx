@@ -28,6 +28,7 @@ import type {
 } from '../lib/database.types';
 import { supabase } from '../lib/supabase';
 import { AboutPage } from '../pages/AboutPage';
+import { ReviewPage } from '../pages/ReviewPage';
 import {
   CommunityPage,
   type CommunityPrayerCard,
@@ -2568,6 +2569,8 @@ function renderPage(
       return <MorePage onNavigate={onNavigate} />;
     case 'about':
       return <AboutPage onNavigate={onNavigate} />;
+    case 'review':
+      return <ReviewPage onNavigate={onNavigate} />;
     case 'getting-started':
       return <GettingStartedPage onNavigate={onNavigate} />;
     case 'parishes':

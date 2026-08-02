@@ -6,6 +6,7 @@ export type ViewKey =
     | 'community'
     | 'more'
     | 'about'
+    | 'review'
     | 'getting-started'
     | 'parishes'
     | 'contact';
@@ -49,6 +50,7 @@ export const VIEW_PATHS: Record<ViewKey, string> = {
     community: '/community',
     more: '/more',
     about: '/about',
+    review: '/review',
     'getting-started': '/start',
     parishes: '/parishes',
     contact: '/contact',

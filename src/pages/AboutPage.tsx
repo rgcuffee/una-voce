@@ -48,9 +48,9 @@ export function AboutPage({ onNavigate }: { onNavigate: ViewNavigator }) {
             of the Church.
           </p>
           <p>
-            We help Catholics find trusted audio and video resources for praying
-            the Liturgy of the Hours, including guided prayer, sung forms, and
-            livestreams in English and Spanish.
+            We help Catholics find publisher-hosted audio and video resources
+            for praying the Liturgy of the Hours, including guided prayer, sung
+            forms, and livestreams in English and Spanish.
           </p>
           <p>
             Some resources make it easier to begin and follow along. Others
@@ -87,8 +87,9 @@ export function AboutPage({ onNavigate }: { onNavigate: ViewNavigator }) {
         <div className="prose about-prose">
           <p>
             Una Voce is currently a prototype for review and early feedback.
-            Some listings are live partner resources, while others are prototype
-            examples used to test design, navigation, and curation patterns.
+            Some listings are live resources from their original publishers,
+            while others are prototype examples used to test design,
+            navigation, and curation patterns.
           </p>
         </div>
       </section>

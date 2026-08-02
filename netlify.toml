@@ -19,6 +19,11 @@
 [functions."apple-podcast-ingest-scheduled"]
   schedule = "*/30 * * * *"
 
+[[headers]]
+  for = "/review"
+  [headers.values]
+    X-Robots-Tag = "noindex, follow"
+
 [[redirects]]
   from = "/api/analytics"
   to = "/.netlify/functions/analytics"
