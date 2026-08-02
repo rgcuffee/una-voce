@@ -1799,13 +1799,56 @@ function partnerVideoOptionForSegment(
   };
 }
 
+const WATCH_COMMUNITY_PRIORITY: PartnerCommunitySlug[] = [
+  'sing-the-hours',
+  'cathaholic-music',
+];
+
+const LISTEN_COMMUNITY_PRIORITY: PartnerCommunitySlug[] = [
+  'divine-office',
+  'st-helena-ministries',
+];
+
+function prioritizeCommunityOptions(
+  options: OptionItem[],
+  priority: PartnerCommunitySlug[],
+) {
+  const priorityBySlug = new Map(
+    priority.map((communitySlug, index) => [communitySlug, index]),
+  );
+
+  return options
+    .map((item, originalIndex) => ({ item, originalIndex }))
+    .sort((left, right) => {
+      const leftPriority = left.item.communitySlug
+        ? priorityBySlug.get(left.item.communitySlug)
+        : undefined;
+      const rightPriority = right.item.communitySlug
+        ? priorityBySlug.get(right.item.communitySlug)
+        : undefined;
+
+      if (leftPriority !== undefined || rightPriority !== undefined) {
+        return (
+          (leftPriority ?? priority.length) -
+          (rightPriority ?? priority.length)
+        );
+      }
+
+      return left.originalIndex - right.originalIndex;
+    })
+    .map(({ item }) => item);
+}
+
 function partnerVideoOptionsForSegment(
   segment: Segment,
   videos: PartnerPrayerVideo[],
 ) {
-  return videos
-    .map((video) => partnerVideoOptionForSegment(segment, video))
-    .filter((item): item is OptionItem => Boolean(item));
+  return prioritizeCommunityOptions(
+    videos
+      .map((video) => partnerVideoOptionForSegment(segment, video))
+      .filter((item): item is OptionItem => Boolean(item)),
+    WATCH_COMMUNITY_PRIORITY,
+  );
 }
 
 function videoOptionsForSegment(
@@ -1868,9 +1911,12 @@ function audioOptionsForSegment(
   segment: Segment,
   audioItems: PartnerPrayerAudio[],
 ) {
-  return audioItems
-    .map((audio) => partnerAudioOptionForSegment(segment, audio))
-    .filter((item): item is OptionItem => Boolean(item));
+  return prioritizeCommunityOptions(
+    audioItems
+      .map((audio) => partnerAudioOptionForSegment(segment, audio))
+      .filter((item): item is OptionItem => Boolean(item)),
+    LISTEN_COMMUNITY_PRIORITY,
+  );
 }
 
 function createPreviewCommunitiesFromPartnerMedia(
@@ -3596,49 +3642,6 @@ export function PrayerOfficeMockup() {
                         ))}
                     </div>
 
-                    {audioOptions.length > 0 ? (
-                      <div
-                        className={`format-output${selectedFormat === 'media' ? '' : ' hidden'}`}
-                      >
-                        <h4>Listen</h4>
-                        <div className="format-options">
-                          {audioOptions.map((item, index) => (
-                            <button
-                              key={
-                                item.videoId ??
-                                item.sourceUrl ??
-                                item.title
-                              }
-                              type="button"
-                              className="format-option format-option-media"
-                              style={{
-                                backgroundImage: `linear-gradient(165deg, rgba(12, 11, 9, 0.2), rgba(12, 11, 9, 0.78)), url(${item.imageUrl ?? optionImageFor('audio', index)})`,
-                              }}
-                              onClick={() =>
-                                openPrayerPlayer(
-                                  createPrayerPlayerSession({
-                                    item,
-                                    segment,
-                                    sourceType: 'recorded',
-                                    pageContext: 'today_listen_card',
-                                    partnerStatusOverrides,
-                                  }),
-                                )
-                              }
-                            >
-                              <div className="option-meta">{item.meta}</div>
-                              <OptionPartnerBadge
-                                item={item}
-                                partnerStatusOverrides={partnerStatusOverrides}
-                              />
-                              <div className="option-title">{item.title}</div>
-                              <p className="option-desc">{item.description}</p>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    ) : null}
-
                     {videoOptions.length > 0 ? (
                       <div
                         className={`format-output${selectedFormat === 'media' ? '' : ' hidden'}`}
@@ -3681,6 +3684,49 @@ export function PrayerOfficeMockup() {
                                   Begin Prayer
                                 </span>
                               </div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+
+                    {audioOptions.length > 0 ? (
+                      <div
+                        className={`format-output${selectedFormat === 'media' ? '' : ' hidden'}`}
+                      >
+                        <h4>Listen</h4>
+                        <div className="format-options">
+                          {audioOptions.map((item, index) => (
+                            <button
+                              key={
+                                item.videoId ??
+                                item.sourceUrl ??
+                                item.title
+                              }
+                              type="button"
+                              className="format-option format-option-media"
+                              style={{
+                                backgroundImage: `linear-gradient(165deg, rgba(12, 11, 9, 0.2), rgba(12, 11, 9, 0.78)), url(${item.imageUrl ?? optionImageFor('audio', index)})`,
+                              }}
+                              onClick={() =>
+                                openPrayerPlayer(
+                                  createPrayerPlayerSession({
+                                    item,
+                                    segment,
+                                    sourceType: 'recorded',
+                                    pageContext: 'today_listen_card',
+                                    partnerStatusOverrides,
+                                  }),
+                                )
+                              }
+                            >
+                              <div className="option-meta">{item.meta}</div>
+                              <OptionPartnerBadge
+                                item={item}
+                                partnerStatusOverrides={partnerStatusOverrides}
+                              />
+                              <div className="option-title">{item.title}</div>
+                              <p className="option-desc">{item.description}</p>
                             </button>
                           ))}
                         </div>
