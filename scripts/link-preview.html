@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <title>Una Voce link preview</title>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        width: 1200px;
+        height: 630px;
+        margin: 0;
+        overflow: hidden;
+      }
+
+      body {
+        color: #ffffff;
+        font-family: 'Inter', sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .card {
+        position: relative;
+        display: flex;
+        width: 100%;
+        height: 100%;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 54px 64px 48px;
+        overflow: hidden;
+        background:
+          linear-gradient(
+            90deg,
+            rgba(20, 24, 23, 0.97) 0%,
+            rgba(20, 24, 23, 0.91) 39%,
+            rgba(20, 24, 23, 0.54) 68%,
+            rgba(20, 24, 23, 0.18) 100%
+          ),
+          url('https://images.openai.com/static-rsc-4/1Lcx2v7pvNNkrdlI1hy_xIf4dCcyNP0FFN67C14C-CKMSjSLIcUn_hzrViGKS6EGygQE2TaFMUpWKlT8uwiqjMh5L1j3j97OlVt2UqoZjptQl4RdZKT10vLNM1jhPqHMfL_sWvBxLwbXK5ddWIOuaIH-PqdDquC9YilML9Z2UPpYhTJgVGHturkYDQHWs7kx?purpose=fullsize')
+            center / cover no-repeat;
+      }
+
+      .card::before {
+        position: absolute;
+        inset: 22px;
+        border: 1px solid rgba(212, 175, 90, 0.42);
+        border-radius: 22px;
+        content: '';
+        pointer-events: none;
+      }
+
+      .brand,
+      .content,
+      .footer {
+        position: relative;
+        z-index: 1;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+      }
+
+      .wordmark {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 34px;
+        font-weight: 400;
+        letter-spacing: 0.18em;
+        line-height: 1;
+      }
+
+      .wordmark span {
+        color: #d4af5a;
+      }
+
+      .brand-rule {
+        width: 58px;
+        height: 1px;
+        background: rgba(212, 175, 90, 0.75);
+      }
+
+      .brand-tagline {
+        color: rgba(255, 255, 255, 0.68);
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+
+      .content {
+        width: 735px;
+        margin-top: auto;
+        margin-bottom: 36px;
+      }
+
+      .eyebrow {
+        margin: 0 0 14px;
+        color: #d4af5a;
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 0;
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 76px;
+        font-weight: 300;
+        letter-spacing: -0.025em;
+        line-height: 0.92;
+        text-wrap: balance;
+      }
+
+      .description {
+        max-width: 650px;
+        margin: 22px 0 0;
+        color: rgba(255, 255, 255, 0.83);
+        font-size: 20px;
+        line-height: 1.45;
+      }
+
+      .footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        color: rgba(255, 255, 255, 0.72);
+        font-size: 14px;
+        font-weight: 500;
+        letter-spacing: 0.035em;
+      }
+
+      .invitation {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+      }
+
+      .cross {
+        color: #d4af5a;
+        font-family: serif;
+        font-size: 21px;
+        line-height: 1;
+      }
+
+      .url {
+        color: rgba(255, 255, 255, 0.9);
+      }
+    </style>
+  </head>
+  <body>
+    <main class="card">
+      <header class="brand">
+        <div class="wordmark">UNA <span>VOCE</span></div>
+        <div class="brand-rule"></div>
+        <div class="brand-tagline">The Church at Prayer</div>
+      </header>
+
+      <section class="content">
+        <p class="eyebrow">The Liturgy of the Hours</p>
+        <h1>Begin praying with the Church today.</h1>
+        <p class="description">
+          Choose one Hour, pray along, and discover faithful communities
+          already praying.
+        </p>
+      </section>
+
+      <footer class="footer">
+        <div class="invitation">
+          <span class="cross">☩</span>
+          <span>Start with one Hour. You do not need to pray all seven.</span>
+        </div>
+        <span class="url">unavoce.net</span>
+      </footer>
+    </main>
+  </body>
+</html>

@@ -12,6 +12,7 @@
     "generate:calendar-conflicts": "node scripts/generate-calendar-conflicts.mjs",
     "test": "node --test",
     "dev": "vite",
+    "social": "vite --open /social/",
     "build": "tsc -b && vite build",
     "preview": "vite preview"
   },

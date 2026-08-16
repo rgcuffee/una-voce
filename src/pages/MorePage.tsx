@@ -65,6 +65,18 @@ export function MorePage({ onNavigate }: { onNavigate: ViewNavigator }) {
             <span className='menu-item-chevron'>›</span>
           </button>
         ))}
+        {import.meta.env.DEV && (
+          <a className='menu-item menu-item-link' href='/social/'>
+            <span className='menu-item-icon'>◫</span>
+            <span className='menu-item-body'>
+              <span className='menu-item-title'>Social Studio</span>
+              <span className='menu-item-desc'>
+                Review social artwork and campaign copy in the private workspace.
+              </span>
+            </span>
+            <span className='menu-item-chevron'>›</span>
+          </a>
+        )}
       </nav>
     </article>
   );

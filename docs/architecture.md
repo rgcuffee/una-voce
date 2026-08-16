@@ -20,6 +20,22 @@ Important frontend areas:
 - `src/data/` contains static partner/hour data used by the client.
 - `src/lib/` contains Supabase clients, analytics, calendar queries, and calendar conflict logic.
 
+## Social Studio
+
+The private social design workspace lives in `social/` and is served at `/social/` during local development.
+
+It is intentionally separate from the public prayer experience:
+
+- `social/index.html` defines the studio and carousel preview shell.
+- `social/app.js` handles the first-nine grid, modal navigation, keyboard controls, crop modes, and deep links.
+- `social/designs.js` contains the approved launch sequence, captions, and slide markup.
+- `social/styles.css` contains the studio interface and crop behavior.
+- `social/artwork.css` contains the approved editorial artwork system and motif library.
+
+The studio must preserve 4:5 artwork review, centered 1:1 crop review, carousel navigation, caption previews, and links to specific designs and slides.
+
+Brand and writing rules live in `docs/brand/`. The current first nine are the reference implementation for future social work.
+
 ## Serverless Functions
 
 Netlify Functions live in `netlify/functions`.
@@ -57,4 +73,3 @@ The admin API client automatically prefers local Netlify Functions when running 
 ## Build
 
 `npm run build` runs TypeScript project builds and then Vite. Netlify uses the same command and publishes `dist`.
-

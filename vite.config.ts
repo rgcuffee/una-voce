@@ -56,6 +56,27 @@ export default defineConfig({
     plugins: [
         react(),
         {
+            name: 'social-studio-dev-route',
+            apply: 'serve',
+            configureServer(server) {
+                server.middlewares.use((request, response, next) => {
+                    const [pathname, query] = (request.url ?? '').split('?', 2)
+
+                    if (pathname !== '/social') {
+                        next()
+                        return
+                    }
+
+                    response.statusCode = 302
+                    response.setHeader(
+                        'Location',
+                        `/social/${query ? `?${query}` : ''}`,
+                    )
+                    response.end()
+                })
+            },
+        },
+        {
             name: 'una-voce-local-functions',
             configureServer(server) {
                 server.middlewares.use(

@@ -24,6 +24,7 @@ Netlify dev serves the app on `http://localhost:8888` and proxies Vite requests 
 
 ```sh
 npm run dev
+npm run social
 npm run build
 npm run preview
 npm run build:us-calendar-sql
@@ -47,6 +48,7 @@ Never expose `SUPABASE_SERVICE_ROLE_KEY`, `INGEST_SHARED_SECRET`, or `ADMIN_SHAR
 - `src/App.tsx` wires the public app and admin routes.
 - `src/components/PrayerOfficeMockup.tsx` contains the current main prayer-office experience.
 - `src/admin/` contains the admin dashboard UI and API client.
+- `social/` contains the approved social design system, first-nine launch sequence, and private preview workspace.
 - `src/lib/liturgicalCalendar.ts` contains browser-side calendar queries.
 - `src/lib/calendarConflictClassifier.ts` classifies calendar differences for review.
 - `netlify/functions/` contains analytics, admin, and media ingestion endpoints.
@@ -59,6 +61,9 @@ Never expose `SUPABASE_SERVICE_ROLE_KEY`, `INGEST_SHARED_SECRET`, or `ADMIN_SHAR
 - [Architecture](docs/architecture.md)
 - [Admin and Ingestion](docs/admin-and-ingestion.md)
 - [Liturgical Calendar](docs/liturgical-calendar.md)
+- [Brand and Editorial Documentation](docs/brand/README.md)
+- [Editorial Standards](docs/brand/UNA_VOCE_EDITORIAL_STANDARDS.md)
+- [Instagram Visual Guide](docs/brand/UNA_VOCE_INSTAGRAM_VISUAL_GUIDE.md)
 
 ## Deployment Notes
 
@@ -71,4 +76,3 @@ Scheduled ingestion functions currently run every 30 minutes:
 - `apple-podcast-ingest-scheduled`
 
 Manual API routes are exposed through Netlify redirects in `netlify.toml`.
-

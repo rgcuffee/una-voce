@@ -49,3 +49,7 @@ tmp/
 temp/
 # Local Netlify folder
 .netlify
+
+
+/social
+/docs

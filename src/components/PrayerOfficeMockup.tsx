@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   PRIMARY_NAV,
   pathForView,
@@ -3310,22 +3310,6 @@ export function PrayerOfficeMockup() {
   return (
     <div className={`phone${activeView === 'today' ? '' : ' single-column'}`}>
       <header className="app-header">
-        <div
-          className="prototype-banner"
-          role="status"
-          aria-label="Preview Mode: Una Voce is currently a prototype for review and early feedback. The official site is coming soon. If you lead a ministry, know of a helpful Liturgy of the Hours resource, or would like to share feedback, please reach out."
-        >
-          <span className="prototype-banner-title">Preview Mode:</span>
-          <span className="prototype-banner-copy">
-            Una Voce is currently a prototype for review and early feedback. The
-            official site is coming soon. If you lead a ministry, know of a
-            helpful Liturgy of the Hours resource, or would like to share
-            feedback, please reach out.
-          </span>
-          <Link className="prototype-banner-link" to={pathForView('contact')}>
-            Contact Una Voce -&gt;
-          </Link>
-        </div>
         <div className="header-top">
           <div
             className="logo"

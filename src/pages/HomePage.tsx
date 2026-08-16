@@ -230,21 +230,43 @@ export function HomePage({
       </section>
 
       <section className="home-section home-parish">
-        <div>
+        <div className="home-parish-copy">
           <div className="page-eyebrow">For parishes, OCIA, and ministries</div>
           <h2>Help people encounter the prayer of the Church</h2>
           <p>
             Una Voce offers a simple doorway for parishioners, catechumens,
             families, and ministry groups without overwhelming them.
           </p>
+          <div className="home-parish-coming-soon">
+            <span aria-hidden="true" />
+            Resources coming soon
+          </div>
         </div>
-        <button
-          type="button"
-          className="page-cta-button"
-          onClick={() => onNavigate('parishes')}
+        <div
+          className="home-parish-resources"
+          aria-label="Resources coming soon"
         >
-          Use Una Voce at your parish
-        </button>
+          <article className="home-parish-resource">
+            <span className="home-parish-resource-number">01</span>
+            <span className="home-parish-resource-copy">
+              <strong>Parish kits</strong>
+              <span>
+                Guides, handouts, and simple pathways for OCIA, small groups,
+                and parish-wide formation.
+              </span>
+            </span>
+          </article>
+          <article className="home-parish-resource">
+            <span className="home-parish-resource-number">02</span>
+            <span className="home-parish-resource-copy">
+              <strong>Campaign kits</strong>
+              <span>
+                Seasonal messaging and invitation materials to help your
+                community begin praying together.
+              </span>
+            </span>
+          </article>
+        </div>
       </section>
     </article>
   );
