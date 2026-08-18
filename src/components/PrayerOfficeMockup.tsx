@@ -2553,17 +2553,26 @@ function createCommunityPrayerCards({
 function TextPrayerProviderCard({
   provider,
   selectedDate,
+  imageUrl,
 }: {
   provider: TextPrayerProvider;
   selectedDate: string;
+  imageUrl?: string;
 }) {
   return (
     <a
-      className="format-option format-option-link text-provider-card"
+      className={`format-option format-option-link text-provider-card text-provider-card--${provider.provider}`}
       href={provider.url}
       target="_blank"
       rel="noreferrer"
       aria-label={`${provider.actionLabel}: ${provider.hourLabel} with ${provider.providerName}`}
+      style={
+        provider.provider === 'divine_office' && imageUrl
+          ? {
+              backgroundImage: `linear-gradient(165deg, rgba(12, 11, 9, 0.24), rgba(12, 11, 9, 0.82)), url(${imageUrl})`,
+            }
+          : undefined
+      }
       onClick={() =>
         trackAnalyticsEvent('content_card_clicked', {
           pageContext: 'today_read_card',
@@ -2591,7 +2600,9 @@ function TextPrayerProviderCard({
       <div className="option-title">{provider.providerName}</div>
       <p className="option-desc">{provider.description}</p>
       <div className="option-card-footer">
-        <span className="text-provider-card-date">{selectedDate}</span>
+        <span className="text-provider-card-date">
+          {formatCivilDate(selectedDate)}
+        </span>
         <span className="option-prayer-action">{provider.actionLabel}</span>
       </div>
     </a>
@@ -3581,6 +3592,10 @@ export function PrayerOfficeMockup() {
                 segment,
                 partnerAudio,
               );
+              const divineOfficeTextImage =
+                audioOptions.find(
+                  (item) => item.communitySlug === 'divine-office',
+                )?.imageUrl ?? optionImageFor('audio', 0);
               const liveGroups = worthAbbeyLiveOptionsForSegment(
                 segment,
                 worthAbbeyVideos,
@@ -3660,6 +3675,11 @@ export function PrayerOfficeMockup() {
                             key={provider.provider}
                             provider={provider}
                             selectedDate={selectedDate}
+                            imageUrl={
+                              provider.provider === 'divine_office'
+                                ? divineOfficeTextImage
+                                : undefined
+                            }
                           />
                         ))}
                       </div>

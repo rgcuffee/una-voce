@@ -798,6 +798,7 @@ body {
 }
 
 .text-provider-card {
+    position: relative;
     display: flex;
     flex-direction: column;
     min-height: 168px;
@@ -805,6 +806,8 @@ body {
     background:
         linear-gradient(165deg, rgba(31, 48, 58, 0.14), rgba(15, 28, 37, 0.9)),
         linear-gradient(135deg, #55717c, #243b49);
+    background-position: center;
+    background-size: cover;
     color: var(--white);
     overflow: hidden;
 }
@@ -847,7 +850,11 @@ body {
     color: rgba(255, 255, 255, 0.78);
     font-size: 11px;
     font-weight: 600;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.02em;
+}
+
+.text-provider-card--divine_office {
+    background-position: top center;
 }
 
 .option-source {
