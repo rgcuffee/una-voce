@@ -18,6 +18,21 @@ const modalViewButtons = [...document.querySelectorAll('[data-modal-view]')];
 let activeDesign = null;
 let activeSlideIndex = 0;
 
+const studioProjectId = 'una-voce-social';
+
+function attachStudioRoot(element, designId, slideIndex) {
+  element.dataset.studioProjectId = studioProjectId;
+  element.dataset.studioDesignId = designId;
+  element.dataset.studioSlideIndex = String(slideIndex);
+}
+
+function attachArtworkMetadata(container, designId, slideIndex) {
+  attachStudioRoot(container, designId, slideIndex);
+  container.querySelectorAll('.uv-post').forEach((artworkRoot) => {
+    attachStudioRoot(artworkRoot, designId, slideIndex);
+  });
+}
+
 function updatePreviewUrl() {
   const nextUrl = new URL(window.location.href);
   if (activeDesign) {
@@ -62,20 +77,24 @@ function designCard(design) {
   card.className = 'mockup-card';
   card.tabIndex = 0;
   card.dataset.designId = design.id;
+  attachStudioRoot(card, design.id, 0);
 
   const viewport = document.createElement('div');
   viewport.className = 'post-viewport';
   const artwork = document.createElement('div');
   artwork.className = 'post';
   artwork.innerHTML = design.slides?.[0]?.html ?? '';
+  attachArtworkMetadata(artwork, design.id, 0);
   viewport.append(artwork);
 
   const caption = document.createElement('footer');
   caption.className = 'mockup-caption';
   const title = document.createElement('strong');
   title.textContent = `${design.number ?? ''}${design.number ? ' · ' : ''}${design.title}`;
+  title.dataset.studioField = 'title';
   const meta = document.createElement('span');
   meta.textContent = `${design.label ?? 'Social post'} · ${design.slides?.length ?? 0} slide${design.slides?.length === 1 ? '' : 's'}`;
+  meta.dataset.studioField = 'label';
   caption.append(title, meta);
   card.append(viewport, caption);
 
@@ -110,6 +129,7 @@ function renderActiveSlide() {
   if (!slide) return;
 
   previewCanvas.innerHTML = slide.html ?? '';
+  attachArtworkMetadata(previewCanvas, activeDesign.id, activeSlideIndex);
   previewPosition.textContent = `Slide ${activeSlideIndex + 1} of ${slides.length}`;
   previewDots.replaceChildren(
     ...slides.map((item, index) => {
@@ -117,6 +137,8 @@ function renderActiveSlide() {
       button.type = 'button';
       button.className = index === activeSlideIndex ? 'is-active' : '';
       button.setAttribute('aria-label', `Show ${item.label ?? `slide ${index + 1}`}`);
+      button.dataset.studioField = 'label';
+      attachStudioRoot(button, activeDesign.id, index);
       button.addEventListener('click', () => {
         activeSlideIndex = index;
         renderActiveSlide();
@@ -127,7 +149,7 @@ function renderActiveSlide() {
   );
 }
 
-function renderCaption(caption) {
+function renderCaption(caption, designId) {
   const content = caption ?? 'Caption copy has not been added yet.';
   const parts = content.split(/(\*\*[^*]+\*\*)/g);
   const nodes = parts.filter(Boolean).map((part) => {
@@ -139,6 +161,8 @@ function renderCaption(caption) {
     return document.createTextNode(part);
   });
   previewCaption.replaceChildren(...nodes);
+  previewCaption.dataset.studioField = 'caption';
+  attachStudioRoot(previewCaption, designId, -1);
 }
 
 function openPreview(designId, slideIndex = 0) {
@@ -148,8 +172,12 @@ function openPreview(designId, slideIndex = 0) {
   activeDesign = design;
   activeSlideIndex = Math.max(0, Math.min(slideIndex, design.slides.length - 1));
   previewTitle.textContent = design.title;
+  previewTitle.dataset.studioField = 'title';
+  attachStudioRoot(previewTitle, design.id, -1);
   previewLabel.textContent = `${design.number ? `Design ${design.number}` : 'Design'} · ${design.label ?? 'Social post'}`;
-  renderCaption(design.caption);
+  previewLabel.dataset.studioField = 'label';
+  attachStudioRoot(previewLabel, design.id, -1);
+  renderCaption(design.caption, design.id);
   setModalView('covers');
   renderActiveSlide();
   dialog.showModal();

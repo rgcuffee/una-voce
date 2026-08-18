@@ -20,15 +20,15 @@ function artwork({
       <header class="uv-post-header">
         <span class="uv-post-mark" aria-hidden="true"><b></b>☩<b></b></span>
       </header>
-      ${marginalia ? `<p class="uv2-marginalia">${marginalia}</p>` : ''}
+      ${marginalia ? `<p class="uv2-marginalia" data-studio-field="artwork.marginalia">${marginalia}</p>` : ''}
       <div class="uv-post-copy">
-        ${eyebrow ? `<p class="uv-post-eyebrow">${eyebrow}</p>` : ''}
-        <h2>${title}</h2>
-        ${body ? `<p class="uv-post-body">${body}</p>` : ''}
+        ${eyebrow ? `<p class="uv-post-eyebrow" data-studio-field="artwork.eyebrow">${eyebrow}</p>` : ''}
+        <h2 data-studio-field="artwork.title">${title}</h2>
+        ${body ? `<p class="uv-post-body" data-studio-field="artwork.body">${body}</p>` : ''}
         ${detail}
       </div>
       ${ornament}
-      ${footer ? `<footer class="uv-post-footer">${footer}</footer>` : ''}
+      ${footer ? `<footer class="uv-post-footer" data-studio-field="artwork.footer">${footer}</footer>` : ''}
     </article>
   `;
 }
