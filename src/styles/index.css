@@ -797,6 +797,59 @@ body {
     text-decoration: none;
 }
 
+.text-provider-card {
+    display: flex;
+    flex-direction: column;
+    min-height: 168px;
+    justify-content: flex-end;
+    background:
+        linear-gradient(165deg, rgba(31, 48, 58, 0.14), rgba(15, 28, 37, 0.9)),
+        linear-gradient(135deg, #55717c, #243b49);
+    color: var(--white);
+    overflow: hidden;
+}
+
+.text-provider-card:hover {
+    border-color: rgba(184, 151, 58, 0.55);
+    box-shadow: 0 18px 32px rgba(0, 0, 0, 0.22);
+}
+
+.text-provider-card-kicker,
+.text-provider-card .option-title,
+.text-provider-card .option-desc,
+.text-provider-card .option-card-footer {
+    position: relative;
+    z-index: 1;
+}
+
+.text-provider-card-kicker {
+    margin-bottom: 7px;
+    color: rgba(255, 255, 255, 0.86);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    line-height: 1.25;
+    text-transform: uppercase;
+}
+
+.text-provider-card .option-title {
+    margin-bottom: 5px;
+    color: var(--white);
+    font-size: 18px;
+    line-height: 1.2;
+}
+
+.text-provider-card .option-desc {
+    color: rgba(255, 255, 255, 0.92);
+}
+
+.text-provider-card-date {
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+}
+
 .option-source {
     align-self: flex-start;
     margin-bottom: 7px;

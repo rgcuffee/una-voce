@@ -20,6 +20,10 @@ import {
   type LiturgicalDayOption,
 } from '../lib/liturgicalCalendar';
 import { trackAnalyticsEvent } from '../lib/prayerAnalytics';
+import {
+  getTextPrayerProviders,
+  type TextPrayerProvider,
+} from '../lib/textPrayerProviders.mjs';
 import type {
   LiturgicalHour,
   LiturgicalSeason,
@@ -46,13 +50,6 @@ import {
   type PrayerPlayerSession,
   type PrayerPlayerSourceType,
 } from './PrayerPlayerPanel';
-import { EveningPrayer } from './prayers/EveningPrayer';
-import { MidafternoonPrayer } from './prayers/MidafternoonPrayer';
-import { MiddayPrayer } from './prayers/MiddayPrayer';
-import { MidmorningPrayer } from './prayers/MidmorningPrayer';
-import { MorningPrayer } from './prayers/MorningPrayer';
-import { NightPrayer } from './prayers/NightPrayer';
-import { OfficeOfReadingsPrayer } from './prayers/OfficeOfReadingsPrayer';
 
 const ONRAMP_DISMISS_KEY = 'una-voce-onramp-dismissed';
 const showPendingPartnerContent =
@@ -1272,7 +1269,7 @@ const SEGMENT_SUBTITLES: Record<string, string> = {
   'segment-office': 'Matins',
   'segment-morning': 'Lauds',
   'segment-midmorning': 'Terce',
-  'segment-midday': 'Terce | Sext | None',
+  'segment-midday': 'Sext',
   'segment-midafternoon': 'None',
   'segment-evening': 'Vespers',
   'segment-night': 'Compline',
@@ -1302,9 +1299,19 @@ const SIDEBAR_ITEMS: SidebarEntry[] = [
     title: 'Daytime Prayer',
     children: [
       {
-        title: 'Midday',
-        subtitle: 'Terce | Sext | None',
+        title: 'Midmorning Prayer',
+        subtitle: 'Terce',
+        segmentId: 'segment-midmorning',
+      },
+      {
+        title: 'Midday Prayer',
+        subtitle: 'Sext',
         segmentId: 'segment-midday',
+      },
+      {
+        title: 'Midafternoon Prayer',
+        subtitle: 'None',
+        segmentId: 'segment-midafternoon',
       },
     ],
   },
@@ -2542,29 +2549,52 @@ function createCommunityPrayerCards({
     .filter((item): item is CommunityPrayerCard => Boolean(item));
 }
 
-function blockClassName(variant: LiturgyBlock['variant']) {
-  return `liturgy-block liturgy-block-${variant}`;
-}
-
-function renderPrayerTemplate(segmentId: string) {
-  switch (segmentId) {
-    case 'segment-office':
-      return <OfficeOfReadingsPrayer />;
-    case 'segment-morning':
-      return <MorningPrayer />;
-    case 'segment-midmorning':
-      return <MidmorningPrayer />;
-    case 'segment-midday':
-      return <MiddayPrayer />;
-    case 'segment-midafternoon':
-      return <MidafternoonPrayer />;
-    case 'segment-evening':
-      return <EveningPrayer />;
-    case 'segment-night':
-      return <NightPrayer />;
-    default:
-      return null;
-  }
+function TextPrayerProviderCard({
+  provider,
+  selectedDate,
+}: {
+  provider: TextPrayerProvider;
+  selectedDate: string;
+}) {
+  return (
+    <a
+      className="format-option format-option-link text-provider-card"
+      href={provider.url}
+      target="_blank"
+      rel="noreferrer"
+      aria-label={`${provider.actionLabel}: ${provider.hourLabel} with ${provider.providerName}`}
+      onClick={() =>
+        trackAnalyticsEvent('content_card_clicked', {
+          pageContext: 'today_read_card',
+          contentId: provider.provider,
+          contentType: 'text_provider',
+          provider: provider.provider,
+          sourceType: 'external',
+          sourceName: provider.providerName,
+          sourceUrl: provider.url,
+          prayerId: `${provider.hour}-text`,
+          ministryId: analyticsSlug(provider.providerName),
+          hour: provider.hour,
+          metadata: {
+            format: 'text',
+            selected_date: selectedDate,
+            hour: provider.hour,
+            provider: provider.provider,
+          },
+        })
+      }
+    >
+      <div className="text-provider-card-kicker">
+        Read with {provider.providerName}
+      </div>
+      <div className="option-title">{provider.providerName}</div>
+      <p className="option-desc">{provider.description}</p>
+      <div className="option-card-footer">
+        <span className="text-provider-card-date">{selectedDate}</span>
+        <span className="option-prayer-action">{provider.actionLabel}</span>
+      </div>
+    </a>
+  );
 }
 
 function renderPage(
@@ -3517,6 +3547,10 @@ export function PrayerOfficeMockup() {
                 segment,
                 worthAbbeyVideos,
               );
+              const textProviders = getTextPrayerProviders(
+                segment.id,
+                selectedDate,
+              );
               const hasMediaOptions =
                 audioOptions.length > 0 ||
                 videoOptions.length > 0 ||
@@ -3579,51 +3613,18 @@ export function PrayerOfficeMockup() {
                     </div>
 
                     <div
-                      className={`prayer-panel format-output${selectedFormat === 'text' ? '' : ' hidden'}`}
+                      className={`format-output${selectedFormat === 'text' ? '' : ' hidden'}`}
                     >
-                      {renderPrayerTemplate(segment.id) ??
-                        segment.text.map((block, index) => (
-                          <section
-                            key={block.label}
-                            className={`liturgy-card${index % 2 === 1 ? ' alt' : ''}`}
-                          >
-                            <div className="liturgy-card-kicker">
-                              {block.label}
-                            </div>
-                            <h3 className="liturgy-card-title">
-                              {block.title}
-                            </h3>
-                            {block.citation ? (
-                              <div className="liturgy-card-citation">
-                                {block.citation}
-                              </div>
-                            ) : null}
-                            <div className="liturgy-lines">
-                              {block.blocks.map((entry) => (
-                                <div
-                                  key={`${block.label}-${entry.variant}-${entry.lines[0]}`}
-                                  className={blockClassName(entry.variant)}
-                                >
-                                  {entry.speaker ? (
-                                    <div className="liturgy-speaker">
-                                      {entry.speaker}
-                                    </div>
-                                  ) : null}
-                                  {entry.lines.map((line) => (
-                                    <p key={line} className="liturgy-line">
-                                      {line}
-                                    </p>
-                                  ))}
-                                  {entry.citation ? (
-                                    <div className="liturgy-inline-citation">
-                                      {entry.citation}
-                                    </div>
-                                  ) : null}
-                                </div>
-                              ))}
-                            </div>
-                          </section>
+                      <h4>Read</h4>
+                      <div className="format-options text-provider-options">
+                        {textProviders.map((provider) => (
+                          <TextPrayerProviderCard
+                            key={provider.provider}
+                            provider={provider}
+                            selectedDate={selectedDate}
+                          />
                         ))}
+                      </div>
                     </div>
 
                     {videoOptions.length > 0 ? (
