@@ -92,9 +92,11 @@ function designCard(design) {
   const title = document.createElement('strong');
   title.textContent = `${design.number ?? ''}${design.number ? ' · ' : ''}${design.title}`;
   title.dataset.studioField = 'title';
+  attachStudioRoot(title, design.id, -1);
   const meta = document.createElement('span');
   meta.textContent = `${design.label ?? 'Social post'} · ${design.slides?.length ?? 0} slide${design.slides?.length === 1 ? '' : 's'}`;
   meta.dataset.studioField = 'label';
+  attachStudioRoot(meta, design.id, -1);
   caption.append(title, meta);
   card.append(viewport, caption);
 
