@@ -13,6 +13,7 @@
     "test": "node --test",
     "dev": "vite",
     "social": "vite --open /social/",
+    "social:export:first3": "node scripts/export-instagram-posts.mjs",
     "build": "tsc -b && vite build",
     "preview": "vite preview"
   },
