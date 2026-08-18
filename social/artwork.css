@@ -1,0 +1,1399 @@
+/* Second-pass editorial art direction ---------------------------------- */
+
+.uv2 {
+  padding: 7.2cqw 7.5cqw;
+}
+
+.uv2 .uv-post-copy {
+  position: relative;
+  z-index: 4;
+  width: auto;
+  margin-top: 12cqw;
+}
+
+.uv2 h2 {
+  max-width: 82cqw;
+  font-size: 11.8cqw;
+  line-height: .9;
+}
+
+.uv2 .uv-post-body {
+  max-width: 62cqw;
+  margin-top: 4.2cqw;
+  font-size: 2.35cqw;
+  line-height: 1.6;
+}
+
+.uv2 .uv-post-eyebrow {
+  margin-bottom: 2.4cqw;
+  font-size: 1.5cqw;
+  line-height: 1.45;
+}
+
+.uv2 .uv-post-footer {
+  bottom: 6cqw;
+  font-size: 1.25cqw;
+}
+
+.uv2--chrome-minimal .uv-frame,
+.uv2--chrome-none .uv-frame,
+.uv2--chrome-none .uv-post-header {
+  display: none;
+}
+
+.uv2--chrome-minimal .uv-post-mark {
+  display: none;
+}
+
+.uv2--chrome-minimal .uv-post-header {
+  display: none;
+}
+
+.uv2--chrome-full .uv-post-header {
+  justify-content: flex-end;
+}
+
+.uv2--chrome-full .uv-frame {
+  inset: 2.4cqw;
+}
+
+.uv2-marginalia {
+  position: absolute;
+  z-index: 5;
+  right: 7.5cqw;
+  bottom: 6cqw;
+  max-width: 72cqw;
+  margin: 0;
+  color: currentColor;
+  font-size: 1.02cqw;
+  font-weight: 500;
+  letter-spacing: .18cqw;
+  line-height: 1.6;
+  opacity: .54;
+  text-align: right;
+  text-transform: uppercase;
+  writing-mode: horizontal-tb;
+}
+
+.uv2-small-note {
+  max-width: 50cqw;
+  margin: 5cqw auto 0;
+  font-size: 1.8cqw;
+  line-height: 1.65;
+}
+
+.uv2-cross-rule {
+  display: flex;
+  align-items: center;
+  gap: 2cqw;
+  width: 32cqw;
+  margin-top: 6cqw;
+  color: var(--muted-gold);
+  font-family: var(--serif);
+  font-size: 3.2cqw;
+}
+
+.uv2-cross-rule i {
+  flex: 1;
+  height: .12cqw;
+  background: currentColor;
+  opacity: .65;
+}
+
+/* Editorial layout families */
+
+.uv2--identity .uv-post-copy {
+  width: 57cqw;
+  margin-top: 15cqw;
+}
+
+.uv2--identity h2 {
+  font-size: 13.8cqw;
+}
+
+.uv2--identity .uv-post-body {
+  max-width: 47cqw;
+  margin-top: 4.6cqw;
+  padding-top: 3cqw;
+  border-top: .12cqw solid rgba(200, 162, 90, .68);
+}
+
+.uv2--centered-display .uv-post-copy {
+  position: absolute;
+  top: 50%;
+  right: 8cqw;
+  left: 8cqw;
+  margin: 0;
+  text-align: center;
+  transform: translateY(-50%);
+}
+
+.uv2--centered-display h2 {
+  max-width: none;
+  font-size: 12.8cqw;
+}
+
+.uv2--centered-display .uv-post-body {
+  max-width: 57cqw;
+  margin: 4cqw auto 0;
+}
+
+.uv2--statement .uv-post-copy {
+  width: 78cqw;
+  margin-top: 14cqw;
+}
+
+.uv2--statement h2 {
+  font-size: 13.4cqw;
+}
+
+.uv2--statement .uv-post-body {
+  max-width: 65cqw;
+  font-size: 2.55cqw;
+}
+
+.uv2--poster-list .uv-post-copy {
+  margin-top: 9cqw;
+}
+
+.uv2--poster-list h2 {
+  font-size: 13.8cqw;
+  line-height: .82;
+}
+
+.uv2--poster-list .uv-post-body {
+  max-width: 52cqw;
+}
+
+.uv2--invitation .uv-post-copy {
+  width: 80cqw;
+  margin-top: 19cqw;
+}
+
+.uv2--invitation h2 {
+  font-size: 14cqw;
+}
+
+.uv2--invitation .uv-post-body {
+  font-size: 2.7cqw;
+}
+
+.uv2--diagram .uv-post-copy {
+  width: 50cqw;
+  margin-top: 9cqw;
+}
+
+.uv2--diagram h2 {
+  font-size: 10.8cqw;
+}
+
+.uv2--hours-cover h2 {
+  line-height: .94;
+}
+
+.uv2--diagram .uv-post-body {
+  max-width: 39cqw;
+}
+
+.uv2--type-stack .uv-post-copy {
+  margin-top: 17cqw;
+}
+
+.uv2--type-stack h2 {
+  max-width: none;
+}
+
+.uv2--art-field .uv-post-copy {
+  width: 46cqw;
+  margin-top: 10cqw;
+}
+
+.uv2--art-field h2 {
+  font-size: 11.8cqw;
+}
+
+.uv2--provocation .uv-post-copy {
+  margin-top: 8cqw;
+}
+
+.uv2--provocation h2 {
+  max-width: 87cqw;
+  font-size: 15cqw;
+  letter-spacing: -.5cqw;
+  line-height: .83;
+}
+
+.uv2--provocation h2 span {
+  color: #8d672b;
+  font-size: 22cqw;
+  font-style: italic;
+}
+
+.uv2--provocation .uv-post-body {
+  margin-top: 5.6cqw;
+  color: #72521f;
+  font-size: 2.7cqw;
+  font-weight: 500;
+  letter-spacing: .04cqw;
+}
+
+.uv2--sparse .uv-post-copy {
+  position: absolute;
+  top: 50%;
+  right: 8cqw;
+  left: 8cqw;
+  margin: 0;
+  transform: translateY(-50%);
+}
+
+.uv2--sparse h2 {
+  max-width: 75cqw;
+  font-size: 17cqw;
+}
+
+.uv2--sparse .uv-post-body {
+  margin-top: 5cqw;
+  font-size: 2.4cqw;
+}
+
+.uv2--three-part .uv-post-copy {
+  width: 54cqw;
+  margin-top: 9cqw;
+}
+
+.uv2--three-part h2 {
+  font-size: 14cqw;
+  line-height: .84;
+}
+
+.uv2--journal .uv-post-copy {
+  width: 63cqw;
+  margin-top: 12cqw;
+}
+
+.uv2--journal h2 {
+  font-size: 12.8cqw;
+}
+
+.uv2--hour .uv-post-copy {
+  width: 64cqw;
+  margin-top: 12cqw;
+}
+
+.uv2--hour h2 {
+  font-size: 12.5cqw;
+}
+
+.uv2--hour .uv-post-body {
+  max-width: 46cqw;
+}
+
+.uv2--split-motif .uv-post-copy {
+  width: 49cqw;
+  margin-top: 17cqw;
+}
+
+.uv2--split-motif h2 {
+  font-size: 14cqw;
+}
+
+.uv2--poetic .uv-post-copy {
+  width: 78cqw;
+  margin-top: 12cqw;
+}
+
+.uv2--poetic h2 {
+  font-size: 11.8cqw;
+}
+
+.uv2--flow .uv-post-copy {
+  margin-top: 14cqw;
+}
+
+.uv2--flow h2 {
+  font-size: 13.5cqw;
+}
+
+/* Identity and architectural drawing */
+
+.uv2-church {
+  position: absolute;
+  z-index: 2;
+  right: -3cqw;
+  bottom: 3cqw;
+  width: 46cqw;
+  height: 96cqw;
+  color: rgba(200, 162, 90, .32);
+}
+
+.uv2-church-cross {
+  position: absolute;
+  top: 0;
+  left: 21cqw;
+  font-family: var(--serif);
+  font-size: 5.5cqw;
+}
+
+.uv2-church-spire {
+  position: absolute;
+  top: 6cqw;
+  left: 13cqw;
+  width: 17cqw;
+  height: 25cqw;
+  border-right: .16cqw solid currentColor;
+  border-left: .16cqw solid currentColor;
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.uv2-church-tower {
+  position: absolute;
+  top: 30cqw;
+  left: 13cqw;
+  width: 17cqw;
+  height: 42cqw;
+  border: .16cqw solid currentColor;
+}
+
+.uv2-church-tower::before,
+.uv2-church-tower::after {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: .12cqw;
+  background: currentColor;
+  content: '';
+  opacity: .55;
+}
+
+.uv2-church-tower::before { left: 4cqw; }
+.uv2-church-tower::after { right: 4cqw; }
+
+.uv2-church-tower b {
+  position: absolute;
+  left: 5.2cqw;
+  width: 6.2cqw;
+  height: 8cqw;
+  border: .15cqw solid currentColor;
+  border-radius: 3.1cqw 3.1cqw 0 0;
+}
+
+.uv2-church-tower b:nth-child(1) { top: 4cqw; }
+.uv2-church-tower b:nth-child(2) { top: 16cqw; }
+.uv2-church-tower b:nth-child(3) { top: 28cqw; }
+
+.uv2-church-nave,
+.uv2-church-aisle {
+  position: absolute;
+  bottom: 3cqw;
+  border: .16cqw solid currentColor;
+  clip-path: polygon(50% 0, 100% 22%, 100% 100%, 0 100%, 0 22%);
+}
+
+.uv2-church-nave {
+  right: 0;
+  left: 0;
+  height: 32cqw;
+}
+
+.uv2-church-aisle {
+  right: 6cqw;
+  left: 6cqw;
+  bottom: 3.2cqw;
+  height: 24cqw;
+  opacity: .58;
+}
+
+.uv2-church-ground {
+  position: absolute;
+  right: -7cqw;
+  bottom: 2.7cqw;
+  width: 60cqw;
+  height: .16cqw;
+  background: currentColor;
+}
+
+.uv2-name {
+  display: block;
+  font-size: 18cqw;
+  font-weight: 400;
+  letter-spacing: -.65cqw;
+}
+
+.uv2--name-slide .uv-post-body {
+  color: #8c672a;
+  font-family: var(--serif);
+  font-size: 5.4cqw;
+  font-style: italic;
+}
+
+.uv2-doorway {
+  position: absolute;
+  z-index: -1;
+  right: -2cqw;
+  bottom: -44cqw;
+  width: 38cqw;
+  height: 66cqw;
+  border: .16cqw solid rgba(112, 81, 38, .35);
+  border-radius: 19cqw 19cqw 0 0;
+}
+
+.uv2-doorway i {
+  position: absolute;
+  inset: 3.5cqw;
+  border: .12cqw solid rgba(112, 81, 38, .25);
+  border-radius: 16cqw 16cqw 0 0;
+}
+
+/* Word fields and diagrammatic elements */
+
+.uv2-word-field {
+  position: relative;
+  z-index: 4;
+}
+
+.uv2-word-field span {
+  display: block;
+}
+
+.uv2-word-field--pathways {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 5cqw;
+  width: 69cqw;
+  margin-top: 5.5cqw;
+  border-top: .12cqw solid rgba(200, 162, 90, .5);
+}
+
+.uv2-word-field--pathways span {
+  padding: 2.1cqw 0;
+  border-bottom: .12cqw solid rgba(200, 162, 90, .34);
+  color: rgba(247, 244, 238, .78);
+  font-size: 1.55cqw;
+  letter-spacing: .16cqw;
+}
+
+.uv2-sunburst {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  width: 58cqw;
+  aspect-ratio: 1;
+  place-items: center;
+  background: repeating-conic-gradient(from 1deg, rgba(157, 116, 47, .52) 0 .65deg, transparent .8deg 7deg);
+  border-radius: 50%;
+}
+
+.uv2-sunburst i {
+  width: 31cqw;
+  aspect-ratio: 1;
+  background: var(--cream);
+  border: .14cqw solid rgba(157, 116, 47, .28);
+  border-radius: 50%;
+}
+
+.uv2-sunburst--small {
+  right: 8cqw;
+  bottom: 10cqw;
+  width: 25cqw;
+}
+
+.uv2-sunburst--small i {
+  width: 13cqw;
+}
+
+.uv2-sunburst--half {
+  top: 31cqw;
+  right: -23cqw;
+  width: 72cqw;
+  background: repeating-conic-gradient(from 1deg, rgba(200, 162, 90, .58) 0 .7deg, transparent .85deg 6deg);
+}
+
+.uv2-sunburst--half i {
+  width: 39cqw;
+  background: var(--deep-forest);
+  border-color: rgba(200, 162, 90, .35);
+}
+
+.uv2-hours-dial {
+  position: absolute;
+  z-index: 2;
+  top: 27cqw;
+  right: -7cqw;
+  width: 55cqw;
+  aspect-ratio: 1;
+  border: .14cqw solid rgba(135, 96, 38, .34);
+  border-radius: 50%;
+}
+
+.uv2-hours-dial::before,
+.uv2-hours-dial::after {
+  position: absolute;
+  inset: 8cqw;
+  border: .12cqw solid rgba(135, 96, 38, .22);
+  border-radius: 50%;
+  content: '';
+}
+
+.uv2-hours-dial::after {
+  inset: 18cqw;
+  background: var(--cream);
+  border-color: rgba(135, 96, 38, .4);
+  box-shadow: 0 0 0 1.2cqw rgba(200, 162, 90, .08);
+}
+
+.uv2-hours-dial > i {
+  position: absolute;
+  z-index: 2;
+  top: 23cqw;
+  left: 26.8cqw;
+  width: .14cqw;
+  height: 4.8cqw;
+  background: #9d7432;
+}
+
+.uv2-hours-dial span {
+  position: absolute;
+  z-index: 3;
+  color: #725a35;
+  font-size: .92cqw;
+  font-weight: 500;
+  letter-spacing: .09cqw;
+}
+
+.uv2-hour--readings { top: -1.2cqw; left: 22cqw; }
+.uv2-hour--morning { top: 6cqw; right: 1cqw; }
+.uv2-hour--midmorning { top: 25cqw; right: -2cqw; }
+.uv2-hour--midday { right: 8cqw; bottom: 5cqw; }
+.uv2-hour--midafternoon { bottom: -1cqw; left: 17cqw; }
+.uv2-hour--evening { bottom: 7cqw; left: 0; }
+.uv2-hour--night { top: 23cqw; left: -2cqw; }
+
+.uv2-rhythm-track {
+  position: absolute;
+  z-index: 3;
+  right: 8cqw;
+  bottom: 18cqw;
+  left: 8cqw;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.uv2-rhythm-track::before {
+  position: absolute;
+  right: 0;
+  left: 0;
+  height: .1cqw;
+  background: currentColor;
+  content: '';
+  opacity: .28;
+}
+
+.uv2-rhythm-track i {
+  position: relative;
+  width: var(--size);
+  aspect-ratio: 1;
+  background: var(--muted-gold);
+  border: .14cqw solid currentColor;
+  border-radius: 50%;
+}
+
+.uv2--psalter-cycle .uv-post-copy {
+  display: flex;
+  height: 91cqw;
+  flex-direction: column;
+  justify-content: space-between;
+  margin-top: 7cqw;
+}
+
+.uv2--psalter-cycle .uv-post-eyebrow {
+  margin-bottom: 0;
+}
+
+.uv2--psalter-cycle h2 {
+  display: grid;
+  grid-template-columns: 28cqw 1fr;
+  align-items: center;
+  max-width: 84cqw;
+  column-gap: 3cqw;
+}
+
+.uv2-cycle-four {
+  color: #9a7130;
+  font-size: 38cqw;
+  font-style: italic;
+  letter-spacing: -2cqw;
+  line-height: .7;
+  transform: translate(1.5cqw, -6cqw);
+}
+
+.uv2-cycle-copy {
+  display: block;
+  padding-top: 2cqw;
+}
+
+.uv2-cycle-copy b,
+.uv2-cycle-copy em {
+  display: block;
+  font-weight: 400;
+}
+
+.uv2-cycle-copy b {
+  margin-bottom: 2cqw;
+  color: var(--charcoal);
+  font-size: 8.4cqw;
+  line-height: .82;
+}
+
+.uv2-cycle-copy em {
+  color: #8d672b;
+  font-size: 8.2cqw;
+  line-height: .88;
+}
+
+.uv2--psalter-cycle .uv-post-body {
+  max-width: 48cqw;
+  margin: 0 0 0 31cqw;
+  padding-left: 3cqw;
+  border-left: .12cqw solid rgba(154, 113, 48, .62);
+  font-size: 2.45cqw;
+  line-height: 1.55;
+}
+
+.uv2-cycle-scale {
+  display: grid;
+  grid-template-columns: auto 1fr auto 1fr auto;
+  align-items: center;
+  gap: 1.6cqw;
+  width: 72cqw;
+  margin: 0 auto;
+  color: #80602b;
+}
+
+.uv2-cycle-scale span {
+  font-size: 1.05cqw;
+  font-weight: 500;
+  letter-spacing: .13cqw;
+}
+
+.uv2-cycle-scale i {
+  height: .1cqw;
+  background: currentColor;
+  opacity: .42;
+}
+
+.uv2-seven-marks {
+  position: absolute;
+  z-index: 3;
+  top: 19cqw;
+  right: 6cqw;
+  display: grid;
+  width: 42cqw;
+}
+
+.uv2-seven-marks span {
+  display: grid;
+  grid-template-columns: 4cqw 1fr;
+  align-items: center;
+  min-height: 8.6cqw;
+  border-bottom: .1cqw solid currentColor;
+  opacity: .4;
+}
+
+.uv2-seven-marks span.is-gentle-start {
+  color: var(--muted-gold);
+  opacity: 1;
+}
+
+.uv2-seven-marks i {
+  width: .7cqw;
+  aspect-ratio: 1;
+  background: currentColor;
+  border-radius: 50%;
+}
+
+.uv2-seven-marks b {
+  font-size: 1.18cqw;
+  font-weight: 500;
+  letter-spacing: .13cqw;
+}
+
+.uv2--seven-art .uv-seven-marks {
+  color: var(--charcoal);
+}
+
+/* Time-of-day motif system */
+
+.uv2-three-moments {
+  position: absolute;
+  z-index: 3;
+  top: 22cqw;
+  right: 6cqw;
+  display: flex;
+  width: 28cqw;
+  flex-direction: column;
+  gap: 7cqw;
+}
+
+.uv2-three-moments span {
+  display: grid;
+  grid-template-columns: 8cqw 1fr;
+  align-items: center;
+  gap: 2cqw;
+}
+
+.uv2-three-moments b {
+  font-size: 1.1cqw;
+  font-weight: 500;
+  letter-spacing: .13cqw;
+}
+
+.uv2-sun-symbol,
+.uv2-horizon-symbol,
+.uv2-moon-symbol {
+  position: relative;
+  display: block;
+  width: 8cqw;
+  aspect-ratio: 1;
+}
+
+.uv2-sun-symbol {
+  background: repeating-conic-gradient(rgba(200, 162, 90, .9) 0 1.2deg, transparent 1.5deg 18deg);
+  border-radius: 50%;
+}
+
+.uv2-sun-symbol::before {
+  position: absolute;
+  inset: 2.2cqw;
+  background: currentColor;
+  border-radius: 50%;
+  content: '';
+}
+
+.uv2-horizon-symbol {
+  overflow: hidden;
+  border-bottom: .12cqw solid currentColor;
+}
+
+.uv2-horizon-symbol::before {
+  position: absolute;
+  right: 1.6cqw;
+  bottom: -2.5cqw;
+  left: 1.6cqw;
+  aspect-ratio: 1;
+  border: .16cqw solid var(--muted-gold);
+  border-radius: 50%;
+  content: '';
+}
+
+.uv2-moon-symbol {
+  border-radius: 50%;
+  box-shadow: -2cqw 1.1cqw 0 0 var(--muted-gold);
+  transform: translateX(2cqw) rotate(-22deg) scale(.72);
+}
+
+.uv2--easiest-cover .uv2-three-moments {
+  top: auto;
+  right: 7.5cqw;
+  bottom: 18cqw;
+  left: 7.5cqw;
+  width: auto;
+  flex-direction: row;
+  gap: 3cqw;
+}
+
+.uv2--easiest-cover .uv2-three-moments span {
+  flex: 1;
+  grid-template-columns: 6cqw 1fr;
+}
+
+.uv2--easiest-cover .uv2-sun-symbol,
+.uv2--easiest-cover .uv2-horizon-symbol,
+.uv2--easiest-cover .uv2-moon-symbol {
+  width: 6cqw;
+}
+
+.uv2--easiest-cover .uv2-sun-symbol::before {
+  inset: 1.7cqw;
+}
+
+.uv2-life-notes {
+  position: absolute;
+  top: 3cqw;
+  right: -36cqw;
+  display: grid;
+  gap: 19cqw;
+  width: 28cqw;
+}
+
+.uv2-life-notes span {
+  padding-bottom: 1.2cqw;
+  border-bottom: .12cqw solid rgba(107, 83, 44, .3);
+  font-size: 1.1cqw;
+  letter-spacing: .12cqw;
+}
+
+.uv2-triptych {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  opacity: .14;
+}
+
+.uv2-triptych i:nth-child(1) { background: var(--deep-forest); }
+.uv2-triptych i:nth-child(2) { background: var(--muted-gold); }
+.uv2-triptych i:nth-child(3) { background: var(--oxblood); }
+
+.uv2--choose-hour-cover .uv-post-copy {
+  z-index: 4;
+}
+
+.uv2-evening-horizon {
+  position: absolute;
+  z-index: 2;
+  right: -8cqw;
+  bottom: 12cqw;
+  width: 55cqw;
+  height: 35cqw;
+  overflow: hidden;
+  border-bottom: .16cqw solid rgba(112, 81, 38, .45);
+}
+
+.uv2-evening-horizon i {
+  position: absolute;
+  right: 8cqw;
+  bottom: -19cqw;
+  width: 38cqw;
+  aspect-ratio: 1;
+  border: .18cqw solid #966f2d;
+  border-radius: 50%;
+}
+
+.uv2-evening-horizon b {
+  position: absolute;
+  right: 15cqw;
+  bottom: 5cqw;
+  left: 7cqw;
+  height: .1cqw;
+  background: rgba(112, 81, 38, .32);
+  box-shadow: 0 2.5cqw rgba(112, 81, 38, .2), 0 5cqw rgba(112, 81, 38, .14);
+}
+
+.uv2-large-moon {
+  position: absolute;
+  z-index: 2;
+  right: 3cqw;
+  bottom: 4cqw;
+  width: 50cqw;
+  height: 61cqw;
+}
+
+.uv2-large-moon i {
+  position: absolute;
+  right: 5cqw;
+  bottom: 9cqw;
+  width: 34cqw;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  box-shadow: -8cqw 5cqw 0 0 rgba(200, 162, 90, .72);
+  transform: rotate(-28deg);
+}
+
+.uv2-large-moon span {
+  position: absolute;
+  color: var(--muted-gold);
+  font-size: 3cqw;
+}
+
+.uv2-large-moon span:nth-of-type(1) { top: 5cqw; right: 5cqw; }
+.uv2-large-moon span:nth-of-type(2) { top: 18cqw; left: 7cqw; }
+
+/* Prayer pathways and line-art objects */
+
+.uv2-line-book {
+  position: absolute;
+  z-index: 2;
+  top: 27cqw;
+  right: 2cqw;
+  width: 48cqw;
+  height: 54cqw;
+  color: rgba(112, 81, 38, .48);
+}
+
+.uv2-line-book i {
+  position: absolute;
+  top: 4cqw;
+  bottom: 6cqw;
+  width: 24cqw;
+  border: .17cqw solid currentColor;
+}
+
+.uv2-line-book i:first-child {
+  left: 0;
+  border-radius: 1cqw 7cqw 2cqw 1cqw;
+  transform: skewY(5deg);
+}
+
+.uv2-line-book i:nth-child(2) {
+  right: 0;
+  border-radius: 7cqw 1cqw 1cqw 2cqw;
+  transform: skewY(-5deg);
+}
+
+.uv2-line-book::before {
+  position: absolute;
+  top: 6cqw;
+  bottom: 0;
+  left: 24cqw;
+  width: .18cqw;
+  background: currentColor;
+  content: '';
+}
+
+.uv2-line-book b {
+  position: absolute;
+  z-index: 2;
+  top: 17cqw;
+  left: 20.6cqw;
+  color: #936d2d;
+  font-family: var(--serif);
+  font-size: 7cqw;
+  font-weight: 400;
+}
+
+.uv2-line-book span {
+  position: absolute;
+  bottom: 0;
+  width: 2cqw;
+  height: 17cqw;
+  background: var(--oxblood);
+}
+
+.uv2-line-book span:nth-of-type(1) { left: 21cqw; transform: rotate(3deg); }
+.uv2-line-book span:nth-of-type(2) { left: 26cqw; background: #a77a32; transform: rotate(-4deg); }
+
+.uv2-voices {
+  position: absolute;
+  z-index: 2;
+  right: 0;
+  bottom: 5cqw;
+  width: 57cqw;
+  height: 57cqw;
+  color: rgba(112, 81, 38, .34);
+}
+
+.uv2-voices i {
+  position: absolute;
+  bottom: 5cqw;
+  left: var(--x);
+  width: .12cqw;
+  height: 45cqw;
+  background: currentColor;
+  opacity: var(--fade);
+  transform: rotate(var(--angle));
+  transform-origin: 50% 100%;
+}
+
+.uv2-voices i::before {
+  position: absolute;
+  top: var(--dot);
+  left: -.55cqw;
+  width: 1.2cqw;
+  aspect-ratio: 1;
+  border: .12cqw solid currentColor;
+  border-radius: 50%;
+  content: '';
+}
+
+.uv2-voices b {
+  position: absolute;
+  right: 26cqw;
+  bottom: 0;
+  color: #98712f;
+  font-family: var(--serif);
+  font-size: 6cqw;
+  font-weight: 400;
+}
+
+.uv-post--forest .uv2-voices {
+  color: rgba(200, 162, 90, .28);
+}
+
+.uv-post--forest .uv2-voices b {
+  color: var(--muted-gold);
+}
+
+.uv2-architecture-lines {
+  position: absolute;
+  z-index: -1;
+  right: -2cqw;
+  bottom: -32cqw;
+  display: flex;
+  align-items: flex-end;
+  gap: 2.5cqw;
+  width: 40cqw;
+  height: 64cqw;
+}
+
+.uv2-architecture-lines i {
+  flex: 1;
+  height: 54cqw;
+  border: .14cqw solid rgba(112, 81, 38, .32);
+  border-radius: 8cqw 8cqw 0 0;
+}
+
+.uv2-architecture-lines i:nth-child(2) { height: 64cqw; }
+
+.uv2-architecture-lines b {
+  position: absolute;
+  top: -2cqw;
+  left: 18cqw;
+  color: #936d2d;
+  font-family: var(--serif);
+  font-size: 5cqw;
+  font-weight: 400;
+}
+
+/* Ecclesial and communal motifs */
+
+.uv2--whole-church-cover .uv-post-copy {
+  width: 68cqw;
+}
+
+.uv2--whole-church-cover .uv2-voices {
+  right: -5cqw;
+  bottom: 1cqw;
+  width: 74cqw;
+  height: 61cqw;
+}
+
+.uv2--whole-church-cover .uv2-voices i {
+  left: var(--x-wide);
+  height: 51cqw;
+}
+
+.uv2--not-alone .uv-post-copy {
+  top: 43%;
+}
+
+.uv2--not-alone h2 {
+  font-size: 15cqw;
+}
+
+.uv2-lone-cross {
+  position: absolute;
+  right: 8cqw;
+  bottom: -18cqw;
+  color: rgba(200, 162, 90, .32);
+  font-family: var(--serif);
+  font-size: 24cqw;
+}
+
+.uv2--praying-places h2 {
+  font-size: 11.9cqw;
+}
+
+.uv2--praying-places .uv-post-body {
+  max-width: 60cqw;
+}
+
+.uv2--voices-converge .uv2-voices {
+  right: -2cqw;
+  bottom: 5cqw;
+  width: 65cqw;
+}
+
+.uv2--voices-converge .uv2-voices i {
+  left: var(--x-mid);
+}
+
+.uv2--one-voice-final .uv-post-body {
+  color: var(--muted-gold);
+  font-family: var(--serif);
+  font-size: 5cqw;
+  font-style: italic;
+}
+
+.uv2--one-voice-final .uv2-cross-rule {
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.uv2-devotion-word {
+  display: inline-block;
+  color: #8d672b;
+  font-size: 16.5cqw;
+  font-style: italic;
+}
+
+.uv2--devotion-cover .uv-post-copy {
+  top: 42%;
+}
+
+.uv2--devotion-cover .uv-post-body {
+  margin-top: 3cqw;
+}
+
+.uv2-gathering-marks {
+  position: relative;
+  width: 47cqw;
+  height: 13cqw;
+  margin: 6cqw auto 0;
+}
+
+.uv2-gathering-marks i {
+  position: absolute;
+  top: 2cqw;
+  left: calc(var(--gather, 0) * 7cqw);
+  width: 1.2cqw;
+  aspect-ratio: 1;
+  border: .12cqw solid #8f692b;
+  border-radius: 50%;
+}
+
+.uv2-gathering-marks i:nth-child(1) { left: 0; top: 5cqw; }
+.uv2-gathering-marks i:nth-child(2) { left: 7cqw; top: 2cqw; }
+.uv2-gathering-marks i:nth-child(3) { left: 14cqw; top: 0; }
+.uv2-gathering-marks i:nth-child(4) { left: 22cqw; top: 1cqw; }
+.uv2-gathering-marks i:nth-child(5) { left: 30cqw; top: 0; }
+.uv2-gathering-marks i:nth-child(6) { left: 37cqw; top: 2cqw; }
+.uv2-gathering-marks i:nth-child(7) { left: 45cqw; top: 5cqw; }
+
+.uv2-gathering-marks b {
+  position: absolute;
+  top: 7cqw;
+  left: 21.5cqw;
+  color: #8f692b;
+  font-family: var(--serif);
+  font-size: 4cqw;
+  font-weight: 400;
+}
+
+.uv2--seven-days .uv-post-copy {
+  margin-top: 12cqw;
+}
+
+.uv2-seven-day-row {
+  display: flex;
+  gap: 2.4cqw;
+  margin-top: 7cqw;
+}
+
+.uv2-seven-day-row i {
+  width: 5cqw;
+  aspect-ratio: 1;
+  border: .14cqw solid #8f692b;
+  border-radius: 50%;
+}
+
+.uv2-seven-day-row i:first-child {
+  background: #8f692b;
+  box-shadow: inset 0 0 0 1cqw var(--cream);
+}
+
+.uv2--shared-rhythm .uv-post-body {
+  max-width: 70cqw;
+  font-size: 2.2cqw;
+}
+
+/* Quiet rhythm and continuation */
+
+.uv2--rhythm-cover .uv-post-copy {
+  margin-top: 16cqw;
+}
+
+.uv2--rhythm-cover h2 {
+  font-size: 14cqw;
+}
+
+.uv2--rhythm-cover .uv2-rhythm-track {
+  bottom: 17cqw;
+}
+
+.uv2--begin-once .uv-post-copy {
+  top: 43%;
+}
+
+.uv2-first-mark {
+  position: absolute;
+  right: 0;
+  bottom: -22cqw;
+  width: 3cqw;
+  aspect-ratio: 1;
+  background: var(--muted-gold);
+  border: .16cqw solid #8c672a;
+  border-radius: 50%;
+  box-shadow: 0 0 0 5cqw rgba(200, 162, 90, .08), 0 0 0 10cqw rgba(200, 162, 90, .04);
+}
+
+.uv2--return-again .uv2-rhythm-track {
+  bottom: 15cqw;
+}
+
+.uv2-prayer-loop {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr;
+  align-items: center;
+  gap: 1.6cqw;
+  width: 78cqw;
+  margin-top: 12cqw;
+  padding: 3cqw 0;
+  border-top: .12cqw solid rgba(200, 162, 90, .45);
+  border-bottom: .12cqw solid rgba(200, 162, 90, .45);
+}
+
+.uv2-prayer-loop span {
+  font-size: 1.1cqw;
+  font-weight: 500;
+  letter-spacing: .1cqw;
+  text-align: center;
+}
+
+.uv2-prayer-loop i {
+  color: var(--muted-gold);
+  font-family: var(--serif);
+  font-size: 2.6cqw;
+  font-style: normal;
+}
+
+.uv2--life-of-prayer .uv-post-copy {
+  top: 46%;
+}
+
+.uv2--life-of-prayer h2 {
+  font-size: 10cqw;
+}
+
+.uv2--life-of-prayer .uv-post-body {
+  color: #8c672a;
+  font-family: var(--serif);
+  font-size: 4.5cqw;
+  font-style: italic;
+}
+
+.uv2--life-of-prayer .uv2-cross-rule {
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.uv2--post-one-invitation .uv-post-footer,
+.uv2--one-hour .uv-post-footer {
+  bottom: 15cqw;
+  font-size: 1.35cqw;
+  opacity: .88;
+}
+
+/* Composition-specific tuning */
+
+.uv2--p3-cover .uv-post-copy {
+  margin-top: 6cqw;
+}
+
+.uv2--p3-cover h2 {
+  line-height: .9;
+}
+
+.uv2--p3-cover h2 .uv2-p3-have {
+  display: block;
+  margin-top: 3.5cqw;
+  font-style: normal;
+}
+
+.uv2--start-one .uv-post-copy {
+  top: 44%;
+}
+
+.uv2--p3-three .uv-post-copy {
+  width: 54cqw;
+}
+
+.uv2--p3-three h2 {
+  font-size: 12.2cqw;
+}
+
+.uv2--p3-three .uv2-three-moments {
+  top: 20cqw;
+  right: 4cqw;
+  justify-content: space-between;
+  width: 23cqw;
+  height: 70cqw;
+  gap: 0;
+}
+
+.uv2--p3-three .uv2-three-moments::before {
+  position: absolute;
+  top: 3cqw;
+  bottom: 3cqw;
+  left: 3cqw;
+  width: .1cqw;
+  background: rgba(200, 162, 90, .26);
+  content: '';
+}
+
+.uv2--p3-three .uv2-three-moments span {
+  position: relative;
+  z-index: 2;
+  grid-template-columns: 6cqw 1fr;
+  gap: 1.5cqw;
+}
+
+.uv2--p3-three .uv2-sun-symbol,
+.uv2--p3-three .uv2-horizon-symbol,
+.uv2--p3-three .uv2-moon-symbol {
+  width: 6cqw;
+}
+
+.uv2--p3-three .uv2-sun-symbol::before {
+  inset: 1.7cqw;
+}
+
+.uv2--hours-map .uv2-seven-marks,
+.uv2--seven-art .uv2-seven-marks {
+  top: 20cqw;
+}
+
+.uv2--seven-art .uv-post-copy {
+  margin-top: 12cqw;
+}
+
+.uv2--already-slide .uv-post-copy {
+  margin-top: 13cqw;
+}
+
+.uv2--return-tomorrow .uv-post-copy {
+  top: 42%;
+}
+
+.uv2--return-tomorrow h2 {
+  font-size: 22cqw;
+}
+
+.uv2--return-tomorrow .uv2-small-note {
+  margin: 4cqw 0 0;
+  color: rgba(247, 244, 238, .58);
+}
+
+.uv2--choose-hour-cover .uv-post-copy {
+  margin-top: 10cqw;
+}
+
+.uv2--ways-cover .uv-post-copy {
+  margin-top: 5cqw;
+}
+
+.uv2--ways-cover h2 {
+  font-size: 14.4cqw;
+}
+
+.uv2--follow-voice .uv2-voices {
+  right: -4cqw;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .uv2 * {
+    transition: none !important;
+  }
+}

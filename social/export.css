@@ -1,0 +1,41 @@
+:root,
+html,
+body {
+  width: 1080px;
+  min-width: 1080px;
+  height: 1350px;
+  min-height: 1350px;
+  margin: 0;
+  overflow: hidden;
+  background: var(--cream);
+}
+
+body {
+  display: block;
+}
+
+.export-artboard {
+  width: 1080px;
+  height: 1350px;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  container-type: inline-size;
+}
+
+.export-artboard .uv-post {
+  width: 100%;
+  height: 100%;
+}
+
+.export-error {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  padding: 80px;
+  place-items: center;
+  color: var(--charcoal);
+  background: var(--cream);
+  font: 32px/1.5 var(--sans);
+  text-align: center;
+}

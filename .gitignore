@@ -51,6 +51,8 @@ temp/
 .netlify
 
 
-/social
-/docs
+/docs/*
+!/docs/architecture.md
+!/docs/brand/
+!/docs/brand/**
 /exports

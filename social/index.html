@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Una Voce Social Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./artwork.css" />
+</head>
+<body data-view="covers">
+  <header class="workspace-header">
+    <div class="workspace-intro">
+      <a class="studio-wordmark" href="/" aria-label="Return to Una Voce">
+        UNA <span>VOCE</span>
+      </a>
+      <p class="workspace-kicker">Instagram launch · editable HTML</p>
+      <h1>The first nine.</h1>
+      <p class="workspace-deck">Reverent · editorial · calm · contemplative · typography-first · liturgical</p>
+    </div>
+
+    <div class="workspace-tools" aria-label="Preview controls">
+      <span class="control-label">Preview format</span>
+      <div class="view-switcher" role="group" aria-label="Preview format">
+        <button class="view-button is-active" type="button" data-set-view="covers" aria-pressed="true">4:5 artwork</button>
+        <button class="view-button" type="button" data-set-view="grid" aria-pressed="false">1:1 feed crop</button>
+      </div>
+      <div class="source-links">
+        <a href="/docs/brand/UNA_VOCE_INSTAGRAM_VISUAL_GUIDE.md">Visual guide</a>
+        <a href="/docs/brand/UNA_VOCE_INSTAGRAM_VISUAL_DIRECTION_REFERENCE.png">Reference board</a>
+        <a href="/">Open Una Voce</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="collection-heading" aria-labelledby="collection-title">
+      <div>
+        <p class="section-label">Launch sequence</p>
+        <h2 id="collection-title">Instagram covers</h2>
+      </div>
+      <p class="collection-count" data-collection-count>Instagram order · 09 → 01</p>
+    </section>
+
+    <section class="mockup-grid" data-design-grid aria-label="Social design previews"></section>
+
+    <section class="studio-empty" data-empty-state>
+      <span class="empty-mark" aria-hidden="true">UV</span>
+      <p class="empty-eyebrow">Ready for the first campaign</p>
+      <h2>No social designs yet.</h2>
+      <p>The preview grid, crop review, slide viewer, and caption panel are in place.</p>
+    </section>
+  </main>
+
+  <dialog class="preview-dialog" data-preview-dialog aria-labelledby="preview-title">
+    <div class="preview-panel">
+      <header class="preview-header">
+        <div>
+          <span class="preview-label" data-preview-label>Design</span>
+          <h2 id="preview-title" data-preview-title>Social design</h2>
+        </div>
+        <button class="preview-close" type="button" data-preview-close aria-label="Close preview">×</button>
+      </header>
+
+      <div class="preview-workspace">
+        <div class="preview-column">
+          <div class="crop-toolbar">
+            <div>
+              <span class="crop-label">Artwork preview</span>
+              <small>Same artboard, crop only</small>
+            </div>
+            <div class="modal-view-switcher" role="group" aria-label="Artwork crop preview">
+              <button class="modal-view-button is-active" type="button" data-modal-view="covers" aria-pressed="true">4:5</button>
+              <button class="modal-view-button" type="button" data-modal-view="grid" aria-pressed="false">1:1 crop</button>
+            </div>
+          </div>
+
+          <div class="preview-stage">
+            <button class="preview-arrow" type="button" data-preview-previous aria-label="Previous slide">←</button>
+            <div class="preview-crop" data-preview-crop data-view="covers">
+              <div class="preview-canvas" data-preview-canvas aria-live="polite"></div>
+            </div>
+            <button class="preview-arrow" type="button" data-preview-next aria-label="Next slide">→</button>
+          </div>
+
+          <footer class="preview-controls">
+            <span data-preview-position>Slide 1 of 1</span>
+            <div class="preview-dots" data-preview-dots aria-label="Choose a slide"></div>
+            <span>Arrow keys work too</span>
+          </footer>
+        </div>
+
+        <aside class="caption-panel" aria-label="Rendered social caption">
+          <div class="caption-topline">
+            <span class="caption-kicker">Rendered post copy</span>
+            <span class="caption-tag">Caption</span>
+          </div>
+          <div class="caption-rendered" data-preview-caption aria-live="polite"></div>
+        </aside>
+      </div>
+    </div>
+  </dialog>
+
+  <footer class="workspace-footer">
+    <p><strong>Una Voce social system</strong> · artwork, crop, carousel, and copy review</p>
+      <span>Source: Instagram visual guide</span>
+  </footer>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
