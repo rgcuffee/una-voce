@@ -87,21 +87,99 @@ const PROVIDER_NAMES = {
   universalis: 'Universalis',
 };
 
+function daysInMonth(year, month) {
+  const isLeapYear =
+    year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+
+  return [
+    31,
+    isLeapYear ? 29 : 28,
+    31,
+    30,
+    31,
+    30,
+    31,
+    31,
+    30,
+    31,
+    30,
+    31,
+  ][month - 1];
+}
+
 function isValidCivilDate(year, month, day) {
-  if (month < 1 || month > 12 || day < 1 || day > 31) {
+  if (year < 1 || year > 9999 || month < 1 || month > 12 || day < 1) {
     return false;
   }
 
-  const date = new Date(Date.UTC(year, month - 1, day));
-  return (
-    date.getUTCFullYear() === year &&
-    date.getUTCMonth() === month - 1 &&
-    date.getUTCDate() === day
-  );
+  return day <= daysInMonth(year, month);
 }
 
 function padDatePart(value) {
   return String(value).padStart(2, '0');
+}
+
+function parseCivilDateKey(dateKey) {
+  if (typeof dateKey !== 'string') {
+    return null;
+  }
+
+  const match = DATE_PATTERN.exec(dateKey);
+  if (!match) {
+    return null;
+  }
+
+  const [, yearText, monthText, dayText] = match;
+  const year = Number(yearText);
+  const month = Number(monthText);
+  const day = Number(dayText);
+
+  return isValidCivilDate(year, month, day)
+    ? { year, month, day }
+    : null;
+}
+
+/**
+ * Move a YYYY-MM-DD civil date key without constructing a timestamp.
+ * This keeps calendar navigation independent of the browser timezone and
+ * daylight-saving transitions.
+ */
+export function shiftCivilDate(dateKey, dayDelta) {
+  const parsed = parseCivilDateKey(dateKey);
+  if (!parsed || !Number.isSafeInteger(dayDelta)) {
+    return null;
+  }
+
+  let { year, month, day } = parsed;
+  const step = dayDelta < 0 ? -1 : 1;
+
+  for (let remaining = Math.abs(dayDelta); remaining > 0; remaining -= 1) {
+    day += step;
+
+    if (day < 1) {
+      month -= 1;
+      if (month < 1) {
+        year -= 1;
+        month = 12;
+      }
+      day = daysInMonth(year, month);
+    } else {
+      if (day > daysInMonth(year, month)) {
+        day = 1;
+        month += 1;
+        if (month > 12) {
+          year += 1;
+          month = 1;
+        }
+      }
+    }
+
+    if (year < 1 || year > 9999) {
+      return null;
+    }
+  }
+
+  return `${String(year).padStart(4, '0')}-${padDatePart(month)}-${padDatePart(day)}`;
 }
 
 /**
@@ -111,17 +189,9 @@ function padDatePart(value) {
  */
 export function formatProviderDate(selectedDate) {
   if (typeof selectedDate === 'string') {
-    const match = DATE_PATTERN.exec(selectedDate);
-    if (!match) {
-      return null;
-    }
-
-    const [, yearText, monthText, dayText] = match;
-    const year = Number(yearText);
-    const month = Number(monthText);
-    const day = Number(dayText);
-    return isValidCivilDate(year, month, day)
-      ? `${yearText}${monthText}${dayText}`
+    const parsed = parseCivilDateKey(selectedDate);
+    return parsed
+      ? `${String(parsed.year).padStart(4, '0')}${padDatePart(parsed.month)}${padDatePart(parsed.day)}`
       : null;
   }
 

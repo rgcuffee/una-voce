@@ -22,6 +22,7 @@ import {
 import { trackAnalyticsEvent } from '../lib/prayerAnalytics';
 import {
   getTextPrayerProviders,
+  shiftCivilDate,
   type TextPrayerProvider,
 } from '../lib/textPrayerProviders.mjs';
 import type {
@@ -2824,6 +2825,9 @@ export function PrayerOfficeMockup() {
     });
   };
 
+  const previousPrayerDate = shiftCivilDate(selectedDate, -1);
+  const nextPrayerDate = shiftCivilDate(selectedDate, 1);
+
   const returnToToday = () => {
     changePrayerDate(localDateString());
     setIsDatePickerOpen(false);
@@ -3457,6 +3461,40 @@ export function PrayerOfficeMockup() {
                 ) : null}
               </div>
               <div className="date-control-actions">
+                <div
+                  className="date-navigation"
+                  role="group"
+                  aria-label="Move prayer date by one day"
+                >
+                  <button
+                    type="button"
+                    className="date-nav-button"
+                    aria-label="Previous calendar day"
+                    title="Previous calendar day"
+                    disabled={!previousPrayerDate}
+                    onClick={() => {
+                      if (previousPrayerDate) {
+                        changePrayerDate(previousPrayerDate);
+                      }
+                    }}
+                  >
+                    <span aria-hidden="true">←</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="date-nav-button"
+                    aria-label="Next calendar day"
+                    title="Next calendar day"
+                    disabled={!nextPrayerDate}
+                    onClick={() => {
+                      if (nextPrayerDate) {
+                        changePrayerDate(nextPrayerDate);
+                      }
+                    }}
+                  >
+                    <span aria-hidden="true">→</span>
+                  </button>
+                </div>
                 <button
                   type="button"
                   className="date-change-button"

@@ -2363,7 +2363,49 @@ body {
 
 .date-control-actions {
     position: relative;
+    display: flex;
+    align-items: center;
+    gap: 6px;
     flex-shrink: 0;
+}
+
+.date-navigation {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.date-nav-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    min-height: 34px;
+    padding: 0;
+    border: 1px solid rgba(184, 151, 58, 0.24);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.68);
+    color: var(--charcoal);
+    cursor: pointer;
+    font: inherit;
+    font-size: 18px;
+    line-height: 1;
+    transition:
+        background 0.15s ease,
+        border-color 0.15s ease,
+        color 0.15s ease;
+}
+
+.date-nav-button:hover,
+.date-nav-button:focus-visible {
+    background: var(--white);
+    border-color: rgba(184, 151, 58, 0.42);
+    color: var(--gold);
+}
+
+.date-nav-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
 }
 
 .date-change-button,
@@ -2757,12 +2799,25 @@ body {
         flex-direction: column;
     }
 
-    .date-control-actions,
-    .date-change-button {
+    .date-control-actions {
+        align-items: center;
         width: 100%;
     }
 
     .date-change-button {
+        flex: 1;
+        width: auto;
+    }
+
+    .date-navigation {
+        flex-shrink: 0;
+    }
+
+    .date-nav-button {
+        width: 36px;
+    }
+
+    .date-control-actions .date-change-button {
         justify-content: center;
     }
 

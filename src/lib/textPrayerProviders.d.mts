@@ -10,6 +10,11 @@ export type TextPrayerHour =
 export type TextPrayerProviderId = 'divine_office' | 'universalis';
 export type TextPrayerDate = string | Date;
 
+export function shiftCivilDate(
+  dateKey: string,
+  dayDelta: number,
+): string | null;
+
 export interface TextPrayerProvider {
   provider: TextPrayerProviderId;
   providerName: string;
