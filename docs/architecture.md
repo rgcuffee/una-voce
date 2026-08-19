@@ -51,7 +51,7 @@ Netlify Functions live in `netlify/functions`.
 
 Functions that write or read privileged data use `SUPABASE_SERVICE_ROLE_KEY`. Keep those workflows server-only.
 
-The Holy Spirit Men's Ministry alpha uses the existing analytics event/session tables for attributable page, resource, and measurable player-duration evidence. Its participant, devotion, and current nightly report records are separate bounded tables created by the checked-in devotion migration. Public participant/report writes never go directly from the browser to Supabase.
+The Holy Spirit Men's Ministry alpha uses the existing analytics event/session tables for attributable page, readable resource, and per-resource measurable player-duration evidence. Its participant, devotion, and current nightly report records are separate bounded tables created by the checked-in devotion migration. Public participant/report writes never go directly from the browser to Supabase. Admin-visible participant links use stable HMAC-derived opaque tokens; raw tokens are not stored in devotion records or returned in dashboard loads.
 
 ## Data
 

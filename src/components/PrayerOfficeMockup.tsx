@@ -2234,6 +2234,7 @@ function createPrayerPlayerSession({
 
   return {
     sourceName,
+    resourceLabel: item.title,
     sourceType,
     prayerType: segment.title,
     prayerId: `${hour}-${sourceType}`,
@@ -3868,6 +3869,7 @@ export function DevotionNightPrayerResources({
 
   const trackResource = (
     resourceId: string,
+    resourceLabel: string,
     provider: string,
     mediaType: string,
     sourceUrl?: string,
@@ -3882,6 +3884,7 @@ export function DevotionNightPrayerResources({
       sourceUrl,
       hour: 'night-prayer',
       pageContext: 'devotion_night_prayer',
+      metadata: { resourceLabel },
     });
   };
 
@@ -3892,7 +3895,7 @@ export function DevotionNightPrayerResources({
   ) => {
     const resourceId = item.videoId ?? item.sourceUrl ?? item.title;
     const provider = item.provider ?? 'youtube';
-    trackResource(resourceId, provider, mediaType, item.sourceUrl);
+    trackResource(resourceId, item.title, provider, mediaType, item.sourceUrl);
     setPrayerPlayerSession({
       ...createPrayerPlayerSession({
         item,
@@ -3925,6 +3928,7 @@ export function DevotionNightPrayerResources({
               onOpen={() =>
                 trackResource(
                   provider.provider,
+                  `${provider.providerName} — ${provider.hourLabel}`,
                   provider.provider,
                   'text',
                   provider.url,

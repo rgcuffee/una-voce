@@ -87,6 +87,7 @@ test('devotion prayer-player sessions persist structured media attribution', asy
     sourceName: 'Word on Fire',
     sourceType: 'recorded',
     pageContext: 'devotion_night_prayer',
+    metadata: { resourceLabel: 'Word on Fire — Night Prayer' },
   };
 
   const startResult = await handler(request(started));
@@ -100,6 +101,10 @@ test('devotion prayer-player sessions persist structured media attribution', asy
   assert.equal(startResult.statusCode, 202);
   assert.equal(endResult.statusCode, 202);
   assert.equal(client.rows.events[0].devotion_id, valid.devotionId);
+  assert.equal(
+    client.rows.events[0].metadata.resourceLabel,
+    'Word on Fire — Night Prayer',
+  );
   assert.deepEqual(client.rows.sessions.get(valid.sessionId), {
     session_id: valid.sessionId,
     started_at: valid.startedAt,

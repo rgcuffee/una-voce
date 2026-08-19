@@ -19,5 +19,7 @@ test('prayer player sessions send devotion attribution in analytics columns', as
   assert.match(dispatch, /prayerDate: session\.prayerDate/);
   assert.match(dispatch, /resourceId: session\.resourceId/);
   assert.match(dispatch, /mediaType: session\.mediaType/);
-  assert.match(source, /referrerPolicy='no-referrer'/);
+  assert.match(source, /resourceLabel: session\.resourceLabel/);
+  assert.match(source, /referrerPolicy='strict-origin-when-cross-origin'/);
+  assert.doesNotMatch(source, /referrerPolicy='no-referrer'/);
 });

@@ -1,9 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
+import { randomUUID } from 'node:crypto';
 import { createAdminAuthorizer } from './lib/admin-auth.mjs';
 import { aggregateDevotionAnalytics } from './lib/devotion-analytics.mjs';
 import {
   DEVOTION_SLUG,
-  generateParticipantToken,
+  deriveParticipantToken,
   hashParticipantToken,
   participantLink,
 } from './lib/devotion-pilot.mjs';
@@ -22,6 +23,8 @@ const supabaseUrl = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const adminSharedSecret =
   process.env.ADMIN_SHARED_SECRET ?? process.env.INGEST_SHARED_SECRET;
+const participantTokenSecret =
+  process.env.DEVOTION_LINK_SECRET ?? adminSharedSecret;
 const adminAllowedEmails = (process.env.ADMIN_ALLOWED_EMAILS ?? '')
   .split(',')
   .map((email) => email.trim())
@@ -67,7 +70,7 @@ export function createAdminDevotionRepository(client) {
     async listEvents(devotionId) {
       const { data, error } = await client
         .from('analytics_events')
-        .select('event_name,devotion_participant_id,pilot_day,prayer_date,resource_id,provider,media_type,content_id,content_type,occurred_at')
+        .select('event_name,devotion_participant_id,pilot_day,prayer_date,resource_id,provider,media_type,content_id,content_type,metadata,occurred_at')
         .eq('devotion_id', devotionId)
         .order('occurred_at');
       if (error) throw error;
@@ -77,7 +80,7 @@ export function createAdminDevotionRepository(client) {
     async listSessions(devotionId) {
       const { data, error } = await client
         .from('analytics_sessions')
-        .select('session_id,devotion_participant_id,pilot_day,prayer_date,resource_id,provider,media_type,active_play_seconds,panel_open_seconds,started_at,ended_at')
+        .select('session_id,devotion_participant_id,pilot_day,prayer_date,resource_id,provider,media_type,source_name,active_play_seconds,panel_open_seconds,started_at,ended_at')
         .eq('devotion_id', devotionId)
         .order('started_at');
       if (error) throw error;
@@ -97,7 +100,7 @@ export function createAdminDevotionRepository(client) {
     async findParticipant(devotionId, participantId) {
       const { data, error } = await client
         .from('devotion_participants')
-        .select('id,label,created_at,revoked_at')
+        .select('id,label,token_hash,created_at,revoked_at')
         .eq('devotion_id', devotionId)
         .eq('id', participantId)
         .maybeSingle();
@@ -130,7 +133,11 @@ export function createAdminDevotionRepository(client) {
   };
 }
 
-export function createAdminDevotionHandler({ repository, authorize }) {
+export function createAdminDevotionHandler({
+  repository,
+  authorize,
+  linkSecret = participantTokenSecret,
+}) {
   return async function adminDevotionHandler(event) {
     if (event.httpMethod === 'OPTIONS') return response(204);
     if (!['GET', 'POST'].includes(event.httpMethod)) {
@@ -158,6 +165,7 @@ export function createAdminDevotionHandler({ repository, authorize }) {
         devotion,
         payload: parsed.value,
         siteUrl: siteUrlFor(event),
+        linkSecret,
       });
       return response(200, result);
     } catch (error) {
@@ -192,11 +200,19 @@ async function dashboard(repository, devotion) {
   };
 }
 
-async function handleAction({ repository, devotion, payload, siteUrl }) {
+async function handleAction({
+  repository,
+  devotion,
+  payload,
+  siteUrl,
+  linkSecret,
+}) {
   if (payload.action === 'createParticipant') {
     const label = participantLabel(payload.label);
-    const token = generateParticipantToken();
+    const id = randomUUID();
+    const token = participantToken(id, linkSecret);
     const participant = await repository.createParticipant({
+      id,
       devotion_id: devotion.id,
       label,
       token_hash: hashParticipantToken(token),
@@ -205,23 +221,32 @@ async function handleAction({ repository, devotion, payload, siteUrl }) {
       ok: true,
       participant: safeParticipant(participant),
       generatedLink: participantLink(token, siteUrl),
+      linkChanged: false,
     };
   }
 
-  if (payload.action === 'reissueParticipant') {
+  if (payload.action === 'showParticipantLink') {
     const participantId = requiredId(payload.participantId);
-    const existing = await repository.findParticipant(devotion.id, participantId);
+    let existing = await repository.findParticipant(devotion.id, participantId);
     if (!existing) throw new RequestError(404, 'Participant not found');
-    const token = generateParticipantToken();
-    const participant = await repository.updateParticipant(
-      devotion.id,
-      participantId,
-      { token_hash: hashParticipantToken(token), revoked_at: null },
-    );
+    if (existing.revoked_at) {
+      throw new RequestError(409, 'Revoked participant links cannot be shown');
+    }
+    const token = participantToken(participantId, linkSecret);
+    const tokenHash = hashParticipantToken(token);
+    const linkChanged = existing.token_hash !== tokenHash;
+    if (linkChanged) {
+      existing = await repository.updateParticipant(
+        devotion.id,
+        participantId,
+        { token_hash: tokenHash },
+      );
+    }
     return {
       ok: true,
-      participant: safeParticipant(participant),
+      participant: safeParticipant(existing),
       generatedLink: participantLink(token, siteUrl),
+      linkChanged,
     };
   }
 
@@ -270,6 +295,19 @@ function participantLabel(value) {
   const label = typeof value === 'string' ? value.trim() : '';
   if (!label || label.length > 120) throw new RequestError(400, 'Participant label must be 1-120 characters');
   return label;
+}
+
+function participantToken(participantId, linkSecret) {
+  try {
+    return deriveParticipantToken(participantId, linkSecret);
+  } catch (error) {
+    throw new RequestError(
+      500,
+      error instanceof Error
+        ? error.message
+        : 'Participant link secret is not configured',
+    );
+  }
 }
 
 function requiredId(value) {
@@ -373,4 +411,8 @@ const authorize = createAdminAuthorizer({
   allowedEmails: adminAllowedEmails,
 });
 
-export const handler = createAdminDevotionHandler({ repository, authorize });
+export const handler = createAdminDevotionHandler({
+  repository,
+  authorize,
+  linkSecret: participantTokenSecret,
+});

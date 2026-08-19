@@ -2,21 +2,50 @@ import { useEffect, useState, type FormEvent } from 'react';
 import {
   createDevotionParticipant,
   loadDevotionAnalytics,
-  reissueDevotionParticipant,
   revokeDevotionParticipant,
+  showDevotionParticipantLink,
   updateDevotionConfiguration,
   type DevotionAnalyticsData,
   type DevotionNightResult,
   type DevotionReportOutcome,
 } from './devotionAdminApi';
 
-type GeneratedLink = { label: string; url: string } | null;
+type GeneratedLink = {
+  label: string;
+  url: string;
+  changedLegacyLink: boolean;
+} | null;
 
 const OUTCOME_LABELS: Record<DevotionReportOutcome, string> = {
   prayed: 'Prayed',
   started_not_finished: "Started, didn't finish",
   not_tonight: 'Not tonight',
 };
+
+const COMMON_TIMEZONES = [
+  ['America/New_York', 'Eastern — New York'],
+  ['America/Chicago', 'Central — Chicago'],
+  ['America/Denver', 'Mountain — Denver'],
+  ['America/Phoenix', 'Arizona — Phoenix'],
+  ['America/Los_Angeles', 'Pacific — Los Angeles'],
+  ['America/Anchorage', 'Alaska — Anchorage'],
+  ['Pacific/Honolulu', 'Hawaii — Honolulu'],
+  ['America/Puerto_Rico', 'Atlantic — Puerto Rico'],
+] as const;
+
+const commonTimezoneValues = new Set<string>(
+  COMMON_TIMEZONES.map(([value]) => value),
+);
+const supportedValuesOf = (
+  Intl as typeof Intl & {
+    supportedValuesOf?: (key: 'timeZone') => string[];
+  }
+).supportedValuesOf;
+const ALL_TIMEZONES = supportedValuesOf
+  ? supportedValuesOf('timeZone').filter(
+      (timezone) => !commonTimezoneValues.has(timezone),
+    )
+  : [];
 
 export function DevotionAnalyticsSection() {
   const [data, setData] = useState<DevotionAnalyticsData | null>(null);
@@ -51,7 +80,11 @@ export function DevotionAnalyticsSection() {
     setError(null);
     try {
       const result = await createDevotionParticipant(label);
-      setGeneratedLink({ label: result.participant.label, url: result.generatedLink });
+      setGeneratedLink({
+        label: result.participant.label,
+        url: result.generatedLink,
+        changedLegacyLink: result.linkChanged,
+      });
       setCopyState('idle');
       form.reset();
       await refresh();
@@ -60,16 +93,20 @@ export function DevotionAnalyticsSection() {
     }
   }
 
-  async function reissue(participantId: string, label: string) {
+  async function showLink(participantId: string, label: string) {
     setBusyParticipantId(participantId);
     setError(null);
     try {
-      const result = await reissueDevotionParticipant(participantId);
-      setGeneratedLink({ label, url: result.generatedLink });
+      const result = await showDevotionParticipantLink(participantId);
+      setGeneratedLink({
+        label,
+        url: result.generatedLink,
+        changedLegacyLink: result.linkChanged,
+      });
       setCopyState('idle');
       await refresh();
     } catch (actionError) {
-      setError(actionError instanceof Error ? actionError.message : 'Unable to reissue link.');
+      setError(actionError instanceof Error ? actionError.message : 'Unable to show link.');
     } finally {
       setBusyParticipantId(null);
     }
@@ -155,8 +192,11 @@ export function DevotionAnalyticsSection() {
           </form>
           {generatedLink ? (
             <div className="devotion-generated-link" role="status">
-              <strong>New link for {generatedLink.label}</strong>
-              <p>This full URL is shown once. Copy it now.</p>
+              <strong>Participant link for {generatedLink.label}</strong>
+              <p>You can return here and show this same link again.</p>
+              {generatedLink.changedLegacyLink ? (
+                <p>The previous one-time link was upgraded and no longer works.</p>
+              ) : null}
               <div>
                 <input aria-label={`Generated participant link for ${generatedLink.label}`} readOnly value={generatedLink.url} onFocus={(event) => event.currentTarget.select()} />
                 <button type="button" className="admin-button primary" onClick={() => void copyGeneratedLink()}>Copy</button>
@@ -192,7 +232,7 @@ export function DevotionAnalyticsSection() {
                     <code>{participant.safeId}</code>
                     <span className={`devotion-link-status ${participant.linkStatus}`}>{participant.linkStatus}</span>
                     <div>
-                      <button type="button" className="admin-button" disabled={busyParticipantId === participant.id} onClick={() => void reissue(participant.id, participant.label)}>Reissue</button>
+                      <button type="button" className="admin-button" disabled={busyParticipantId === participant.id || participant.linkStatus === 'revoked'} onClick={() => void showLink(participant.id, participant.label)}>Show link</button>
                       <button type="button" className="admin-button danger" disabled={busyParticipantId === participant.id || participant.linkStatus === 'revoked'} onClick={() => void revoke(participant.id)}>Revoke</button>
                     </div>
                   </th>
@@ -213,15 +253,28 @@ function NightCell({ night }: { night: DevotionNightResult }) {
       <div className="devotion-night-cell">
         <strong>{night.opened ? `Opened ×${night.openCount}` : 'Not opened'}</strong>
         {night.resources.map((resource) => (
-          <span key={`${resource.resourceId}:${resource.provider}:${resource.mediaType}`}>
-            {resource.provider} · {resource.mediaType} · {resource.resourceId}{resource.count > 1 ? ` ×${resource.count}` : ''}
+          <span className="devotion-resource-result" key={`${resource.resourceId}:${resource.provider}:${resource.mediaType}`}>
+            <strong>{resource.label}</strong>
+            <small>
+              {formatResourceType(resource.provider, resource.mediaType)} · {resource.count} {resource.count === 1 ? 'click' : 'clicks'}
+              {resource.measuredMinutes > 0 ? ` · ${resource.measuredMinutes} min open` : ''}
+            </small>
           </span>
         ))}
-        {night.measuredMediaMinutes > 0 ? <span>{night.measuredMediaMinutes} measured min</span> : null}
+        {night.measuredMediaMinutes > 0 ? <span>{night.measuredMediaMinutes} total measured min</span> : null}
         <em>{night.outcome ? OUTCOME_LABELS[night.outcome] : 'No report'}</em>
       </div>
     </td>
   );
+}
+
+function formatResourceType(provider: string, mediaType: string) {
+  const providerLabel = provider
+    .split(/[-_]/)
+    .map((part) => part ? `${part[0].toUpperCase()}${part.slice(1)}` : part)
+    .join(' ');
+  const mediaLabel = mediaType.replace(/_/g, ' ');
+  return `${providerLabel} · ${mediaLabel}`;
 }
 
 function DevotionConfiguration({
@@ -263,7 +316,24 @@ function DevotionConfiguration({
       </div>
       <form className="devotion-config-form" onSubmit={save}>
         <label>Start date<input type="date" name="start-date" defaultValue={data.devotion.startDate ?? ''} /></label>
-        <label>Timezone<input name="timezone" placeholder="IANA timezone" defaultValue={data.devotion.timezone ?? ''} /></label>
+        <label>
+          Timezone
+          <select name="timezone" defaultValue={data.devotion.timezone ?? ''}>
+            <option value="">Select a timezone</option>
+            <optgroup label="Common US timezones">
+              {COMMON_TIMEZONES.map(([value, label]) => (
+                <option key={value} value={value}>{label} ({value})</option>
+              ))}
+            </optgroup>
+            {ALL_TIMEZONES.length > 0 ? (
+              <optgroup label="All IANA timezones">
+                {ALL_TIMEZONES.map((timezone) => (
+                  <option key={timezone} value={timezone}>{timezone}</option>
+                ))}
+              </optgroup>
+            ) : null}
+          </select>
+        </label>
         <label>Status<select name="status" defaultValue={data.devotion.status}><option value="inactive">Inactive</option><option value="active">Active</option><option value="completed">Completed</option></select></label>
         <label>Pre-survey URL<input type="url" name="pre-survey-url" defaultValue={data.devotion.preSurveyUrl ?? ''} /></label>
         <label>Post-survey URL<input type="url" name="post-survey-url" defaultValue={data.devotion.postSurveyUrl ?? ''} /></label>

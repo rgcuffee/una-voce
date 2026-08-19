@@ -20,6 +20,10 @@ test('the devotion route builds a crawler-visible campaign document', async () =
   assert.match(document, /property="og:url" content="https:\/\/unavoce\.net\/devotions\/holy-spirit-mens-ministry\/night-prayer"/);
   assert.doesNotMatch(document, /[?&]p=/);
   assert.match(
+    document,
+    /<meta name="referrer" content="strict-origin-when-cross-origin" \/>/,
+  );
+  assert.match(
     viteConfig,
     /devotions\/holy-spirit-mens-ministry\/night-prayer\/index\.html/,
   );
@@ -30,6 +34,10 @@ test('the devotion route builds a crawler-visible campaign document', async () =
   assert.match(
     netlifyConfig,
     /from = "\/devotions\/holy-spirit-mens-ministry\/night-prayer"[\s\S]*to = "\/devotions\/holy-spirit-mens-ministry\/night-prayer\/index\.html"[\s\S]*force = true/,
+  );
+  assert.match(
+    netlifyConfig,
+    /for = "\/devotions\/\*"[\s\S]*Referrer-Policy = "strict-origin-when-cross-origin"/,
   );
 });
 
@@ -43,4 +51,17 @@ test('invalid-link and focus styles expose accessible state', async () => {
   assert.match(page, /aria-live=\{error \? 'assertive' : undefined\}/);
   assert.match(styles, /\.devotion-page :is\(a, button, input\):focus-visible \{[\s\S]*outline: 3px solid #4f6745/);
   assert.match(styles, /\.devotion-eyebrow,[\s\S]*color: #5f6f53/);
+});
+
+test('devotion admin uses a timezone picker and readable resource results', async () => {
+  const admin = await readFile(
+    new URL('src/admin/DevotionAnalyticsSection.tsx', root),
+    'utf8',
+  );
+
+  assert.match(admin, /<select name="timezone"/);
+  assert.match(admin, /America\/Los_Angeles/);
+  assert.match(admin, />Show link<\/button>/);
+  assert.match(admin, /resource\.label/);
+  assert.match(admin, /resource\.measuredMinutes/);
 });

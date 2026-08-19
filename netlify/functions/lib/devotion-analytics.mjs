@@ -32,18 +32,39 @@ export function aggregateDevotionAnalytics({
       const resourceMap = new Map();
 
       for (const event of resourceEvents) {
-        const resourceKey = [
-          event.resource_id ?? '',
-          event.provider ?? '',
-          event.media_type ?? '',
-        ].join('|');
+        const resourceKey = resourceKeyFor(event);
         const current = resourceMap.get(resourceKey) ?? {
           resourceId: event.resource_id ?? event.content_id ?? 'resource',
+          label: readableResourceLabel(event),
           provider: event.provider ?? 'unknown',
           mediaType: event.media_type ?? event.content_type ?? 'unknown',
           count: 0,
+          measuredSeconds: 0,
         };
         current.count += 1;
+        current.label = preferredLabel(
+          current.label,
+          readableResourceLabel(event),
+        );
+        resourceMap.set(resourceKey, current);
+      }
+
+      for (const session of cellSessions) {
+        if (!session.resource_id) continue;
+        const resourceKey = resourceKeyFor(session);
+        const current = resourceMap.get(resourceKey) ?? {
+          resourceId: session.resource_id,
+          label: readableResourceLabel(session),
+          provider: session.provider ?? 'unknown',
+          mediaType: session.media_type ?? 'unknown',
+          count: 0,
+          measuredSeconds: 0,
+        };
+        current.measuredSeconds += measuredSessionSeconds(session);
+        current.label = preferredLabel(
+          current.label,
+          readableResourceLabel(session),
+        );
         resourceMap.set(resourceKey, current);
       }
 
@@ -63,7 +84,14 @@ export function aggregateDevotionAnalytics({
         openCount: openEvents.length,
         resourceEngaged: resourceEvents.length > 0,
         resourceCount: resourceEvents.length,
-        resources: [...resourceMap.values()],
+        resources: [...resourceMap.values()].map((resource) => ({
+          resourceId: resource.resourceId,
+          label: resource.label,
+          provider: resource.provider,
+          mediaType: resource.mediaType,
+          count: resource.count,
+          measuredMinutes: roundMinutes(resource.measuredSeconds),
+        })),
         measuredMediaMinutes: roundMinutes(measuredSeconds),
         outcome: reportsByCell.get(key)?.outcome ?? null,
       };
@@ -125,6 +153,61 @@ function groupByCell(items) {
 
 function cellKey(participantId, pilotDay) {
   return `${participantId ?? ''}:${pilotDay ?? ''}`;
+}
+
+function resourceKeyFor(item) {
+  return [
+    item.resource_id ?? item.content_id ?? '',
+    item.provider ?? '',
+    item.media_type ?? item.content_type ?? '',
+  ].join('|');
+}
+
+function readableResourceLabel(item) {
+  const metadataLabel = item.metadata?.resourceLabel;
+  if (typeof metadataLabel === 'string' && metadataLabel.trim()) {
+    return metadataLabel.trim();
+  }
+  if (typeof item.source_name === 'string' && item.source_name.trim()) {
+    return item.source_name.trim();
+  }
+
+  const identifier = item.resource_id ?? item.content_id ?? '';
+  if (identifier && !looksOpaque(identifier)) {
+    return identifier
+      .replace(/[-_]+/g, ' ')
+      .replace(/\b\w/g, (character) => character.toUpperCase());
+  }
+
+  const provider = item.provider ?? 'Prayer';
+  const mediaType = item.media_type ?? item.content_type ?? 'resource';
+  return `${titleCase(provider)} ${mediaType.replace(/_/g, ' ')}`;
+}
+
+function preferredLabel(current, candidate) {
+  return looksGenericLabel(current) && !looksGenericLabel(candidate)
+    ? candidate
+    : current;
+}
+
+function looksGenericLabel(value) {
+  return /^(Prayer|Youtube|Spotify|Apple Podcast|Unknown)\b/i.test(value ?? '');
+}
+
+function looksOpaque(value) {
+  return (
+    /^[A-Za-z0-9_-]{11}$/.test(value) ||
+    /^\d{6,}$/.test(value) ||
+    /^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(value) ||
+    /^https?:\/\//i.test(value)
+  );
+}
+
+function titleCase(value) {
+  return String(value)
+    .split(/[-_]/)
+    .map((part) => part ? `${part[0].toUpperCase()}${part.slice(1)}` : part)
+    .join(' ');
 }
 
 function measuredSessionSeconds(session) {

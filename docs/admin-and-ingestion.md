@@ -33,7 +33,9 @@ Server-side admin authorization uses:
 
 The API returns a combined dashboard payload with partners, feeds, rules, recent YouTube videos, recent audio episodes, summaries, and totals.
 
-The bounded devotion admin API supports participant label enrollment, one-time opaque link generation and reissue, revocation, pilot configuration, and the participant-by-night results matrix. Raw participant tokens are never returned by later dashboard loads.
+The bounded devotion admin API supports participant label enrollment, explicitly requested opaque-link display, revocation, pilot configuration, and the participant-by-night results matrix. Participant tokens are derived server-side from the participant ID and `DEVOTION_LINK_SECRET`, so raw tokens are not stored or included in dashboard loads. Participants created before this change receive one clearly disclosed link upgrade the first time an admin selects **Show link**.
+
+Devotion reporting presents readable resource labels, click counts, and measured time per media resource. External text links can record the click but cannot measure time spent on the third-party page.
 
 ## Ingestion Functions
 
@@ -97,6 +99,7 @@ Set `.env.local` with:
 - `INGEST_SHARED_SECRET`
 - `ADMIN_SHARED_SECRET`
 - `ADMIN_ALLOWED_EMAILS`
+- `DEVOTION_LINK_SECRET` (recommended; otherwise participant links derive from `ADMIN_SHARED_SECRET`)
 
 For client admin access, also set:
 

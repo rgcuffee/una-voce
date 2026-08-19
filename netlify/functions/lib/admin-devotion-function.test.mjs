@@ -2,11 +2,14 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createAdminDevotionHandler } from '../admin-devotion.mjs';
 
-test('admin participant creation returns a one-time opaque link and allows duplicate labels', async () => {
+const LINK_SECRET = 'stable-admin-devotion-test-secret';
+
+test('admin participant creation returns a stable opaque link and allows duplicate labels', async () => {
   const repository = memoryRepository();
   const handler = createAdminDevotionHandler({
     repository,
     authorize: async () => true,
+    linkSecret: LINK_SECRET,
   });
 
   const first = await handler(request({ action: 'createParticipant', label: 'John' }));
@@ -20,33 +23,75 @@ test('admin participant creation returns a one-time opaque link and allows dupli
   assert.match(firstBody.generatedLink, /\?p=[A-Za-z0-9_-]{43}$/);
   assert.equal(JSON.stringify(repository.participants).includes('?p='), false);
   assert.match(repository.participants[0].token_hash, /^[a-f0-9]{64}$/);
+  assert.equal(firstBody.linkChanged, false);
 });
 
-test('reissue rotates the token and revoke invalidates link status without reconstructing it', async () => {
+test('show link reconstructs the same token and revoke prevents disclosure', async () => {
   const repository = memoryRepository();
-  const handler = createAdminDevotionHandler({ repository, authorize: async () => true });
+  const handler = createAdminDevotionHandler({
+    repository,
+    authorize: async () => true,
+    linkSecret: LINK_SECRET,
+  });
   const created = JSON.parse((await handler(request({ action: 'createParticipant', label: 'Peter' }))).body);
   const beforeHash = repository.participants[0].token_hash;
-  const reissued = JSON.parse((await handler(request({
-    action: 'reissueParticipant', participantId: created.participant.id,
+  const shown = JSON.parse((await handler(request({
+    action: 'showParticipantLink', participantId: created.participant.id,
   }))).body);
+
+  assert.equal(repository.participants[0].token_hash, beforeHash);
+  assert.equal(shown.generatedLink, created.generatedLink);
+  assert.equal(shown.linkChanged, false);
+
   const revoked = JSON.parse((await handler(request({
     action: 'revokeParticipant', participantId: created.participant.id,
   }))).body);
-
-  assert.notEqual(repository.participants[0].token_hash, beforeHash);
-  assert.notEqual(reissued.generatedLink, created.generatedLink);
   assert.equal(revoked.participant.linkStatus, 'revoked');
-  const dashboard = JSON.parse((await handler({ httpMethod: 'GET', headers: {} })).body);
-  assert.equal(JSON.stringify(dashboard).includes(reissued.generatedLink), false);
+  const blocked = await handler(request({
+    action: 'showParticipantLink', participantId: created.participant.id,
+  }));
+  assert.equal(blocked.statusCode, 409);
+  assert.equal(JSON.stringify(blocked).includes(created.generatedLink), false);
+});
+
+test('show link upgrades a legacy random token once and then remains stable', async () => {
+  const repository = memoryRepository();
+  const handler = createAdminDevotionHandler({
+    repository,
+    authorize: async () => true,
+    linkSecret: LINK_SECRET,
+  });
+  const created = JSON.parse((await handler(request({
+    action: 'createParticipant', label: 'Legacy participant',
+  }))).body);
+  repository.participants[0].token_hash = 'a'.repeat(64);
+
+  const upgraded = JSON.parse((await handler(request({
+    action: 'showParticipantLink', participantId: created.participant.id,
+  }))).body);
+  const shownAgain = JSON.parse((await handler(request({
+    action: 'showParticipantLink', participantId: created.participant.id,
+  }))).body);
+
+  assert.equal(upgraded.linkChanged, true);
+  assert.equal(shownAgain.linkChanged, false);
+  assert.equal(upgraded.generatedLink, shownAgain.generatedLink);
 });
 
 test('admin endpoint enforces authorization and active configuration requirements', async () => {
   const repository = memoryRepository();
-  const denied = createAdminDevotionHandler({ repository, authorize: async () => false });
+  const denied = createAdminDevotionHandler({
+    repository,
+    authorize: async () => false,
+    linkSecret: LINK_SECRET,
+  });
   assert.equal((await denied({ httpMethod: 'GET', headers: {} })).statusCode, 401);
 
-  const allowed = createAdminDevotionHandler({ repository, authorize: async () => true });
+  const allowed = createAdminDevotionHandler({
+    repository,
+    authorize: async () => true,
+    linkSecret: LINK_SECRET,
+  });
   const invalid = await allowed(request({
     action: 'updateDevotion',
     devotion: { status: 'active', startDate: '', timezone: '' },

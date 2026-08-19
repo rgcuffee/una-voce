@@ -1,4 +1,4 @@
-import { createHash, randomBytes } from 'node:crypto';
+import { createHash, createHmac, randomBytes } from 'node:crypto';
 
 export const DEVOTION_SLUG = 'holy-spirit-mens-ministry';
 export const DEVOTION_PATH = `/devotions/${DEVOTION_SLUG}/night-prayer`;
@@ -9,10 +9,25 @@ export const REPORT_OUTCOMES = new Set([
 ]);
 
 const TOKEN_PATTERN = /^[A-Za-z0-9_-]{43}$/;
+const PARTICIPANT_ID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
 export function generateParticipantToken() {
   return randomBytes(32).toString('base64url');
+}
+
+export function deriveParticipantToken(participantId, secret) {
+  if (!PARTICIPANT_ID_PATTERN.test(participantId ?? '')) {
+    throw new Error('Invalid participant ID');
+  }
+  if (typeof secret !== 'string' || !secret) {
+    throw new Error('Participant link secret is not configured');
+  }
+
+  return createHmac('sha256', secret)
+    .update(`una-voce:devotion-participant:${participantId}`, 'utf8')
+    .digest('base64url');
 }
 
 export function isParticipantToken(value) {

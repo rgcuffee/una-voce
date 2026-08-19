@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
+  deriveParticipantToken,
   generateParticipantToken,
   hashParticipantToken,
   isParticipantToken,
@@ -27,6 +28,24 @@ test('opaque participant tokens are URL-safe, non-recoverable hashes', () => {
   assert.equal(
     participantLink(token, 'http://127.0.0.1:8888'),
     `http://127.0.0.1:8888/devotions/holy-spirit-mens-ministry/night-prayer?p=${token}`,
+  );
+});
+
+test('participant tokens can be derived again without storing the raw link', () => {
+  const participantId = '11111111-1111-4111-8111-111111111111';
+  const first = deriveParticipantToken(participantId, 'stable-test-secret');
+  const second = deriveParticipantToken(participantId, 'stable-test-secret');
+  const other = deriveParticipantToken(
+    '22222222-2222-4222-8222-222222222222',
+    'stable-test-secret',
+  );
+
+  assert.equal(first, second);
+  assert.notEqual(first, other);
+  assert.equal(isParticipantToken(first), true);
+  assert.throws(
+    () => deriveParticipantToken(participantId, ''),
+    /link secret is not configured/,
   );
 });
 

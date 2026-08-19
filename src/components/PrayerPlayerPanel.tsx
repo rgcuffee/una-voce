@@ -8,6 +8,7 @@ export type PrayerPlayerSourceType = 'live' | 'recorded' | 'external';
 
 export interface PrayerPlayerSession {
   sourceName: string;
+  resourceLabel?: string;
   sourceType: PrayerPlayerSourceType;
   prayerType: string;
   prayerId?: string;
@@ -71,6 +72,7 @@ function trackPrayerPlayerAnalytics(
       : new Date().toISOString();
   const metadata = {
     prayerType: session.prayerType,
+    resourceLabel: session.resourceLabel,
     sourceUrl: session.sourceUrl,
     ...(typeof extra.metadata === 'object' && extra.metadata
       ? extra.metadata
@@ -100,6 +102,10 @@ function trackPrayerPlayerAnalytics(
     panelOpenSeconds:
       typeof extra.panelOpenSeconds === 'number'
         ? extra.panelOpenSeconds
+        : undefined,
+    activePlaySeconds:
+      typeof extra.activePlaySeconds === 'number'
+        ? extra.activePlaySeconds
         : undefined,
     metadata,
   });
@@ -315,7 +321,7 @@ export function PrayerPlayerPanel({
                 className='prayer-player-frame'
                 src={embedUrl}
                 title={`${session.sourceName} ${session.title}`}
-                referrerPolicy='no-referrer'
+                referrerPolicy='strict-origin-when-cross-origin'
                 allow={
                   session.provider === 'apple-podcast'
                     ? 'autoplay *; encrypted-media *; fullscreen *; clipboard-write'

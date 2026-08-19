@@ -15,9 +15,11 @@ export type DevotionNightResult = {
   resourceCount: number;
   resources: Array<{
     resourceId: string;
+    label: string;
     provider: string;
     mediaType: string;
     count: number;
+    measuredMinutes: number;
   }>;
   measuredMediaMinutes: number;
   outcome: DevotionReportOutcome | null;
@@ -68,20 +70,22 @@ export function createDevotionParticipant(label: string) {
     ok: true;
     participant: Omit<DevotionParticipantResult, 'nights'>;
     generatedLink: string;
+    linkChanged: boolean;
   }>('/api/admin/devotion', {
     method: 'POST',
     body: JSON.stringify({ action: 'createParticipant', label }),
   });
 }
 
-export function reissueDevotionParticipant(participantId: string) {
+export function showDevotionParticipantLink(participantId: string) {
   return adminFetch<{
     ok: true;
     participant: Omit<DevotionParticipantResult, 'nights'>;
     generatedLink: string;
+    linkChanged: boolean;
   }>('/api/admin/devotion', {
     method: 'POST',
-    body: JSON.stringify({ action: 'reissueParticipant', participantId }),
+    body: JSON.stringify({ action: 'showParticipantLink', participantId }),
   });
 }
 
