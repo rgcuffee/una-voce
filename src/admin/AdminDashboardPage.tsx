@@ -27,6 +27,7 @@ import {
 } from './adminApi';
 import { supabase } from '../lib/supabase';
 import { AdminSidebar } from './AdminSidebar';
+import { DevotionAnalyticsSection } from './DevotionAnalyticsSection';
 import type {
   LiturgicalHour,
   LiturgicalSeason,
@@ -38,7 +39,7 @@ import type {
 } from '../lib/database.types';
 
 type LoadState = 'idle' | 'loading' | 'ready' | 'error';
-type AdminSection = 'overview' | 'analytics' | 'partners' | 'videos' | 'audio' | 'feeds' | 'rules';
+type AdminSection = 'overview' | 'analytics' | 'devotion-analytics' | 'partners' | 'videos' | 'audio' | 'feeds' | 'rules';
 
 const HOUR_OPTIONS: { value: LiturgicalHour; label: string }[] = [
   { value: 'office_of_readings', label: 'Office of Readings' },
@@ -569,6 +570,7 @@ export function AdminDashboardPage() {
         <nav>
           <button className={section === 'overview' ? 'active' : ''} type="button" onClick={() => setSection('overview')}>Overview</button>
           <button className={section === 'analytics' ? 'active' : ''} type="button" onClick={() => setSection('analytics')}>Analytics</button>
+          <button className={section === 'devotion-analytics' ? 'active' : ''} type="button" onClick={() => setSection('devotion-analytics')}>Devotion Analytics</button>
           <button className={section === 'partners' ? 'active' : ''} type="button" onClick={() => setSection('partners')}>Partners</button>
           <button className={section === 'videos' ? 'active' : ''} type="button" onClick={() => setSection('videos')}>Video Review</button>
           <button className={section === 'audio' ? 'active' : ''} type="button" onClick={() => setSection('audio')}>Audio Review</button>
@@ -582,23 +584,27 @@ export function AdminDashboardPage() {
         <header className="engine-topbar">
           <div>
             <p>Internal operations</p>
-            <h1>Partner Dashboard</h1>
+            <h1>{section === 'devotion-analytics' ? 'Devotion Analytics' : 'Partner Dashboard'}</h1>
           </div>
           <div className="engine-controls admin-secret-controls">
             <span className="admin-user-email">{authEmail}</span>
-            <button type="button" className="admin-button primary" onClick={() => void refresh()}>
-              Refresh
-            </button>
+            {section !== 'devotion-analytics' ? (
+              <button type="button" className="admin-button primary" onClick={() => void refresh()}>
+                Refresh
+              </button>
+            ) : null}
             <button type="button" className="admin-button" onClick={() => void signOut()}>
               Sign out
             </button>
           </div>
         </header>
 
-        {state === 'loading' && <div className="engine-empty">Loading partner operations...</div>}
-        {state === 'error' && <div className="engine-empty engine-error">{error}</div>}
+        {section !== 'devotion-analytics' && state === 'loading' ? <div className="engine-empty">Loading partner operations...</div> : null}
+        {section !== 'devotion-analytics' && state === 'error' ? <div className="engine-empty engine-error">{error}</div> : null}
 
-        {data && state !== 'loading' ? (
+        {section === 'devotion-analytics' ? <DevotionAnalyticsSection /> : null}
+
+        {section !== 'devotion-analytics' && data && state !== 'loading' ? (
           <>
             <section className="engine-metrics" aria-label="Partner operations summary">
               <Metric label="Partners" value={data.totals.partners} detail={`${data.totals.activePartners} active`} />

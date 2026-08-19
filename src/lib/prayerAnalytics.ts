@@ -1,3 +1,9 @@
+import {
+  sanitizeAnalyticsMetadata,
+  sanitizeAnalyticsPagePath,
+  sanitizeAnalyticsReferrer,
+} from './analyticsPrivacy.mjs';
+
 const ANALYTICS_EVENT_NAME = 'una-voce:prayer-analytics';
 const ANONYMOUS_ID_KEY = 'una-voce-anonymous-id';
 const SESSION_ID_KEY = 'una-voce-session-id';
@@ -24,7 +30,11 @@ export type PrayerAnalyticsEventName =
   | 'share_clicked'
   | 'search_performed'
   | 'filter_changed'
-  | 'utm_landing_recorded';
+  | 'utm_landing_recorded'
+  | 'devotion_page_opened'
+  | 'devotion_resource_opened'
+  | 'devotion_report_submitted'
+  | 'devotion_survey_clicked';
 
 export interface PrayerAnalyticsEventDetail {
   sessionId: string;
@@ -58,6 +68,12 @@ export interface PrayerAnalyticsEventDetail {
   contentId?: string;
   contentType?: string;
   sourceUrl?: string;
+  devotionId?: string;
+  devotionParticipantId?: string;
+  pilotDay?: number | null;
+  prayerDate?: string | null;
+  resourceId?: string;
+  mediaType?: string;
   metadata?: Record<string, unknown>;
 }
 
@@ -116,7 +132,9 @@ export function trackAnalyticsEvent(
   }
 
   const attribution = currentAttribution();
-  const pagePath = detail.pagePath ?? `${window.location.pathname}${window.location.search}`;
+  const pagePath = sanitizeAnalyticsPagePath(
+    detail.pagePath ?? `${window.location.pathname}${window.location.search}`,
+  );
 
   void recordPrayerAnalyticsEvent({
     sessionId: detail.sessionId ?? getClientSessionId(),
@@ -139,7 +157,9 @@ export function trackAnalyticsEvent(
     videoId: detail.videoId,
     pageContext: detail.pageContext,
     pagePath,
-    referrer: detail.referrer ?? (document.referrer || undefined),
+    referrer: sanitizeAnalyticsReferrer(
+      detail.referrer ?? (document.referrer || undefined) ?? '',
+    ) || undefined,
     utmSource: detail.utmSource ?? attribution.utmSource,
     utmMedium: detail.utmMedium ?? attribution.utmMedium,
     utmCampaign: detail.utmCampaign ?? attribution.utmCampaign,
@@ -150,7 +170,13 @@ export function trackAnalyticsEvent(
     contentId: detail.contentId,
     contentType: detail.contentType,
     sourceUrl: detail.sourceUrl,
-    metadata: detail.metadata,
+    devotionId: detail.devotionId,
+    devotionParticipantId: detail.devotionParticipantId,
+    pilotDay: detail.pilotDay,
+    prayerDate: detail.prayerDate,
+    resourceId: detail.resourceId,
+    mediaType: detail.mediaType,
+    metadata: sanitizeAnalyticsMetadata(detail.metadata ?? {}),
   });
 }
 
@@ -246,7 +272,7 @@ async function recordPrayerAnalyticsEvent(detail: PrayerAnalyticsEventDetail) {
         anonymousId,
         occurredAt,
         locale,
-        metadata: compactMetadata(detail.metadata ?? {}),
+        metadata: compactMetadata(sanitizeAnalyticsMetadata(detail.metadata ?? {})),
       }),
     ),
   }).catch((error: unknown) => {

@@ -53,6 +53,14 @@ function headersFrom(request: { headers?: Record<string, string | string[] | und
 }
 
 export default defineConfig({
+    build: {
+        rollupOptions: {
+            input: {
+                main: 'index.html',
+                devotion: 'devotions/holy-spirit-mens-ministry/night-prayer/index.html',
+            },
+        },
+    },
     plugins: [
         react(),
         {
@@ -269,6 +277,7 @@ export default defineConfig({
             },
             workbox: {
                 globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+                navigateFallbackDenylist: [/^\/devotions\//],
                 runtimeCaching: [
                     {
                         urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,

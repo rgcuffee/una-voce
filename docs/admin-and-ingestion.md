@@ -2,6 +2,8 @@
 
 The admin system manages partner communities, partner feeds, classification rules, and imported media review.
 
+The same protected admin shell also contains a top-level **Devotion Analytics** tab for the Holy Spirit Men's Ministry seven-night alpha. Its separate `/api/admin/devotion` Function reuses the existing shared-secret or Google bearer/server-allowlist authorization boundary.
+
 ## Admin Access
 
 The admin UI lives at:
@@ -28,6 +30,8 @@ Server-side admin authorization uses:
 - Updating imported media display status and prayer metadata.
 
 The API returns a combined dashboard payload with partners, feeds, rules, recent YouTube videos, recent audio episodes, summaries, and totals.
+
+The bounded devotion admin API supports participant label enrollment, one-time opaque link generation and reissue, revocation, pilot configuration, and the participant-by-night results matrix. Raw participant tokens are never returned by later dashboard loads.
 
 ## Ingestion Functions
 

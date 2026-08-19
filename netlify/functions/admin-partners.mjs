@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { createClient } from '@supabase/supabase-js';
+import { createAdminAuthorizer } from './lib/admin-auth.mjs';
 
 loadLocalEnv();
 
@@ -55,6 +56,11 @@ const supabase =
         },
       })
     : null;
+const isAuthorized = createAdminAuthorizer({
+  supabase,
+  sharedSecret: adminSharedSecret,
+  allowedEmails: adminAllowedEmails,
+});
 
 function loadLocalEnv() {
   const envPath = resolve(process.cwd(), '.env.local');
@@ -1180,34 +1186,6 @@ function throwIfError(error) {
   if (error) {
     throw error;
   }
-}
-
-async function isAuthorized(event) {
-  const secretHeader = event.headers?.['x-admin-secret'];
-  const authorization = event.headers?.authorization ?? '';
-
-  if (
-    adminSharedSecret &&
-    (secretHeader === adminSharedSecret ||
-      authorization === `Bearer ${adminSharedSecret}`)
-  ) {
-    return true;
-  }
-
-  const token = authorization.startsWith('Bearer ')
-    ? authorization.slice('Bearer '.length).trim()
-    : '';
-
-  if (!token || adminAllowedEmails.size === 0) {
-    return false;
-  }
-
-  const { data, error } = await supabase.auth.getUser(token);
-  if (error || !data.user?.email) {
-    return false;
-  }
-
-  return adminAllowedEmails.has(data.user.email.toLowerCase());
 }
 
 function response(statusCode, body) {

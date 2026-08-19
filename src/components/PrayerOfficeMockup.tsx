@@ -2554,10 +2554,12 @@ function TextPrayerProviderCard({
   provider,
   selectedDate,
   imageUrl,
+  onOpen,
 }: {
   provider: TextPrayerProvider;
   selectedDate: string;
   imageUrl?: string;
+  onOpen?: () => void;
 }) {
   return (
     <a
@@ -2573,7 +2575,8 @@ function TextPrayerProviderCard({
             }
           : undefined
       }
-      onClick={() =>
+      onClick={() => {
+        onOpen?.();
         trackAnalyticsEvent('content_card_clicked', {
           pageContext: 'today_read_card',
           contentId: provider.provider,
@@ -2591,8 +2594,8 @@ function TextPrayerProviderCard({
             hour: provider.hour,
             provider: provider.provider,
           },
-        })
-      }
+        });
+      }}
     >
       <div className="text-provider-card-kicker">
         Read with {provider.providerName}
@@ -2670,6 +2673,190 @@ function renderPage(
   }
 }
 
+function usePrayerResources(
+  selectedDate: string,
+  liturgicalSeason: LiturgicalSeason | null,
+) {
+  const [partnerVideos, setPartnerVideos] = useState<PartnerPrayerVideo[]>([]);
+  const [partnerAudio, setPartnerAudio] = useState<PartnerPrayerAudio[]>([]);
+  const [worthAbbeyVideos, setWorthAbbeyVideos] = useState<WorthAbbeyVideo[]>([]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadPartnerVideos() {
+      if (!supabase) {
+        setPartnerVideos([]);
+        return;
+      }
+
+      const partnerClient = supabase;
+      try {
+        const videoSelect = [
+          'title',
+          'description',
+          'youtube_video_id',
+          'thumbnail_url',
+          'canonical_url',
+          'embed_url',
+          'published_at',
+          'scheduled_start_at',
+          'prayer_date',
+          'prayer_type',
+          'available_weekdays',
+          'partners!inner(slug,name,active,onboarding_status)',
+        ].join(',');
+        const selectedWeekday = weekdayForDate(selectedDate);
+        const baseVideoQuery = () =>
+          partnerClient
+            .from('youtube_videos')
+            .select(videoSelect)
+            .eq('display_status', 'approved' satisfies YoutubeVideoDisplayStatus)
+            .eq('partners.active', true)
+            .eq('partners.onboarding_status', 'active' satisfies PartnerOnboardingStatus)
+            .eq('video_kind', 'video')
+            .in('prayer_type', partnerContentPrayerTypes)
+            .order('published_at', { ascending: false })
+            .abortSignal(controller.signal);
+        const [datedResult, seasonalResult] = await Promise.all([
+          baseVideoQuery().eq('prayer_date', selectedDate),
+          liturgicalSeason
+            ? baseVideoQuery()
+                .eq('partners.slug', 'word-on-fire')
+                .is('prayer_date', null)
+                .contains('available_liturgical_seasons', [liturgicalSeason])
+            : Promise.resolve({ data: [], error: null }),
+        ]);
+        if (datedResult.error) throw datedResult.error;
+        if (seasonalResult.error) throw seasonalResult.error;
+
+        const preview = await loadPartnerContentPreview(
+          selectedDate,
+          liturgicalSeason,
+          controller.signal,
+        );
+        const rows = mergePartnerRows(
+          [
+            ...((datedResult.data ?? []) as unknown as PartnerPrayerVideoRow[]),
+            ...((seasonalResult.data ?? []) as unknown as PartnerPrayerVideoRow[])
+              .filter((video) => isVideoAvailableForWeekday(video, selectedWeekday)),
+          ],
+          preview?.videos,
+        );
+        setPartnerVideos(rows.map(normalizePartnerPrayerVideo));
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          console.warn('Unable to load partner videos.', error);
+          setPartnerVideos([]);
+        }
+      }
+    }
+
+    void loadPartnerVideos();
+    return () => controller.abort();
+  }, [liturgicalSeason, selectedDate]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadPartnerAudio() {
+      if (!supabase) {
+        setPartnerAudio([]);
+        return;
+      }
+
+      try {
+        const commonSelect = [
+          'title',
+          'description',
+          'image_url',
+          'canonical_url',
+          'embed_url',
+          'published_at',
+          'prayer_date',
+          'prayer_type',
+          'duration_seconds',
+          'partners!inner(slug,name,active,onboarding_status)',
+        ];
+        const [spotifyResult, appleResult] = await Promise.all([
+          supabase
+            .from('spotify_episodes')
+            .select([...commonSelect, 'spotify_episode_id'].join(','))
+            .eq('display_status', 'approved' satisfies YoutubeVideoDisplayStatus)
+            .eq('partners.active', true)
+            .eq('partners.onboarding_status', 'active' satisfies PartnerOnboardingStatus)
+            .eq('prayer_date', selectedDate)
+            .in('prayer_type', partnerContentPrayerTypes)
+            .order('published_at', { ascending: false })
+            .abortSignal(controller.signal),
+          supabase
+            .from('apple_podcast_episodes')
+            .select([...commonSelect, 'apple_episode_id', 'audio_url'].join(','))
+            .eq('display_status', 'approved' satisfies YoutubeVideoDisplayStatus)
+            .eq('partners.active', true)
+            .eq('partners.onboarding_status', 'active' satisfies PartnerOnboardingStatus)
+            .eq('prayer_date', selectedDate)
+            .in('prayer_type', partnerContentPrayerTypes)
+            .order('published_at', { ascending: false })
+            .abortSignal(controller.signal),
+        ]);
+        if (spotifyResult.error) throw spotifyResult.error;
+        if (appleResult.error) throw appleResult.error;
+
+        const preview = await loadPartnerContentPreview(
+          selectedDate,
+          liturgicalSeason,
+          controller.signal,
+        );
+        const rows = mergePartnerRows(
+          [
+            ...((spotifyResult.data ?? []) as unknown as PartnerPrayerAudioRow[])
+              .map((episode) => ({ ...episode, provider: 'spotify' as const })),
+            ...((appleResult.data ?? []) as unknown as PartnerPrayerAudioRow[])
+              .map((episode) => ({ ...episode, provider: 'apple-podcast' as const })),
+          ],
+          preview?.audio,
+        );
+        setPartnerAudio(rows.map(normalizePartnerPrayerAudio));
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          console.warn('Unable to load partner audio.', error);
+          setPartnerAudio([]);
+        }
+      }
+    }
+
+    void loadPartnerAudio();
+    return () => controller.abort();
+  }, [liturgicalSeason, selectedDate]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadWorthAbbeyVideos() {
+      try {
+        const response = await fetch(
+          `/.netlify/functions/worth-abbey-videos?date=${encodeURIComponent(selectedDate)}`,
+          { signal: controller.signal },
+        );
+        if (!response.ok) throw new Error(`Worth Abbey videos returned ${response.status}`);
+        const body = (await response.json()) as { videos?: WorthAbbeyVideo[] };
+        setWorthAbbeyVideos(body.videos ?? []);
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          console.warn('Unable to load Worth Abbey videos.', error);
+          setWorthAbbeyVideos([]);
+        }
+      }
+    }
+
+    void loadWorthAbbeyVideos();
+    return () => controller.abort();
+  }, [selectedDate]);
+
+  return { partnerVideos, partnerAudio, worthAbbeyVideos };
+}
+
 export function PrayerOfficeMockup() {
   const location = useLocation();
   const routerNavigate = useNavigate();
@@ -2729,10 +2916,9 @@ export function PrayerOfficeMockup() {
   const [liturgicalSeason, setLiturgicalSeason] =
     useState<LiturgicalSeason | null>(null);
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
-  const [partnerVideos, setPartnerVideos] = useState<PartnerPrayerVideo[]>([]);
-  const [partnerAudio, setPartnerAudio] = useState<PartnerPrayerAudio[]>([]);
-  const [worthAbbeyVideos, setWorthAbbeyVideos] = useState<WorthAbbeyVideo[]>(
-    [],
+  const { partnerVideos, partnerAudio, worthAbbeyVideos } = usePrayerResources(
+    selectedDate,
+    liturgicalSeason,
   );
   const [partnerStatusOverrides, setPartnerStatusOverrides] = useState<
     PartnerCommunityStatusOverrides | undefined
@@ -3044,249 +3230,6 @@ export function PrayerOfficeMockup() {
       isActive = false;
     };
   }, []);
-
-  useEffect(() => {
-    const controller = new AbortController();
-
-    async function loadPartnerVideos() {
-      if (!supabase) {
-        setPartnerVideos([]);
-        return;
-      }
-
-      const partnerClient = supabase;
-
-      try {
-        const videoSelect = [
-          'title',
-          'description',
-          'youtube_video_id',
-          'thumbnail_url',
-          'canonical_url',
-          'embed_url',
-          'published_at',
-          'scheduled_start_at',
-          'prayer_date',
-          'prayer_type',
-          'available_weekdays',
-          'partners!inner(slug,name,active,onboarding_status)',
-        ].join(',');
-        const selectedWeekday = weekdayForDate(selectedDate);
-        const baseVideoQuery = () =>
-          partnerClient
-            .from('youtube_videos')
-            .select(videoSelect)
-            .eq('display_status', 'approved' satisfies YoutubeVideoDisplayStatus)
-            .eq('partners.active', true)
-            .eq(
-              'partners.onboarding_status',
-              'active' satisfies PartnerOnboardingStatus,
-            )
-            .eq('video_kind', 'video')
-            .in('prayer_type', partnerContentPrayerTypes)
-            .order('published_at', { ascending: false })
-            .abortSignal(controller.signal);
-        const [datedResult, seasonalResult] = await Promise.all([
-          baseVideoQuery().eq('prayer_date', selectedDate),
-          liturgicalSeason
-            ? baseVideoQuery()
-                .eq('partners.slug', 'word-on-fire')
-                .is('prayer_date', null)
-                .contains('available_liturgical_seasons', [liturgicalSeason])
-            : Promise.resolve({ data: [], error: null }),
-        ]);
-
-        if (datedResult.error) {
-          throw datedResult.error;
-        }
-
-        if (seasonalResult.error) {
-          throw seasonalResult.error;
-        }
-
-        const preview = await loadPartnerContentPreview(
-          selectedDate,
-          liturgicalSeason,
-          controller.signal,
-        );
-        const rows = mergePartnerRows(
-          [
-            ...((datedResult.data ?? []) as unknown as PartnerPrayerVideoRow[]),
-            ...(
-              (seasonalResult.data ?? []) as unknown as PartnerPrayerVideoRow[]
-            ).filter((video) =>
-              isVideoAvailableForWeekday(video, selectedWeekday),
-            ),
-          ],
-          preview?.videos,
-        );
-
-        setPartnerVideos(rows.map(normalizePartnerPrayerVideo));
-      } catch (error) {
-        if (controller.signal.aborted) {
-          return;
-        }
-
-        console.warn('Unable to load partner videos.', error);
-        setPartnerVideos([]);
-      }
-    }
-
-    void loadPartnerVideos();
-
-    return () => controller.abort();
-  }, [liturgicalSeason, selectedDate]);
-
-  useEffect(() => {
-    const controller = new AbortController();
-
-    async function loadPartnerAudio() {
-      if (!supabase) {
-        setPartnerAudio([]);
-        return;
-      }
-
-      try {
-        const [spotifyResult, appleResult] = await Promise.all([
-          supabase
-            .from('spotify_episodes')
-            .select(
-              [
-                'title',
-                'description',
-                'spotify_episode_id',
-                'image_url',
-                'canonical_url',
-                'embed_url',
-                'published_at',
-                'prayer_date',
-                'prayer_type',
-                'duration_seconds',
-                'partners!inner(slug,name,active,onboarding_status)',
-              ].join(','),
-            )
-            .eq(
-              'display_status',
-              'approved' satisfies YoutubeVideoDisplayStatus,
-            )
-            .eq('partners.active', true)
-            .eq(
-              'partners.onboarding_status',
-              'active' satisfies PartnerOnboardingStatus,
-            )
-            .eq('prayer_date', selectedDate)
-            .in('prayer_type', partnerContentPrayerTypes)
-            .order('published_at', { ascending: false })
-            .abortSignal(controller.signal),
-          supabase
-            .from('apple_podcast_episodes')
-            .select(
-              [
-                'title',
-                'description',
-                'apple_episode_id',
-                'image_url',
-                'canonical_url',
-                'embed_url',
-                'audio_url',
-                'published_at',
-                'prayer_date',
-                'prayer_type',
-                'duration_seconds',
-                'partners!inner(slug,name,active,onboarding_status)',
-              ].join(','),
-            )
-            .eq(
-              'display_status',
-              'approved' satisfies YoutubeVideoDisplayStatus,
-            )
-            .eq('partners.active', true)
-            .eq(
-              'partners.onboarding_status',
-              'active' satisfies PartnerOnboardingStatus,
-            )
-            .eq('prayer_date', selectedDate)
-            .in('prayer_type', partnerContentPrayerTypes)
-            .order('published_at', { ascending: false })
-            .abortSignal(controller.signal),
-        ]);
-
-        if (spotifyResult.error) {
-          throw spotifyResult.error;
-        }
-
-        if (appleResult.error) {
-          throw appleResult.error;
-        }
-
-        const preview = await loadPartnerContentPreview(
-          selectedDate,
-          liturgicalSeason,
-          controller.signal,
-        );
-        const rows = mergePartnerRows(
-          [
-            ...(
-              (spotifyResult.data ?? []) as unknown as PartnerPrayerAudioRow[]
-            ).map((episode) => ({ ...episode, provider: 'spotify' as const })),
-            ...(
-              (appleResult.data ?? []) as unknown as PartnerPrayerAudioRow[]
-            ).map((episode) => ({
-              ...episode,
-              provider: 'apple-podcast' as const,
-            })),
-          ],
-          preview?.audio,
-        );
-
-        setPartnerAudio(rows.map(normalizePartnerPrayerAudio));
-      } catch (error) {
-        if (controller.signal.aborted) {
-          return;
-        }
-
-        console.warn('Unable to load partner audio.', error);
-        setPartnerAudio([]);
-      }
-    }
-
-    void loadPartnerAudio();
-
-    return () => controller.abort();
-  }, [liturgicalSeason, selectedDate]);
-
-  useEffect(() => {
-    const controller = new AbortController();
-
-    async function loadWorthAbbeyVideos() {
-      try {
-        const response = await fetch(
-          `/.netlify/functions/worth-abbey-videos?date=${encodeURIComponent(selectedDate)}`,
-          { signal: controller.signal },
-        );
-
-        if (!response.ok) {
-          throw new Error(`Worth Abbey videos returned ${response.status}`);
-        }
-
-        const body = (await response.json()) as {
-          videos?: WorthAbbeyVideo[];
-        };
-        setWorthAbbeyVideos(body.videos ?? []);
-      } catch (error) {
-        if (controller.signal.aborted) {
-          return;
-        }
-
-        console.warn('Unable to load Worth Abbey videos.', error);
-        setWorthAbbeyVideos([]);
-      }
-    }
-
-    void loadWorthAbbeyVideos();
-
-    return () => controller.abort();
-  }, [selectedDate]);
 
   const setFormat = (segmentId: string, format: FormatKey) => {
     setSelectedFormats((current) => ({ ...current, [segmentId]: format }));
@@ -3875,5 +3818,199 @@ export function PrayerOfficeMockup() {
         onClose={() => setPrayerPlayerSession(null)}
       />
     </div>
+  );
+}
+
+export type DevotionResourceAttribution = {
+  devotionId: string;
+  devotionParticipantId: string;
+  pilotDay: number;
+  prayerDate: string;
+};
+
+export function DevotionNightPrayerResources({
+  selectedDate,
+  attribution,
+}: {
+  selectedDate: string;
+  attribution: DevotionResourceAttribution;
+}) {
+  const [liturgicalSeason, setLiturgicalSeason] =
+    useState<LiturgicalSeason | null>(null);
+  const [prayerPlayerSession, setPrayerPlayerSession] =
+    useState<PrayerPlayerSession | null>(null);
+  const { partnerVideos, partnerAudio, worthAbbeyVideos } = usePrayerResources(
+    selectedDate,
+    liturgicalSeason,
+  );
+  const segment = SEGMENTS.find((item) => item.id === 'segment-night');
+
+  useEffect(() => {
+    let active = true;
+    getLiturgicalDayWithHours(DEFAULT_CALENDAR_ID, selectedDate)
+      .then((day) => {
+        if (active) setLiturgicalSeason(day?.season ?? null);
+      })
+      .catch(() => {
+        if (active) setLiturgicalSeason(null);
+      });
+    return () => {
+      active = false;
+    };
+  }, [selectedDate]);
+
+  if (!segment) return null;
+
+  const textProviders = getTextPrayerProviders(segment.id, selectedDate);
+  const videos = videoOptionsForSegment(segment, partnerVideos);
+  const audio = audioOptionsForSegment(segment, partnerAudio);
+  const liveGroups = worthAbbeyLiveOptionsForSegment(segment, worthAbbeyVideos);
+
+  const trackResource = (
+    resourceId: string,
+    provider: string,
+    mediaType: string,
+    sourceUrl?: string,
+  ) => {
+    trackAnalyticsEvent('devotion_resource_opened', {
+      ...attribution,
+      resourceId,
+      provider,
+      mediaType,
+      contentId: resourceId,
+      contentType: mediaType,
+      sourceUrl,
+      hour: 'night-prayer',
+      pageContext: 'devotion_night_prayer',
+    });
+  };
+
+  const openMedia = (
+    item: OptionItem,
+    sourceType: PrayerPlayerSourceType,
+    mediaType: 'audio' | 'video' | 'live_video',
+  ) => {
+    const resourceId = item.videoId ?? item.sourceUrl ?? item.title;
+    const provider = item.provider ?? 'youtube';
+    trackResource(resourceId, provider, mediaType, item.sourceUrl);
+    setPrayerPlayerSession({
+      ...createPrayerPlayerSession({
+        item,
+        segment,
+        sourceType,
+        pageContext: 'devotion_night_prayer',
+      }),
+      ...attribution,
+      resourceId,
+      mediaType,
+    });
+  };
+
+  return (
+    <section className="devotion-prayer-resources" aria-labelledby="devotion-resources-heading">
+      <div className="devotion-section-heading">
+        <span>Tonight&apos;s prayer</span>
+        <h2 id="devotion-resources-heading">Choose a Night Prayer resource</h2>
+        <p>Read, listen, or watch using the same prayer resources available in Una Voce.</p>
+      </div>
+
+      <div className="devotion-resource-group">
+        <h3>Read</h3>
+        <div className="format-options text-provider-options">
+          {textProviders.map((provider) => (
+            <TextPrayerProviderCard
+              key={provider.provider}
+              provider={provider}
+              selectedDate={selectedDate}
+              onOpen={() =>
+                trackResource(
+                  provider.provider,
+                  provider.provider,
+                  'text',
+                  provider.url,
+                )
+              }
+            />
+          ))}
+        </div>
+      </div>
+
+      {videos.length > 0 ? (
+        <div className="devotion-resource-group">
+          <h3>Watch</h3>
+          <div className="format-options">
+            {videos.map((item, index) => (
+              <button
+                key={item.videoId ?? item.sourceUrl ?? item.title}
+                type="button"
+                className="format-option format-option-media"
+                style={{
+                  backgroundImage: `linear-gradient(165deg, rgba(14, 12, 9, 0.18), rgba(14, 12, 9, 0.8)), url(${item.imageUrl ?? optionImageFor('video', index)})`,
+                }}
+                onClick={() => openMedia(item, 'recorded', 'video')}
+              >
+                <div className="option-meta">{item.meta}</div>
+                <div className="option-title">{item.title}</div>
+                <p className="option-desc">{item.description}</p>
+                <div className="option-card-footer">
+                  <span className="option-prayer-action">Begin Prayer</span>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      {audio.length > 0 ? (
+        <div className="devotion-resource-group">
+          <h3>Listen</h3>
+          <div className="format-options">
+            {audio.map((item, index) => (
+              <button
+                key={item.videoId ?? item.sourceUrl ?? item.title}
+                type="button"
+                className="format-option format-option-media"
+                style={{
+                  backgroundImage: `linear-gradient(165deg, rgba(12, 11, 9, 0.2), rgba(12, 11, 9, 0.78)), url(${item.imageUrl ?? optionImageFor('audio', index)})`,
+                }}
+                onClick={() => openMedia(item, 'recorded', 'audio')}
+              >
+                <div className="option-meta">{item.meta}</div>
+                <div className="option-title">{item.title}</div>
+                <p className="option-desc">{item.description}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      {liveGroups.map((group, groupIndex) => (
+        <div className="devotion-resource-group" key={group.title}>
+          <h3>{group.title}</h3>
+          <div className="format-options">
+            {group.items.map((item, itemIndex) => (
+              <button
+                key={item.videoId ?? item.sourceUrl ?? item.title}
+                type="button"
+                className="format-option format-option-media"
+                style={{
+                  backgroundImage: `linear-gradient(165deg, rgba(16, 13, 12, 0.26), rgba(16, 13, 12, 0.82)), url(${item.imageUrl ?? optionImageFor('live', groupIndex * 8 + itemIndex)})`,
+                }}
+                onClick={() => openMedia(item, 'live', 'live_video')}
+              >
+                <div className="option-meta">{item.meta}</div>
+                <div className="option-title">{item.title}</div>
+                <p className="option-desc">{item.description}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+      ))}
+
+      <PrayerPlayerPanel
+        session={prayerPlayerSession}
+        onClose={() => setPrayerPlayerSession(null)}
+      />
+    </section>
   );
 }

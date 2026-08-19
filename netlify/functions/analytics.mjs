@@ -1,4 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
+import {
+  sanitizeAnalyticsMetadata,
+  sanitizeAnalyticsPagePath,
+  sanitizeAnalyticsReferrer,
+} from '../../src/lib/analyticsPrivacy.mjs';
 
 const EVENT_NAMES = new Set([
   'app_opened',
@@ -21,6 +26,10 @@ const EVENT_NAMES = new Set([
   'search_performed',
   'filter_changed',
   'utm_landing_recorded',
+  'devotion_page_opened',
+  'devotion_resource_opened',
+  'devotion_report_submitted',
+  'devotion_survey_clicked',
 ]);
 
 const JSON_HEADERS = {
@@ -41,7 +50,8 @@ const supabase =
       })
     : null;
 
-export async function handler(event) {
+export function createAnalyticsHandler(client) {
+  return async function analyticsHandler(event) {
   if (event.httpMethod === 'OPTIONS') {
     return response(204);
   }
@@ -50,7 +60,7 @@ export async function handler(event) {
     return response(405, { error: 'Method not allowed' });
   }
 
-  if (!supabase) {
+  if (!client) {
     return response(500, { error: 'Analytics is not configured' });
   }
 
@@ -59,7 +69,10 @@ export async function handler(event) {
     return response(400, { error: payload.error });
   }
 
-  const detail = payload.value;
+  const detail = sanitizeAnalyticsMetadata(payload.value);
+  detail.pagePath = sanitizeAnalyticsPagePath(detail.pagePath);
+  detail.referrer = sanitizeAnalyticsReferrer(detail.referrer);
+  detail.sourceUrl = sanitizeAnalyticsReferrer(detail.sourceUrl);
   const validationError = validateAnalyticsEvent(detail);
   if (validationError) {
     return response(400, { error: validationError });
@@ -69,6 +82,7 @@ export async function handler(event) {
   const occurredAt = detail.occurredAt ?? new Date().toISOString();
   const locale = detail.locale ?? 'en-US';
   const metadata = compactMetadata({
+    ...detail.metadata,
     sourceName: detail.sourceName,
     sourceType: detail.sourceType,
     provider: detail.provider,
@@ -86,10 +100,15 @@ export async function handler(event) {
     contentId: detail.contentId,
     contentType: detail.contentType,
     sourceUrl: detail.sourceUrl,
-    ...detail.metadata,
+    devotionId: detail.devotionId,
+    devotionParticipantId: detail.devotionParticipantId,
+    pilotDay: detail.pilotDay,
+    prayerDate: detail.prayerDate,
+    resourceId: detail.resourceId,
+    mediaType: detail.mediaType,
   });
 
-  const eventError = await insertAnalyticsEvent({
+  const eventError = await insertAnalyticsEvent(client, {
     occurred_at: occurredAt,
     session_id: detail.sessionId,
     event_name: detail.eventName,
@@ -116,6 +135,12 @@ export async function handler(event) {
     provider: detail.provider,
     source_url: detail.sourceUrl,
     metadata,
+    devotion_id: detail.devotionId ?? null,
+    devotion_participant_id: detail.devotionParticipantId ?? null,
+    pilot_day: detail.pilotDay ?? null,
+    prayer_date: detail.prayerDate ?? null,
+    resource_id: detail.resourceId ?? null,
+    media_type: detail.mediaType ?? null,
   });
 
   if (eventError === UNSUPPORTED_EVENT_WITHOUT_MIGRATION) {
@@ -130,7 +155,7 @@ export async function handler(event) {
     return response(500, { error: 'Unable to record analytics event' });
   }
 
-  const sessionError = await updateAnalyticsSession({
+  const sessionError = await updateAnalyticsSession(client, {
     ...detail,
     anonymousId,
     locale,
@@ -142,10 +167,13 @@ export async function handler(event) {
   }
 
   return response(202, { ok: true });
+  };
 }
 
-async function insertAnalyticsEvent(row) {
-  const { error } = await supabase.from('analytics_events').insert(row);
+export const handler = createAnalyticsHandler(supabase);
+
+async function insertAnalyticsEvent(client, row) {
+  const { error } = await client.from('analytics_events').insert(row);
 
   if (!error) {
     return null;
@@ -173,7 +201,7 @@ async function insertAnalyticsEvent(row) {
     playback_seconds: row.playback_seconds,
     metadata: row.metadata,
   };
-  const { error: legacyError } = await supabase.from('analytics_events').insert(legacyRow);
+  const { error: legacyError } = await client.from('analytics_events').insert(legacyRow);
 
   if (!legacyError) {
     return null;
@@ -192,13 +220,17 @@ function parsePayload(body) {
   }
 
   try {
-    return { ok: true, value: JSON.parse(body) };
+    const value = JSON.parse(body);
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+      return { ok: false, error: 'Invalid analytics payload' };
+    }
+    return { ok: true, value };
   } catch {
     return { ok: false, error: 'Invalid JSON body' };
   }
 }
 
-function validateAnalyticsEvent(detail) {
+export function validateAnalyticsEvent(detail) {
   if (!detail || typeof detail !== 'object') {
     return 'Invalid analytics payload';
   }
@@ -225,6 +257,60 @@ function validateAnalyticsEvent(detail) {
 
   if (detail.partnerId !== undefined && detail.partnerId !== null && !isUuid(detail.partnerId)) {
     return 'Invalid partnerId';
+  }
+
+  if (detail.devotionId !== undefined && !isUuid(detail.devotionId)) {
+    return 'Invalid devotionId';
+  }
+
+  if (
+    detail.devotionParticipantId !== undefined &&
+    !isUuid(detail.devotionParticipantId)
+  ) {
+    return 'Invalid devotionParticipantId';
+  }
+
+  if (
+    detail.pilotDay !== undefined &&
+    detail.pilotDay !== null &&
+    !isIntegerBetween(detail.pilotDay, 1, 7)
+  ) {
+    return 'Invalid pilotDay';
+  }
+
+  if (
+    detail.prayerDate !== undefined &&
+    detail.prayerDate !== null &&
+    !/^\d{4}-\d{2}-\d{2}$/.test(detail.prayerDate)
+  ) {
+    return 'Invalid prayerDate';
+  }
+
+  if (detail.resourceId !== undefined && !isBoundedString(detail.resourceId, 500)) {
+    return 'Invalid resourceId';
+  }
+
+  if (detail.mediaType !== undefined && !isBoundedString(detail.mediaType, 80)) {
+    return 'Invalid mediaType';
+  }
+
+  if (
+    detail.eventName === 'devotion_resource_opened' &&
+    (!detail.resourceId || !detail.provider || !detail.mediaType)
+  ) {
+    return 'Missing devotion resource attribution';
+  }
+
+  if (detail.devotionId || detail.devotionParticipantId || detail.eventName.startsWith('devotion_')) {
+    if (!detail.devotionId || !detail.devotionParticipantId) {
+      return 'Missing devotion attribution';
+    }
+    if (
+      detail.eventName !== 'devotion_survey_clicked' &&
+      (!detail.pilotDay || !detail.prayerDate)
+    ) {
+      return 'Missing devotion night attribution';
+    }
   }
 
   if (
@@ -258,9 +344,9 @@ function validateAnalyticsEvent(detail) {
   return null;
 }
 
-async function updateAnalyticsSession(detail) {
+async function updateAnalyticsSession(client, detail) {
   if (detail.eventName === 'prayer_session_started') {
-    const { error } = await supabase.from('analytics_sessions').upsert(
+    const { error } = await client.from('analytics_sessions').upsert(
       {
         session_id: detail.sessionId,
         started_at: detail.startedAt,
@@ -275,6 +361,12 @@ async function updateAnalyticsSession(detail) {
         provider: detail.provider,
         video_id: detail.videoId,
         page_context: detail.pageContext,
+        devotion_id: detail.devotionId ?? null,
+        devotion_participant_id: detail.devotionParticipantId ?? null,
+        pilot_day: detail.pilotDay ?? null,
+        prayer_date: detail.prayerDate ?? null,
+        resource_id: detail.resourceId ?? null,
+        media_type: detail.mediaType ?? null,
       },
       { onConflict: 'session_id' },
     );
@@ -287,7 +379,7 @@ async function updateAnalyticsSession(detail) {
     return null;
   }
 
-  const { error } = await supabase
+  const { error } = await client
     .from('analytics_sessions')
     .update(updates)
     .eq('session_id', detail.sessionId);
@@ -376,6 +468,10 @@ function isNonEmptyString(value) {
 
 function isNonNegativeInteger(value) {
   return Number.isInteger(value) && value >= 0;
+}
+
+function isBoundedString(value, maximum) {
+  return typeof value === 'string' && value.length > 0 && value.length <= maximum;
 }
 
 function isIntegerBetween(value, min, max) {

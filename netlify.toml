@@ -24,6 +24,13 @@
   [headers.values]
     X-Robots-Tag = "noindex, follow"
 
+[[headers]]
+  for = "/devotions/*"
+  [headers.values]
+    Cache-Control = "private, no-store"
+    Referrer-Policy = "no-referrer"
+    X-Robots-Tag = "noindex, nofollow"
+
 [[redirects]]
   from = "/api/analytics"
   to = "/.netlify/functions/analytics"
@@ -47,6 +54,16 @@
 [[redirects]]
   from = "/api/admin/partners"
   to = "/.netlify/functions/admin-partners"
+  status = 200
+
+[[redirects]]
+  from = "/api/devotion"
+  to = "/.netlify/functions/devotion"
+  status = 200
+
+[[redirects]]
+  from = "/api/admin/devotion"
+  to = "/.netlify/functions/admin-devotion"
   status = 200
 
 [[redirects]]
@@ -78,6 +95,12 @@
   from = "/node_modules/vite/*"
   to = "http://localhost:5173/node_modules/vite/:splat"
   status = 200
+
+[[redirects]]
+  from = "/devotions/holy-spirit-mens-ministry/night-prayer"
+  to = "/devotions/holy-spirit-mens-ministry/night-prayer/index.html"
+  status = 200
+  force = true
 
 [[redirects]]
   from = "/*"

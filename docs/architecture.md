@@ -41,6 +41,8 @@ Brand and writing rules live in `docs/brand/`. The current first nine are the re
 Netlify Functions live in `netlify/functions`.
 
 - `analytics.mjs` records prayer-player analytics.
+- `devotion.mjs` resolves opaque participant links and upserts the current nightly report.
+- `admin-devotion.mjs` provides the allowlisted Devotion Analytics cohort and results contract.
 - `admin-partners.mjs` powers the admin dashboard and partner/media management actions.
 - `youtube-ingest.mjs`, `spotify-ingest.mjs`, and `apple-podcast-ingest.mjs` import partner media.
 - `*-scheduled.mjs` wrappers run ingestion on the schedule configured in `netlify.toml`.
@@ -48,6 +50,8 @@ Netlify Functions live in `netlify/functions`.
 - `cathoholic-videos.mjs` and `worth-abbey-videos.mjs` expose partner-specific helpers backed by `netlify/functions/lib/`.
 
 Functions that write or read privileged data use `SUPABASE_SERVICE_ROLE_KEY`. Keep those workflows server-only.
+
+The Holy Spirit Men's Ministry alpha uses the existing analytics event/session tables for attributable page, resource, and measurable player-duration evidence. Its participant, devotion, and current nightly report records are separate bounded tables created by the checked-in devotion migration. Public participant/report writes never go directly from the browser to Supabase.
 
 ## Data
 

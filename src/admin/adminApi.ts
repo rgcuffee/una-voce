@@ -363,7 +363,7 @@ export function storeAdminSecret(secret: string) {
   }
 }
 
-async function adminFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
+export async function adminFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
   const secret = adminSecret();
   const headers = new Headers(options.headers);
   headers.set('accept', 'application/json');

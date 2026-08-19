@@ -81,7 +81,16 @@ export type PrayerAnalyticsEventName =
     | 'share_clicked'
     | 'search_performed'
     | 'filter_changed'
-    | 'utm_landing_recorded';
+    | 'utm_landing_recorded'
+    | 'devotion_page_opened'
+    | 'devotion_resource_opened'
+    | 'devotion_report_submitted'
+    | 'devotion_survey_clicked';
+export type DevotionStatus = 'inactive' | 'active' | 'completed';
+export type DevotionReportOutcome =
+    | 'prayed'
+    | 'started_not_finished'
+    | 'not_tonight';
 export type PartnerOnboardingStatus = 'pending' | 'active' | 'archived';
 export type PartnerRelationshipStatus = 'curated' | 'verified' | 'partner';
 export type PartnerYoutubeFeedType = 'channel' | 'playlist';
@@ -105,6 +114,137 @@ export type YoutubeVideoDisplayStatus =
 export type Database = {
     public: {
         Tables: {
+            devotions: {
+                Row: {
+                    id: string;
+                    slug: string;
+                    name: string;
+                    organization_label: string;
+                    hour_key: LiturgicalHour;
+                    start_date: string | null;
+                    duration_days: number;
+                    timezone: string | null;
+                    status: DevotionStatus;
+                    pre_survey_url: string | null;
+                    post_survey_url: string | null;
+                    created_at: string;
+                    updated_at: string;
+                };
+                Insert: {
+                    id?: string;
+                    slug: string;
+                    name: string;
+                    organization_label: string;
+                    hour_key?: LiturgicalHour;
+                    start_date?: string | null;
+                    duration_days?: number;
+                    timezone?: string | null;
+                    status?: DevotionStatus;
+                    pre_survey_url?: string | null;
+                    post_survey_url?: string | null;
+                    created_at?: string;
+                    updated_at?: string;
+                };
+                Update: {
+                    id?: string;
+                    slug?: string;
+                    name?: string;
+                    organization_label?: string;
+                    hour_key?: LiturgicalHour;
+                    start_date?: string | null;
+                    duration_days?: number;
+                    timezone?: string | null;
+                    status?: DevotionStatus;
+                    pre_survey_url?: string | null;
+                    post_survey_url?: string | null;
+                    created_at?: string;
+                    updated_at?: string;
+                };
+                Relationships: [];
+            };
+            devotion_participants: {
+                Row: {
+                    id: string;
+                    devotion_id: string;
+                    label: string;
+                    token_hash: string;
+                    created_at: string;
+                    revoked_at: string | null;
+                };
+                Insert: {
+                    id?: string;
+                    devotion_id: string;
+                    label: string;
+                    token_hash: string;
+                    created_at?: string;
+                    revoked_at?: string | null;
+                };
+                Update: {
+                    id?: string;
+                    devotion_id?: string;
+                    label?: string;
+                    token_hash?: string;
+                    created_at?: string;
+                    revoked_at?: string | null;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: 'devotion_participants_devotion_id_fkey';
+                        columns: ['devotion_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'devotions';
+                        referencedColumns: ['id'];
+                    },
+                ];
+            };
+            devotion_daily_reports: {
+                Row: {
+                    id: string;
+                    devotion_id: string;
+                    participant_id: string;
+                    pilot_day: number;
+                    prayer_date: string;
+                    outcome: DevotionReportOutcome;
+                    first_reported_at: string;
+                    updated_at: string;
+                };
+                Insert: {
+                    id?: string;
+                    devotion_id: string;
+                    participant_id: string;
+                    pilot_day: number;
+                    prayer_date: string;
+                    outcome: DevotionReportOutcome;
+                    first_reported_at?: string;
+                    updated_at?: string;
+                };
+                Update: {
+                    id?: string;
+                    devotion_id?: string;
+                    participant_id?: string;
+                    pilot_day?: number;
+                    prayer_date?: string;
+                    outcome?: DevotionReportOutcome;
+                    first_reported_at?: string;
+                    updated_at?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: 'devotion_daily_reports_devotion_id_fkey';
+                        columns: ['devotion_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'devotions';
+                        referencedColumns: ['id'];
+                    },
+                    {
+                        foreignKeyName: 'devotion_daily_reports_participant_id_fkey';
+                        columns: ['participant_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'devotion_participants';
+                        referencedColumns: ['id'];
+                    },
+                ];
+            };
             partners: {
                 Row: {
                     id: string;
@@ -666,6 +806,12 @@ export type Database = {
                     content_type: string | null;
                     provider: string | null;
                     source_url: string | null;
+                    devotion_id: string | null;
+                    devotion_participant_id: string | null;
+                    pilot_day: number | null;
+                    prayer_date: string | null;
+                    resource_id: string | null;
+                    media_type: string | null;
                     metadata: Json;
                 };
                 Insert: {
@@ -695,6 +841,12 @@ export type Database = {
                     content_type?: string | null;
                     provider?: string | null;
                     source_url?: string | null;
+                    devotion_id?: string | null;
+                    devotion_participant_id?: string | null;
+                    pilot_day?: number | null;
+                    prayer_date?: string | null;
+                    resource_id?: string | null;
+                    media_type?: string | null;
                     metadata?: Json;
                 };
                 Update: {
@@ -724,6 +876,12 @@ export type Database = {
                     content_type?: string | null;
                     provider?: string | null;
                     source_url?: string | null;
+                    devotion_id?: string | null;
+                    devotion_participant_id?: string | null;
+                    pilot_day?: number | null;
+                    prayer_date?: string | null;
+                    resource_id?: string | null;
+                    media_type?: string | null;
                     metadata?: Json;
                 };
                 Relationships: [];
@@ -749,6 +907,12 @@ export type Database = {
                     provider: string | null;
                     video_id: string | null;
                     page_context: string | null;
+                    devotion_id: string | null;
+                    devotion_participant_id: string | null;
+                    pilot_day: number | null;
+                    prayer_date: string | null;
+                    resource_id: string | null;
+                    media_type: string | null;
                     created_at: string;
                     updated_at: string;
                 };
@@ -772,6 +936,12 @@ export type Database = {
                     provider?: string | null;
                     video_id?: string | null;
                     page_context?: string | null;
+                    devotion_id?: string | null;
+                    devotion_participant_id?: string | null;
+                    pilot_day?: number | null;
+                    prayer_date?: string | null;
+                    resource_id?: string | null;
+                    media_type?: string | null;
                     created_at?: string;
                     updated_at?: string;
                 };
@@ -795,6 +965,12 @@ export type Database = {
                     provider?: string | null;
                     video_id?: string | null;
                     page_context?: string | null;
+                    devotion_id?: string | null;
+                    devotion_participant_id?: string | null;
+                    pilot_day?: number | null;
+                    prayer_date?: string | null;
+                    resource_id?: string | null;
+                    media_type?: string | null;
                     created_at?: string;
                     updated_at?: string;
                 };
@@ -1504,6 +1680,8 @@ export type Database = {
             calendar_conflict_severity: CalendarConflictSeverity;
             calendar_conflict_reason: CalendarConflictReason;
             prayer_analytics_event_name: PrayerAnalyticsEventName;
+            devotion_status: DevotionStatus;
+            devotion_report_outcome: DevotionReportOutcome;
             partner_onboarding_status: PartnerOnboardingStatus;
             partner_relationship_status: PartnerRelationshipStatus;
             partner_youtube_feed_type: PartnerYoutubeFeedType;

@@ -26,6 +26,12 @@ export interface PrayerPlayerSession {
   sourceUrl: string;
   embedUrl?: string;
   audioUrl?: string;
+  devotionId?: string;
+  devotionParticipantId?: string;
+  pilotDay?: number | null;
+  prayerDate?: string | null;
+  resourceId?: string;
+  mediaType?: string;
 }
 
 interface PrayerPlayerPanelProps {
@@ -85,6 +91,12 @@ function trackPrayerPlayerAnalytics(
     videoId: session.videoId,
     pageContext: session.pageContext,
     sourceUrl: session.sourceUrl,
+    devotionId: session.devotionId,
+    devotionParticipantId: session.devotionParticipantId,
+    pilotDay: session.pilotDay,
+    prayerDate: session.prayerDate,
+    resourceId: session.resourceId,
+    mediaType: session.mediaType,
     panelOpenSeconds:
       typeof extra.panelOpenSeconds === 'number'
         ? extra.panelOpenSeconds
@@ -303,6 +315,7 @@ export function PrayerPlayerPanel({
                 className='prayer-player-frame'
                 src={embedUrl}
                 title={`${session.sourceName} ${session.title}`}
+                referrerPolicy='no-referrer'
                 allow={
                   session.provider === 'apple-podcast'
                     ? 'autoplay *; encrypted-media *; fullscreen *; clipboard-write'
