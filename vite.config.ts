@@ -101,13 +101,6 @@ export default defineConfig({
                                     >
                                 },
                             )
-                            if (
-                                !headers['x-admin-secret'] &&
-                                process.env.ADMIN_SHARED_SECRET
-                            ) {
-                                headers['x-admin-secret'] =
-                                    process.env.ADMIN_SHARED_SECRET
-                            }
                             const event: LocalFunctionEvent = {
                                 httpMethod:
                                     (request as { method?: string }).method ??

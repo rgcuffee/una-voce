@@ -5666,6 +5666,39 @@ body {
     line-height: 1.5;
 }
 
+.admin-login-form {
+    display: grid;
+    gap: 12px;
+}
+
+.admin-login-form label {
+    color: #283025;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.admin-login-form input {
+    min-height: 42px;
+    padding: 0 12px;
+    border: 1px solid #cfd7cb;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #20231f;
+    font: inherit;
+}
+
+.admin-login-form input:focus-visible {
+    border-color: #546b47;
+    outline: 2px solid rgba(84, 107, 71, 0.28);
+    outline-offset: 2px;
+}
+
+.admin-login-panel .admin-login-error {
+    margin: 0;
+    color: #93412f;
+    font-weight: 700;
+}
+
 .admin-secret-controls {
     justify-content: flex-end;
 }

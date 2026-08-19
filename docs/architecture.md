@@ -10,7 +10,7 @@ This project has three main layers:
 
 The app entry point is `src/App.tsx`.
 
-Public routes fall through to `PrayerOfficeMockup`, which currently owns the main user-facing experience. Admin routes are protected by `AdminAuthGate` and render the partner dashboard or calendar-engine tools.
+Public routes fall through to `PrayerOfficeMockup`, which currently owns the main user-facing experience. Admin routes are protected by `AdminAuthGate` and render the partner dashboard or calendar-engine tools. Production uses Google OAuth and email allowlists; Vite development additionally exposes a local-password path validated by the admin API against `ADMIN_SHARED_SECRET`.
 
 Important frontend areas:
 
@@ -70,7 +70,7 @@ Browser-side Supabase access uses `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KE
 
 ## Local Development
 
-Use `npm run dev` for client-only work. Use `npx netlify dev` when testing `/api/*` routes or Netlify Functions.
+Use `npm run dev` for a loopback client server with local admin middleware. Use `npm run dev:lan` only for an explicitly requested trusted-private-LAN development session; it prints the usable private IPv4 URLs. Use `npm run dev:functions` when testing the complete Netlify redirect/function stack on loopback.
 
 The admin API client automatically prefers local Netlify Functions when running through the expected local dev ports. If needed, set `VITE_ADMIN_API_BASE_URL` to point the admin UI at another API origin.
 

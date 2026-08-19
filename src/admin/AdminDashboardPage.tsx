@@ -28,6 +28,10 @@ import {
 import { supabase } from '../lib/supabase';
 import { AdminSidebar } from './AdminSidebar';
 import { DevotionAnalyticsSection } from './DevotionAnalyticsSection';
+import {
+  clearLocalAdminPassword,
+  localPasswordModeEnabled,
+} from './localAdminAccess.mjs';
 import type {
   LiturgicalHour,
   LiturgicalSeason,
@@ -510,6 +514,12 @@ export function AdminDashboardPage() {
   }
 
   useEffect(() => {
+    if (localPasswordModeEnabled(import.meta.env.DEV)) {
+      setAuthEmail('Local development');
+      void refresh();
+      return;
+    }
+
     supabase?.auth.getSession().then(({ data: sessionData }) => {
       setAuthEmail(sessionData.session?.user.email ?? '');
       void refresh();
@@ -525,6 +535,12 @@ export function AdminDashboardPage() {
   }, []);
 
   async function signOut() {
+    if (localPasswordModeEnabled(import.meta.env.DEV)) {
+      clearLocalAdminPassword(window.localStorage);
+      window.location.assign('/admin');
+      return;
+    }
+
     if (!supabase) return;
     await supabase.auth.signOut();
   }

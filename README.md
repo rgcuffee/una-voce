@@ -12,18 +12,22 @@ cp .env.example .env.local
 npm run dev
 ```
 
-The Vite app runs on `http://localhost:5173`. For Netlify redirects and local functions, use:
+The Vite app runs on `http://127.0.0.1:5173`. For Netlify redirects and local functions, use:
 
 ```sh
-npx netlify dev
+npm run dev:functions
 ```
 
-Netlify dev serves the app on `http://localhost:8888` and proxies Vite requests to port `5173`.
+Netlify dev serves the app on `http://127.0.0.1:8888` and proxies Vite requests to port `5173`.
+
+To make the Vite client and development admin available on the trusted private LAN for an explicitly requested development session, run `npm run dev:lan`. The command prints the detected private-LAN URLs. This does not change production listeners or authentication.
 
 ## Common Commands
 
 ```sh
 npm run dev
+npm run dev:lan
+npm run dev:functions
 npm run social
 npm run build
 npm run preview
@@ -42,6 +46,8 @@ Copy `.env.example` to `.env.local` and fill in the keys needed for the workflow
 The client can run without Supabase credentials, but data-backed features will throw configuration errors or show empty states. Netlify Functions and calendar seed scripts require server-side Supabase credentials.
 
 Never expose `SUPABASE_SERVICE_ROLE_KEY`, `INGEST_SHARED_SECRET`, or `ADMIN_SHARED_SECRET` in client-visible configuration.
+
+Production admin authentication remains Google OAuth plus the configured email allowlists. In Vite development only, the admin sign-in screen also accepts the server-only `ADMIN_SHARED_SECRET` as a local password and persists it only after the local API validates it.
 
 ## Project Map
 

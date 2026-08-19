@@ -12,7 +12,9 @@ The admin UI lives at:
 - `/admin/partners`
 - `/admin/calendar-engine`
 
-`AdminAuthGate` checks `VITE_ADMIN_ALLOWED_EMAILS` on the client. Privileged API requests also require an admin shared secret stored in browser local storage by `src/admin/adminApi.ts`.
+In production, `AdminAuthGate` uses Google OAuth and checks `VITE_ADMIN_ALLOWED_EMAILS` on the client. The server independently enforces its configured authorization boundary.
+
+In Vite development only, the sign-in screen also accepts `ADMIN_SHARED_SECRET` as a local password. The UI sends the candidate to the local admin API and stores it under `una-voce-admin-secret` only after a successful response. A wrong password is not persisted, and production builds do not render or invoke this local-password path.
 
 Server-side admin authorization uses:
 
@@ -70,10 +72,22 @@ When adding rules, prefer narrowly targeted include keywords and explicit exclus
 
 ## Local Testing
 
-Use Netlify dev for API testing:
+Use the loopback Vite server for the client and local admin-password flow:
 
 ```sh
-npx netlify dev
+npm run dev
+```
+
+Use the full Netlify development stack for redirect/function testing:
+
+```sh
+npm run dev:functions
+```
+
+For an explicitly requested trusted-private-LAN development session, use:
+
+```sh
+npm run dev:lan
 ```
 
 Set `.env.local` with:
@@ -88,4 +102,3 @@ For client admin access, also set:
 
 - `VITE_ADMIN_ALLOWED_EMAILS`
 - `VITE_ADMIN_API_BASE_URL` when the API is not on the same local origin
-

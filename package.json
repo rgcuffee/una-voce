@@ -11,10 +11,15 @@
     "seed:us-calendar-canonical": "node scripts/seed-us-calendar-canonicalization.mjs",
     "generate:calendar-conflicts": "node scripts/generate-calendar-conflicts.mjs",
     "test": "node --test",
-    "dev": "vite",
+    "dev": "node scripts/start-local-dev.mjs",
+    "dev:lan": "node scripts/start-local-dev.mjs --lan",
+    "dev:functions": "netlify dev --no-open",
     "social": "vite --open /social/",
     "social:export:first3": "node scripts/export-instagram-posts.mjs",
     "build": "tsc -b && vite build",
+    "build:verify": "node scripts/verify-build.mjs",
+    "verify:5225-state": "node scripts/verify-5225-state.mjs",
+    "checkpoint:verify": "npm test && npm run build:verify && npm run verify:5225-state",
     "preview": "vite preview"
   },
   "dependencies": {

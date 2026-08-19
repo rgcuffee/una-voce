@@ -9,9 +9,9 @@ import type {
   YoutubeVideoDisplayStatus,
 } from '../lib/database.types';
 import { supabase } from '../lib/supabase';
+import { readLocalAdminPassword } from './localAdminAccess.mjs';
 
 const ADMIN_API_BASE = import.meta.env.VITE_ADMIN_API_BASE_URL ?? '';
-const ADMIN_SECRET_KEY = 'una-voce-admin-secret';
 
 export type AdminPartner = {
   id: string;
@@ -348,19 +348,7 @@ export type BulkEpisodeUpdate = {
 };
 
 function adminSecret() {
-  return window.localStorage.getItem(ADMIN_SECRET_KEY) ?? '';
-}
-
-export function getStoredAdminSecret() {
-  return adminSecret();
-}
-
-export function storeAdminSecret(secret: string) {
-  if (secret.trim()) {
-    window.localStorage.setItem(ADMIN_SECRET_KEY, secret.trim());
-  } else {
-    window.localStorage.removeItem(ADMIN_SECRET_KEY);
-  }
+  return readLocalAdminPassword(window.localStorage);
 }
 
 export async function adminFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
