@@ -62,6 +62,11 @@ const isAuthorized = createAdminAuthorizer({
   allowedEmails: adminAllowedEmails,
 });
 
+export function optionalExactCount(result) {
+  if (!result || result.error) return null;
+  return result.count ?? 0;
+}
+
 function loadLocalEnv() {
   const envPath = resolve(process.cwd(), '.env.local');
 
@@ -149,6 +154,8 @@ async function dashboardResponse() {
     videosResult,
     spotifyEpisodesResult,
     applePodcastEpisodesResult,
+    activeDevotionsResult,
+    openCalendarReviewsResult,
   ] =
     await Promise.all([
       supabase.from('partners').select('*').order('name'),
@@ -186,6 +193,14 @@ async function dashboardResponse() {
         .select('*')
         .order('published_at', { ascending: false })
         .limit(1000),
+      supabase
+        .from('devotions')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'active'),
+      supabase
+        .from('calendar_review_items')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'open'),
     ]);
 
   throwIfError(partnersResult.error);
@@ -231,6 +246,10 @@ async function dashboardResponse() {
     episodes,
     summaries,
     analytics,
+    homeSignals: {
+      activeDevotions: optionalExactCount(activeDevotionsResult),
+      openCalendarReviews: optionalExactCount(openCalendarReviewsResult),
+    },
     totals: {
       partners: partners.length,
       activePartners: partners.filter(

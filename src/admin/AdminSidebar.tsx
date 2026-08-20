@@ -38,7 +38,7 @@ export function AdminSidebar({
         onClick={(event) => {
           const target = event.target;
 
-          if (target instanceof Element && target.closest('a, button')) {
+          if (target instanceof Element && target.closest('a, [data-admin-sidebar-close]')) {
             setIsOpen(false);
           }
         }}

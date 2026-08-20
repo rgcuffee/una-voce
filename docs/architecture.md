@@ -10,7 +10,7 @@ This project has three main layers:
 
 The app entry point is `src/App.tsx`.
 
-Public routes fall through to `PrayerOfficeMockup`, which currently owns the main user-facing experience. Admin routes are protected by `AdminAuthGate` and render the partner dashboard or calendar-engine tools. Production uses Google OAuth and email allowlists; Vite development additionally exposes a local-password path validated by the admin API against `ADMIN_SHARED_SECRET`.
+Public routes fall through to `PrayerOfficeMockup`, which currently owns the main user-facing experience. Admin routes are protected by `AdminAuthGate` and render a routed admin shell or the calendar-engine tools. The routed shell lazy-loads the partner dashboard and exposes stable Home, partner operations, content review, analytics, and devotion URLs while continuing to use the existing combined admin payloads. Production uses Google OAuth and email allowlists; Vite development additionally exposes a local-password path validated by the admin API against `ADMIN_SHARED_SECRET`.
 
 Important frontend areas:
 

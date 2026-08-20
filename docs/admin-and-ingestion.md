@@ -2,7 +2,7 @@
 
 The admin system manages partner communities, partner feeds, classification rules, and imported media review.
 
-The same protected admin shell also contains a top-level **Devotion Analytics** tab for the Holy Spirit Men's Ministry seven-night alpha. Its separate `/api/admin/devotion` Function reuses the existing shared-secret or Google bearer/server-allowlist authorization boundary.
+The same protected admin shell contains devotion operations and analytics for the Holy Spirit Men's Ministry seven-night alpha. Its separate `/api/admin/devotion` Function reuses the existing shared-secret or Google bearer/server-allowlist authorization boundary.
 
 ## Admin Access
 
@@ -10,7 +10,16 @@ The admin UI lives at:
 
 - `/admin`
 - `/admin/partners`
+- `/admin/partners/review`
+- `/admin/partners/sources`
+- `/admin/partners/rules`
+- `/admin/analytics/activity`
+- `/admin/analytics/communities`
+- `/admin/devotions`
+- `/admin/analytics/devotions`
 - `/admin/calendar-engine`
+
+`/admin` is the action-oriented Home view, including pending content, stale sources, active devotion, and open calendar-review signals. Partner Inventory, Content Review, Sources, and Rules are grouped in a collapsible Partners navigation section. Content Review uses URL-backed `media`, `partner`, `date`, and `status` filters so a filtered queue survives refresh and can be shared internally. These routes reorganize existing records and payloads; they do not require new analytics collection, schema, or ingestion data.
 
 In production, `AdminAuthGate` uses Google OAuth and checks `VITE_ADMIN_ALLOWED_EMAILS` on the client. The server independently enforces its configured authorization boundary.
 

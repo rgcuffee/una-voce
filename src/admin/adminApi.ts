@@ -237,6 +237,10 @@ export type AdminDashboardData = {
   episodes: AdminAudioEpisode[];
   summaries: PartnerSummary[];
   analytics: AdminAnalyticsData;
+  homeSignals?: {
+    activeDevotions: number | null;
+    openCalendarReviews: number | null;
+  };
   totals: {
     partners: number;
     activePartners: number;

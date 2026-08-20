@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   loadAdminDashboard,
   updateVideo,
@@ -28,6 +29,7 @@ import {
 import { supabase } from '../lib/supabase';
 import { AdminSidebar } from './AdminSidebar';
 import { DevotionAnalyticsSection } from './DevotionAnalyticsSection';
+import { ADMIN_ROUTES, adminLocation, adminSectionForPath, homeSignalsOrUnavailable, reviewSearchParams, type AdminRouteSection } from './adminRoutes';
 import {
   clearLocalAdminPassword,
   localPasswordModeEnabled,
@@ -43,7 +45,64 @@ import type {
 } from '../lib/database.types';
 
 type LoadState = 'idle' | 'loading' | 'ready' | 'error';
-type AdminSection = 'overview' | 'analytics' | 'devotion-analytics' | 'partners' | 'videos' | 'audio' | 'feeds' | 'rules';
+type AdminSection = AdminRouteSection;
+
+type AdminNotice = { tone: 'success' | 'error'; message: string };
+const ADMIN_NOTICE_EVENT = 'una-voce-admin-notice';
+
+function announceAdminNotice(tone: AdminNotice['tone'], message: string) {
+  window.dispatchEvent(new CustomEvent<AdminNotice>(ADMIN_NOTICE_EVENT, { detail: { tone, message } }));
+}
+
+function mutationMessage(error: unknown, fallback: string) {
+  return error instanceof Error ? error.message : fallback;
+}
+
+const ADMIN_SECTION_TITLES: Record<AdminSection, string> = {
+  home: 'Admin Home',
+  inventory: 'Partner Inventory',
+  review: 'Content Review',
+  sources: 'Source Health',
+  rules: 'Partner Rules',
+  devotions: 'Devotion Operations',
+  activity: 'Activity Analytics',
+  communities: 'Community Performance',
+  'devotion-analytics': 'Devotion Analytics',
+};
+
+function AdminNavGroup({
+  id,
+  label,
+  active,
+  children,
+}: {
+  id: string;
+  label: string;
+  active: boolean;
+  children: ReactNode;
+}) {
+  const [open, setOpen] = useState(active);
+
+  useEffect(() => {
+    if (active) setOpen(true);
+  }, [active]);
+
+  return (
+    <div className={`admin-nav-section${active ? ' active' : ''}`}>
+      <button
+        type="button"
+        className="admin-nav-group-toggle"
+        aria-expanded={open}
+        aria-controls={id}
+        onClick={() => setOpen((current) => !current)}
+      >
+        <span>{label}</span>
+        <span aria-hidden="true">{open ? '−' : '+'}</span>
+      </button>
+      <div id={id} className="admin-nav-group-links" hidden={!open}>{children}</div>
+    </div>
+  );
+}
 
 const HOUR_OPTIONS: { value: LiturgicalHour; label: string }[] = [
   { value: 'office_of_readings', label: 'Office of Readings' },
@@ -490,14 +549,44 @@ function parseWeekdays(value: string) {
 }
 
 export function AdminDashboardPage() {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [authEmail, setAuthEmail] = useState('');
   const [state, setState] = useState<LoadState>('idle');
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<AdminNotice | null>(null);
   const [data, setData] = useState<AdminDashboardData | null>(null);
-  const [section, setSection] = useState<AdminSection>('overview');
-  const [selectedPartnerId, setSelectedPartnerId] = useState<string>('');
-  const [reviewPartnerId, setReviewPartnerId] = useState<string>('all');
-  const [reviewDate, setReviewDate] = useState('');
+  const section = adminSectionForPath(location.pathname);
+  const query = useMemo(() => new URLSearchParams(location.search), [location.search]);
+  const reviewParams = reviewSearchParams(location.search);
+  const selectedPartnerId = query.get('partner') || '';
+  const reviewPartnerId = reviewParams.partner;
+  const reviewDate = reviewParams.date;
+
+  function updateSearch(next: Record<string, string | null>) {
+    const params = new URLSearchParams(location.search);
+    Object.entries(next).forEach(([key, value]) => {
+      if (value) params.set(key, value);
+      else params.delete(key);
+    });
+    navigate({ pathname: location.pathname, search: params.toString() ? `?${params}` : '' }, { replace: true });
+  }
+
+  function goTo(nextSection: AdminSection, params?: Record<string, string | null>) {
+    navigate(adminLocation(nextSection, params));
+  }
+
+  useEffect(() => {
+    const receive = (event: Event) => setNotice((event as CustomEvent<AdminNotice>).detail);
+    window.addEventListener(ADMIN_NOTICE_EVENT, receive);
+    return () => window.removeEventListener(ADMIN_NOTICE_EVENT, receive);
+  }, []);
+
+  useEffect(() => {
+    if (!notice) return;
+    const timeout = window.setTimeout(() => setNotice(null), 5000);
+    return () => window.clearTimeout(timeout);
+  }, [notice]);
 
   async function refresh() {
     setState('loading');
@@ -505,7 +594,6 @@ export function AdminDashboardPage() {
     try {
       const nextData = await loadAdminDashboard();
       setData(nextData);
-      setSelectedPartnerId((current) => current || nextData.partners[0]?.id || '');
       setState('ready');
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : 'Unable to load admin data.');
@@ -545,29 +633,30 @@ export function AdminDashboardPage() {
     await supabase.auth.signOut();
   }
 
+  const resolvedPartnerId = selectedPartnerId || data?.partners[0]?.id || '';
   const selectedPartner = useMemo(
-    () => data?.partners.find((partner) => partner.id === selectedPartnerId) ?? null,
-    [data, selectedPartnerId],
+    () => data?.partners.find((partner) => partner.id === resolvedPartnerId) ?? null,
+    [data, resolvedPartnerId],
   );
 
   const partnerFeeds = useMemo(
-    () => data?.feeds.filter((feed) => feed.partner_id === selectedPartnerId) ?? [],
-    [data, selectedPartnerId],
+    () => data?.feeds.filter((feed) => feed.partner_id === resolvedPartnerId) ?? [],
+    [data, resolvedPartnerId],
   );
 
   const partnerSpotifyFeeds = useMemo(
-    () => data?.spotifyFeeds.filter((feed) => feed.partner_id === selectedPartnerId) ?? [],
-    [data, selectedPartnerId],
+    () => data?.spotifyFeeds.filter((feed) => feed.partner_id === resolvedPartnerId) ?? [],
+    [data, resolvedPartnerId],
   );
 
   const partnerApplePodcastFeeds = useMemo(
-    () => data?.applePodcastFeeds.filter((feed) => feed.partner_id === selectedPartnerId) ?? [],
-    [data, selectedPartnerId],
+    () => data?.applePodcastFeeds.filter((feed) => feed.partner_id === resolvedPartnerId) ?? [],
+    [data, resolvedPartnerId],
   );
 
   const partnerRules = useMemo(
-    () => data?.rules.filter((rule) => rule.partner_id === selectedPartnerId) ?? [],
-    [data, selectedPartnerId],
+    () => data?.rules.filter((rule) => rule.partner_id === resolvedPartnerId) ?? [],
+    [data, resolvedPartnerId],
   );
 
   const partnerVideos = useMemo(
@@ -584,15 +673,22 @@ export function AdminDashboardPage() {
     <main className="engine-admin admin-dashboard">
       <AdminSidebar title="Admin Hub">
         <nav>
-          <button className={section === 'overview' ? 'active' : ''} type="button" onClick={() => setSection('overview')}>Overview</button>
-          <button className={section === 'analytics' ? 'active' : ''} type="button" onClick={() => setSection('analytics')}>Analytics</button>
-          <button className={section === 'devotion-analytics' ? 'active' : ''} type="button" onClick={() => setSection('devotion-analytics')}>Devotion Analytics</button>
-          <button className={section === 'partners' ? 'active' : ''} type="button" onClick={() => setSection('partners')}>Partners</button>
-          <button className={section === 'videos' ? 'active' : ''} type="button" onClick={() => setSection('videos')}>Video Review</button>
-          <button className={section === 'audio' ? 'active' : ''} type="button" onClick={() => setSection('audio')}>Audio Review</button>
-          <button className={section === 'feeds' ? 'active' : ''} type="button" onClick={() => setSection('feeds')}>Source Health</button>
-          <button className={section === 'rules' ? 'active' : ''} type="button" onClick={() => setSection('rules')}>Rules</button>
-          <a href="/admin/calendar-engine">Calendar Engine</a>
+          <Link className={section === 'home' ? 'active' : ''} to={ADMIN_ROUTES.home}>Home</Link>
+          <AdminNavGroup id="admin-partner-links" label="Partners" active={['inventory', 'review', 'sources', 'rules'].includes(section)}>
+            <Link className={section === 'inventory' ? 'active' : ''} to={ADMIN_ROUTES.inventory}>Partner Inventory</Link>
+            <Link className={section === 'review' ? 'active' : ''} to={`${ADMIN_ROUTES.review}?media=video`}>Content Review</Link>
+            <Link className={section === 'sources' ? 'active' : ''} to={ADMIN_ROUTES.sources}>Sources</Link>
+            <Link className={section === 'rules' ? 'active' : ''} to={ADMIN_ROUTES.rules}>Rules</Link>
+          </AdminNavGroup>
+          <AdminNavGroup id="admin-analytics-links" label="Analytics" active={['activity', 'communities'].includes(section)}>
+            <Link className={section === 'activity' ? 'active' : ''} to={ADMIN_ROUTES.activity}>Activity</Link>
+            <Link className={section === 'communities' ? 'active' : ''} to={ADMIN_ROUTES.communities}>Communities</Link>
+          </AdminNavGroup>
+          <AdminNavGroup id="admin-devotion-links" label="Devotions" active={['devotions', 'devotion-analytics'].includes(section)}>
+            <Link className={section === 'devotions' ? 'active' : ''} to={ADMIN_ROUTES.devotions}>Operations</Link>
+            <Link className={section === 'devotion-analytics' ? 'active' : ''} to={ADMIN_ROUTES['devotion-analytics']}>Analytics</Link>
+            <a href="/admin/calendar-engine">Calendar Engine</a>
+          </AdminNavGroup>
         </nav>
       </AdminSidebar>
 
@@ -600,11 +696,11 @@ export function AdminDashboardPage() {
         <header className="engine-topbar">
           <div>
             <p>Internal operations</p>
-            <h1>{section === 'devotion-analytics' ? 'Devotion Analytics' : 'Partner Dashboard'}</h1>
+            <h1>{ADMIN_SECTION_TITLES[section]}</h1>
           </div>
           <div className="engine-controls admin-secret-controls">
             <span className="admin-user-email">{authEmail}</span>
-            {section !== 'devotion-analytics' ? (
+            {section !== 'devotion-analytics' && section !== 'devotions' ? (
               <button type="button" className="admin-button primary" onClick={() => void refresh()}>
                 Refresh
               </button>
@@ -615,12 +711,13 @@ export function AdminDashboardPage() {
           </div>
         </header>
 
-        {section !== 'devotion-analytics' && state === 'loading' ? <div className="engine-empty">Loading partner operations...</div> : null}
-        {section !== 'devotion-analytics' && state === 'error' ? <div className="engine-empty engine-error">{error}</div> : null}
+        {section !== 'devotion-analytics' && section !== 'devotions' && state === 'loading' ? <div className="engine-empty">Loading partner operations...</div> : null}
+        {section !== 'devotion-analytics' && section !== 'devotions' && state === 'error' ? <div className="engine-empty engine-error" role="alert">{error}</div> : null}
+        {notice ? <div className={`admin-mutation-notice ${notice.tone}`} role={notice.tone === 'error' ? 'alert' : 'status'}>{notice.message}</div> : null}
 
-        {section === 'devotion-analytics' ? <DevotionAnalyticsSection /> : null}
+        {section === 'devotion-analytics' || section === 'devotions' ? <DevotionAnalyticsSection /> : null}
 
-        {section !== 'devotion-analytics' && data && state !== 'loading' ? (
+        {section !== 'devotion-analytics' && section !== 'devotions' && data && state !== 'loading' ? (
           <>
             <section className="engine-metrics" aria-label="Partner operations summary">
               <Metric label="Partners" value={data.totals.partners} detail={`${data.totals.activePartners} active`} />
@@ -630,47 +727,53 @@ export function AdminDashboardPage() {
               <Metric label="Stale Feeds" value={data.totals.staleFeeds} detail="Past polling interval" />
             </section>
 
-            {section === 'overview' && <Overview data={data} onSelectPartner={setSelectedPartnerId} onOpenSection={setSection} />}
-            {section === 'analytics' && <AnalyticsSection analytics={data.analytics} />}
-            {section === 'partners' && (
+            {section === 'home' && <HomeSection data={data} onOpen={(destination, params) => goTo(destination, params)} />}
+            {section === 'inventory' && <Overview data={data} onSelectPartner={(id) => goTo('inventory', { partner: id })} />}
+            {(section === 'activity' || section === 'communities') && <AnalyticsSection analytics={data.analytics} communityOnly={section === 'communities'} />}
+            {section === 'inventory' && (
               <PartnersSection
                 data={data}
-                selectedPartnerId={selectedPartnerId}
+                selectedPartnerId={resolvedPartnerId}
                 selectedPartner={selectedPartner}
-                onSelectPartner={setSelectedPartnerId}
+                onSelectPartner={(id) => updateSearch({ partner: id })}
                 onSaved={refresh}
               />
             )}
-            {section === 'videos' && (
+            {section === 'review' ? <ContentReviewTabs media={reviewParams.media} /> : null}
+            {section === 'review' && reviewParams.media === 'video' && (
               <VideosSection
                 data={data}
                 videos={partnerVideos}
                 selectedPartnerId={reviewPartnerId}
-                onSelectPartner={setReviewPartnerId}
+                onSelectPartner={(id) => updateSearch({ partner: id })}
                 reviewDate={reviewDate}
-                onReviewDateChange={setReviewDate}
+                onReviewDateChange={(date) => updateSearch({ date })}
+                statusFilter={reviewParams.status}
+                onStatusFilterChange={(status) => updateSearch({ status: status === 'pending' ? null : status })}
                 onSaved={refresh}
               />
             )}
-            {section === 'audio' && (
+            {section === 'review' && reviewParams.media === 'audio' && (
               <AudioSection
                 data={data}
                 episodes={partnerEpisodes}
                 selectedPartnerId={reviewPartnerId}
-                onSelectPartner={setReviewPartnerId}
+                onSelectPartner={(id) => updateSearch({ partner: id })}
                 reviewDate={reviewDate}
-                onReviewDateChange={setReviewDate}
+                onReviewDateChange={(date) => updateSearch({ date })}
+                statusFilter={reviewParams.status}
+                onStatusFilterChange={(status) => updateSearch({ status: status === 'pending' ? null : status })}
                 onSaved={refresh}
               />
             )}
-            {section === 'feeds' && (
+            {section === 'sources' && (
               <FeedsSection
                 data={data}
                 feeds={partnerFeeds}
                 spotifyFeeds={partnerSpotifyFeeds}
                 applePodcastFeeds={partnerApplePodcastFeeds}
-                selectedPartnerId={selectedPartnerId}
-                onSelectPartner={setSelectedPartnerId}
+                selectedPartnerId={resolvedPartnerId}
+                onSelectPartner={(id) => updateSearch({ partner: id })}
                 onSaved={refresh}
               />
             )}
@@ -678,8 +781,8 @@ export function AdminDashboardPage() {
               <RulesSection
                 data={data}
                 rules={partnerRules}
-                selectedPartnerId={selectedPartnerId}
-                onSelectPartner={setSelectedPartnerId}
+                selectedPartnerId={resolvedPartnerId}
+                onSelectPartner={(id) => updateSearch({ partner: id })}
                 onSaved={refresh}
               />
             )}
@@ -743,7 +846,7 @@ function ReviewDatePicker({
   );
 }
 
-function AnalyticsSection({ analytics }: { analytics: AdminAnalyticsData }) {
+function AnalyticsSection({ analytics, communityOnly = false }: { analytics: AdminAnalyticsData; communityOnly?: boolean }) {
   const latestDays = analytics.daily.slice(-14);
 
   return (
@@ -763,7 +866,7 @@ function AnalyticsSection({ analytics }: { analytics: AdminAnalyticsData }) {
         </div>
       ) : null}
 
-      <section className="engine-metrics admin-analytics-metrics" aria-label="Audience analytics summary">
+      {!communityOnly ? <section className="engine-metrics admin-analytics-metrics" aria-label="Audience analytics summary">
         <Metric label="Active Users" value={analytics.totals.activeUsers} detail="Anonymous browsers" />
         <Metric label="Page Views" value={analytics.totals.pageViews} detail="All app routes" />
         <Metric label="Prayer Sessions" value={analytics.totals.prayerSessions} detail="Player opens" />
@@ -771,9 +874,9 @@ function AnalyticsSection({ analytics }: { analytics: AdminAnalyticsData }) {
         <Metric label="Community Views" value={analytics.totals.communityPageViews} detail="Profile pages" />
         <Metric label="Partner Clicks" value={analytics.totals.outboundClicks} detail="Outbound links" />
         <Metric label="Avg Open" value={`${analytics.totals.averagePanelOpenSeconds}s`} detail="Player panel" />
-      </section>
+      </section> : null}
 
-      <div className="admin-analytics-grid">
+      {!communityOnly ? <div className="admin-analytics-grid">
         <AnalyticsList title="Top Pages" items={analytics.topPages} />
         <AnalyticsList title="Acquisition" items={analytics.acquisitionSources} />
         <AnalyticsList title="Devices" items={analytics.deviceClasses} />
@@ -781,10 +884,10 @@ function AnalyticsSection({ analytics }: { analytics: AdminAnalyticsData }) {
         <AnalyticsList title="Platform Opens" items={analytics.platformOpensByProvider} />
         <AnalyticsList title="Prayer Hours" items={analytics.prayerByHour} />
         <AnalyticsList title="Outbound Destinations" items={analytics.outboundByDestination} />
-      </div>
+      </div> : null}
 
       <div className="admin-analytics-two-column">
-        <div>
+        <div className={communityOnly ? 'admin-community-full' : ''}>
           <div className="engine-section-heading compact">
             <div>
               <p>Partner impact</p>
@@ -792,7 +895,7 @@ function AnalyticsSection({ analytics }: { analytics: AdminAnalyticsData }) {
             </div>
           </div>
           <div className="engine-table-wrap">
-            <table className="engine-table">
+            <table className="engine-table admin-responsive-table">
               <thead>
                 <tr>
                   <th>Community</th>
@@ -810,14 +913,14 @@ function AnalyticsSection({ analytics }: { analytics: AdminAnalyticsData }) {
                 ) : (
                   analytics.communityPerformance.map((community) => (
                     <tr key={community.communitySlug}>
-                      <td>
+                      <td data-label="Community">
                         <strong>{community.partnerName}</strong>
                         <span>{community.communitySlug}</span>
                       </td>
-                      <td>{community.activeUsers}</td>
-                      <td>{community.pageViews}</td>
-                      <td>{community.contentClicks}</td>
-                      <td>{community.outboundClicks}</td>
+                      <td data-label="Users">{community.activeUsers}</td>
+                      <td data-label="Views">{community.pageViews}</td>
+                      <td data-label="Prayer clicks">{community.contentClicks}</td>
+                      <td data-label="Outbound">{community.outboundClicks}</td>
                     </tr>
                   ))
                 )}
@@ -826,7 +929,7 @@ function AnalyticsSection({ analytics }: { analytics: AdminAnalyticsData }) {
           </div>
         </div>
 
-        <div>
+        {!communityOnly ? <div>
           <div className="engine-section-heading compact">
             <div>
               <p>Trend</p>
@@ -834,7 +937,7 @@ function AnalyticsSection({ analytics }: { analytics: AdminAnalyticsData }) {
             </div>
           </div>
           <div className="engine-table-wrap">
-            <table className="engine-table">
+            <table className="engine-table admin-responsive-table">
               <thead>
                 <tr>
                   <th>Date</th>
@@ -854,20 +957,95 @@ function AnalyticsSection({ analytics }: { analytics: AdminAnalyticsData }) {
                 ) : (
                   latestDays.map((day) => (
                     <tr key={day.date}>
-                      <td>{day.date}</td>
-                      <td>{day.activeUsers}</td>
-                      <td>{day.pageViews}</td>
-                      <td>{day.communityPageViews}</td>
-                      <td>{day.prayerSessions}</td>
-                      <td>{day.platformOpens}</td>
-                      <td>{day.outboundClicks}</td>
+                      <td data-label="Date">{day.date}</td>
+                      <td data-label="Users">{day.activeUsers}</td>
+                      <td data-label="Pages">{day.pageViews}</td>
+                      <td data-label="Community">{day.communityPageViews}</td>
+                      <td data-label="Prayer">{day.prayerSessions}</td>
+                      <td data-label="Platform">{day.platformOpens}</td>
+                      <td data-label="Outbound">{day.outboundClicks}</td>
                     </tr>
                   ))
                 )}
               </tbody>
             </table>
           </div>
-        </div>
+        </div> : null}
+      </div>
+    </section>
+  );
+}
+
+function ContentReviewTabs({ media }: { media: 'video' | 'audio' }) {
+  const location = useLocation();
+  const reviewPath = (nextMedia: 'video' | 'audio') => {
+    const params = new URLSearchParams(location.search);
+    params.set('media', nextMedia);
+    return `${ADMIN_ROUTES.review}?${params}`;
+  };
+
+  return (
+    <nav className="admin-review-tabs" aria-label="Content media type">
+      <Link className={media === 'video' ? 'active' : ''} to={reviewPath('video')}>Video</Link>
+      <Link className={media === 'audio' ? 'active' : ''} to={reviewPath('audio')}>Audio</Link>
+    </nav>
+  );
+}
+
+function HomeSection({
+  data,
+  onOpen,
+}: {
+  data: AdminDashboardData;
+  onOpen: (section: AdminRouteSection, params?: Record<string, string | null>) => void;
+}) {
+  const homeSignals = homeSignalsOrUnavailable(data.homeSignals);
+  const actionItems: Array<{
+    label: string;
+    value: number | string;
+    detail: string;
+    section?: AdminRouteSection;
+    media?: 'video' | 'audio';
+    href?: string;
+  }> = [
+    { label: 'Pending video', value: data.totals.pendingVideos, detail: 'Review imported video', section: 'review' as const, media: 'video' },
+    { label: 'Pending audio', value: data.totals.pendingEpisodes, detail: 'Review imported audio', section: 'review' as const, media: 'audio' },
+    { label: 'Stale feeds', value: data.totals.staleFeeds, detail: 'Check source configuration', section: 'sources' as const },
+    {
+      label: 'Active devotions',
+      value: homeSignals.activeDevotions ?? '—',
+      detail: homeSignals.activeDevotions === null ? 'Unavailable in this environment' : 'Open devotion operations',
+      section: 'devotions',
+    },
+    {
+      label: 'Open calendar reviews',
+      value: homeSignals.openCalendarReviews ?? '—',
+      detail: homeSignals.openCalendarReviews === null ? 'Unavailable in this environment' : 'Open calendar engine',
+      href: '/admin/calendar-engine',
+    },
+  ];
+
+  return (
+    <section className="engine-section admin-home">
+      <div className="engine-section-heading">
+        <div><p>Action center</p><h2>What needs attention</h2></div>
+        <span>Generated {formatDateTime(data.generatedAt)}</span>
+      </div>
+      <div className="admin-home-actions">
+        {actionItems.map((item) => {
+          const content = <><strong>{item.value}</strong><span>{item.label}</span><small>{item.detail}</small></>;
+          return item.href ? (
+            <Link key={item.label} to={item.href}>{content}</Link>
+          ) : (
+            <button key={item.label} type="button" onClick={() => item.section && onOpen(item.section, item.media ? { media: item.media } : undefined)}>{content}</button>
+          );
+        })}
+      </div>
+      <div className="admin-home-links">
+        <button type="button" className="admin-button primary" onClick={() => onOpen('inventory')}>Manage partners</button>
+        <button type="button" className="admin-button" onClick={() => onOpen('review', { media: 'video' })}>Open content review</button>
+        <button type="button" className="admin-button" onClick={() => onOpen('sources')}>Manage sources</button>
+        <a className="admin-button" href="/admin/calendar-engine">Open calendar engine</a>
       </div>
     </section>
   );
@@ -913,11 +1091,9 @@ function humanizeAnalyticsLabel(value: string) {
 function Overview({
   data,
   onSelectPartner,
-  onOpenSection,
 }: {
   data: AdminDashboardData;
   onSelectPartner: (id: string) => void;
-  onOpenSection: (section: AdminSection) => void;
 }) {
   return (
     <section className="engine-section">
@@ -929,7 +1105,7 @@ function Overview({
         <span>Generated {formatDateTime(data.generatedAt)}</span>
       </div>
       <div className="engine-table-wrap">
-        <table className="engine-table">
+        <table className="engine-table admin-responsive-table">
           <thead>
             <tr>
               <th>Partner</th>
@@ -950,29 +1126,26 @@ function Overview({
               const summary = data.summaries.find((item) => item.partnerId === partner.id);
               return (
                 <tr key={partner.id}>
-                  <td>
+                  <td data-label="Partner">
                     <button
                       type="button"
                       className="admin-link-button"
-                      onClick={() => {
-                        onSelectPartner(partner.id);
-                        onOpenSection('partners');
-                      }}
+                      onClick={() => onSelectPartner(partner.id)}
                     >
                       {partner.name}
                     </button>
                     <span>{partner.slug}</span>
                   </td>
-                  <td><span className={`engine-badge ${statusClass(partner.relationship_status)}`}>{partner.relationship_status}</span></td>
-                  <td><span className={`engine-badge ${statusClass(partner.onboarding_status)}`}>{partner.onboarding_status}</span></td>
-                  <td>YT {summary?.activeFeedCount ?? 0}/{summary?.feedCount ?? 0} · SP {summary?.activeSpotifyFeedCount ?? 0}/{summary?.spotifyFeedCount ?? 0} · AP {summary?.activeApplePodcastFeedCount ?? 0}/{summary?.applePodcastFeedCount ?? 0}</td>
-                  <td>{summary?.ruleCount ?? 0}</td>
-                  <td>{summary?.videoCount ?? 0}</td>
-                  <td>{summary?.episodeCount ?? 0}</td>
-                  <td>{(summary?.pendingVideoCount ?? 0) + (summary?.pendingEpisodeCount ?? 0)}</td>
-                  <td>{summary?.approvedTodayCount ?? 0}</td>
-                  <td>{formatDateTime(summary?.lastPolledAt)}</td>
-                  <td>{summary?.missingTodayHours.length ? summary.missingTodayHours.join(', ') : 'Covered'}</td>
+                  <td data-label="Public tier"><span className={`engine-badge ${statusClass(partner.relationship_status)}`}>{partner.relationship_status}</span></td>
+                  <td data-label="Ops status"><span className={`engine-badge ${statusClass(partner.onboarding_status)}`}>{partner.onboarding_status}</span></td>
+                  <td data-label="Sources">YT {summary?.activeFeedCount ?? 0}/{summary?.feedCount ?? 0} · SP {summary?.activeSpotifyFeedCount ?? 0}/{summary?.spotifyFeedCount ?? 0} · AP {summary?.activeApplePodcastFeedCount ?? 0}/{summary?.applePodcastFeedCount ?? 0}</td>
+                  <td data-label="Rules">{summary?.ruleCount ?? 0}</td>
+                  <td data-label="Videos">{summary?.videoCount ?? 0}</td>
+                  <td data-label="Audio">{summary?.episodeCount ?? 0}</td>
+                  <td data-label="Pending">{(summary?.pendingVideoCount ?? 0) + (summary?.pendingEpisodeCount ?? 0)}</td>
+                  <td data-label="Today">{summary?.approvedTodayCount ?? 0}</td>
+                  <td data-label="Last poll">{formatDateTime(summary?.lastPolledAt)}</td>
+                  <td data-label="Coverage">{summary?.missingTodayHours.length ? summary.missingTodayHours.join(', ') : 'Covered'}</td>
                 </tr>
               );
             })}
@@ -1006,6 +1179,9 @@ function PartnersSection({
     try {
       await upsertPartner(draft);
       await onSaved();
+      announceAdminNotice('success', 'Partner saved.');
+    } catch (actionError) {
+      announceAdminNotice('error', mutationMessage(actionError, 'Unable to save partner.'));
     } finally {
       setSaving(false);
     }
@@ -1122,6 +1298,8 @@ function VideosSection({
   onSelectPartner,
   reviewDate,
   onReviewDateChange,
+  statusFilter,
+  onStatusFilterChange,
   onSaved,
 }: {
   data: AdminDashboardData;
@@ -1130,9 +1308,10 @@ function VideosSection({
   onSelectPartner: (id: string) => void;
   reviewDate: string;
   onReviewDateChange: (value: string) => void;
+  statusFilter: YoutubeVideoDisplayStatus | 'all';
+  onStatusFilterChange: (value: YoutubeVideoDisplayStatus | 'all') => void;
   onSaved: () => Promise<void>;
 }) {
-  const [statusFilter, setStatusFilter] = useState<YoutubeVideoDisplayStatus | 'all'>('pending');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
   const [bulkSaving, setBulkSaving] = useState(false);
   const shownVideos = useMemo(
@@ -1188,6 +1367,9 @@ function VideosSection({
       await updateVideos({ ids, display_status: displayStatus });
       setSelectedIds(new Set());
       await onSaved();
+      announceAdminNotice('success', `${ids.length} video${ids.length === 1 ? '' : 's'} updated.`);
+    } catch (actionError) {
+      announceAdminNotice('error', mutationMessage(actionError, 'Unable to update videos.'));
     } finally {
       setBulkSaving(false);
     }
@@ -1205,7 +1387,7 @@ function VideosSection({
           <ReviewDatePicker value={reviewDate} onChange={onReviewDateChange} />
           <label>
             Status
-            <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as YoutubeVideoDisplayStatus | 'all')}>
+            <select value={statusFilter} onChange={(event) => onStatusFilterChange(event.target.value as YoutubeVideoDisplayStatus | 'all')}>
               <option value="all">All</option>
               {STATUS_OPTIONS.map((status) => <option key={status} value={status}>{status}</option>)}
             </select>
@@ -1304,6 +1486,9 @@ function VideoReviewCard({
         available_weekdays: usesSeasonalAvailability ? weekdays : [],
       });
       await onSaved();
+      announceAdminNotice('success', 'Video saved.');
+    } catch (actionError) {
+      announceAdminNotice('error', mutationMessage(actionError, 'Unable to save video.'));
     } finally {
       setSaving(false);
     }
@@ -1379,6 +1564,8 @@ function AudioSection({
   onSelectPartner,
   reviewDate,
   onReviewDateChange,
+  statusFilter,
+  onStatusFilterChange,
   onSaved,
 }: {
   data: AdminDashboardData;
@@ -1387,9 +1574,10 @@ function AudioSection({
   onSelectPartner: (id: string) => void;
   reviewDate: string;
   onReviewDateChange: (value: string) => void;
+  statusFilter: YoutubeVideoDisplayStatus | 'all';
+  onStatusFilterChange: (value: YoutubeVideoDisplayStatus | 'all') => void;
   onSaved: () => Promise<void>;
 }) {
-  const [statusFilter, setStatusFilter] = useState<YoutubeVideoDisplayStatus | 'all'>('pending');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
   const [bulkSaving, setBulkSaving] = useState(false);
   const shownEpisodes = useMemo(
@@ -1454,6 +1642,9 @@ function AudioSection({
       });
       setSelectedIds(new Set());
       await onSaved();
+      announceAdminNotice('success', `${selectedEpisodes.length} audio item${selectedEpisodes.length === 1 ? '' : 's'} updated.`);
+    } catch (actionError) {
+      announceAdminNotice('error', mutationMessage(actionError, 'Unable to update audio.'));
     } finally {
       setBulkSaving(false);
     }
@@ -1471,7 +1662,7 @@ function AudioSection({
           <ReviewDatePicker value={reviewDate} onChange={onReviewDateChange} />
           <label>
             Status
-            <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as YoutubeVideoDisplayStatus | 'all')}>
+            <select value={statusFilter} onChange={(event) => onStatusFilterChange(event.target.value as YoutubeVideoDisplayStatus | 'all')}>
               <option value="all">All</option>
               {STATUS_OPTIONS.map((status) => <option key={status} value={status}>{status}</option>)}
             </select>
@@ -1558,6 +1749,9 @@ function EpisodeReviewCard({
         prayer_date: date || null,
       });
       await onSaved();
+      announceAdminNotice('success', 'Audio item saved.');
+    } catch (actionError) {
+      announceAdminNotice('error', mutationMessage(actionError, 'Unable to save audio.'));
     } finally {
       setSaving(false);
     }
@@ -1655,6 +1849,9 @@ function FeedsSection({
       });
       await onSaved();
       setDraft(feedDraft(selectedPartnerId));
+      announceAdminNotice('success', 'YouTube source saved.');
+    } catch (actionError) {
+      announceAdminNotice('error', mutationMessage(actionError, 'Unable to save YouTube source.'));
     } finally {
       setSaving(false);
     }
@@ -1666,6 +1863,9 @@ function FeedsSection({
       await upsertSpotifyFeed(spotifyDraft);
       await onSaved();
       setSpotifyDraft(spotifyFeedDraft(selectedPartnerId));
+      announceAdminNotice('success', 'Spotify source saved.');
+    } catch (actionError) {
+      announceAdminNotice('error', mutationMessage(actionError, 'Unable to save Spotify source.'));
     } finally {
       setSavingSpotify(false);
     }
@@ -1677,6 +1877,9 @@ function FeedsSection({
       await upsertApplePodcastFeed(applePodcastDraft);
       await onSaved();
       setApplePodcastDraft(applePodcastFeedDraft(selectedPartnerId));
+      announceAdminNotice('success', 'Apple Podcasts source saved.');
+    } catch (actionError) {
+      announceAdminNotice('error', mutationMessage(actionError, 'Unable to save Apple Podcasts source.'));
     } finally {
       setSavingApplePodcast(false);
     }
@@ -1875,6 +2078,9 @@ function RulesSection({
       await upsertRule(draft);
       await onSaved();
       setDraft(ruleDraft(selectedPartnerId));
+      announceAdminNotice('success', 'Rule saved.');
+    } catch (actionError) {
+      announceAdminNotice('error', mutationMessage(actionError, 'Unable to save rule.'));
     } finally {
       setSaving(false);
     }
