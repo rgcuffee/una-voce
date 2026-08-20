@@ -161,6 +161,29 @@ export default defineConfig({
                     },
                 )
                 server.middlewares.use(
+                    '/api/admin/devotion',
+                    async (request, response) => {
+                        try {
+                            const functionModulePath = `file://${process.cwd()}/netlify/functions/admin-devotion.mjs?dev=${Date.now()}`
+                            const { handler } = await import(functionModulePath)
+                            const method = (request as { method?: string }).method ?? 'GET'
+                            const result = await handler({
+                                httpMethod: method,
+                                headers: headersFrom(request as { headers?: Record<string, string | string[] | undefined> }),
+                                body: method === 'POST' ? await readRequestBody(request as { on(event: 'data', callback: (chunk: unknown) => void): void; on(event: 'end', callback: () => void): void; on(event: 'error', callback: (error: Error) => void): void }) : '',
+                                queryStringParameters: queryParams((request as { url?: string }).url),
+                            })
+                            response.statusCode = result.statusCode
+                            for (const [key, value] of Object.entries(result.headers ?? {})) response.setHeader(key, value as string)
+                            response.end(result.body ?? '')
+                        } catch (error) {
+                            response.statusCode = 500
+                            response.setHeader('content-type', 'application/json')
+                            response.end(JSON.stringify({ error: error instanceof Error ? error.message : 'Unable to load devotion data' }))
+                        }
+                    },
+                )
+                server.middlewares.use(
                     '/.netlify/functions/cathoholic-videos',
                     async (request, response) => {
                         try {

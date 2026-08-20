@@ -64,6 +64,7 @@ export function createAnalyticsHandler(client) {
     return response(500, { error: 'Analytics is not configured' });
   }
 
+  if (typeof event.body === 'string' && Buffer.byteLength(event.body, 'utf8') > 64 * 1024) return response(400, { error: 'Analytics payload too large' });
   const payload = parsePayload(event.body);
   if (!payload.ok) {
     return response(400, { error: payload.error });
@@ -107,6 +108,7 @@ export function createAnalyticsHandler(client) {
     resourceId: detail.resourceId,
     mediaType: detail.mediaType,
   });
+  if (Buffer.byteLength(JSON.stringify(metadata), 'utf8') > 16 * 1024) return response(400, { error: 'Analytics metadata too large' });
 
   const eventError = await insertAnalyticsEvent(client, {
     occurred_at: occurredAt,
@@ -255,8 +257,16 @@ export function validateAnalyticsEvent(detail) {
     return 'Invalid anonymousId';
   }
 
+  for (const [field, limit] of Object.entries({ anonymousId: 160, locale: 35, prayerId: 160, ministryId: 160, hour: 80, sourceName: 200, sourceType: 120, provider: 120, videoId: 120, pageContext: 120, pagePath: 2048, referrer: 2048, sourceUrl: 2048, utmSource: 160, utmMedium: 160, utmCampaign: 160, utmContent: 160, deviceClass: 32, communitySlug: 160, contentId: 500, contentType: 80 })) {
+    if (detail[field] !== undefined && !isBoundedString(detail[field], limit)) return `Invalid ${field}`;
+  }
+
   if (detail.partnerId !== undefined && detail.partnerId !== null && !isUuid(detail.partnerId)) {
     return 'Invalid partnerId';
+  }
+
+  if (detail.userId !== undefined && detail.userId !== null && !isUuid(detail.userId)) {
+    return 'Invalid userId';
   }
 
   if (detail.devotionId !== undefined && !isUuid(detail.devotionId)) {

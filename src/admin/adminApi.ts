@@ -197,19 +197,24 @@ export type AnalyticsCommunityRow = {
 export type AdminAnalyticsData = {
   windowDays: number;
   generatedAt: string;
+  rangeBounds?: { start: string; end: string; timezone: 'UTC' };
+  sourceCap?: number;
+  sourceTruncated?: boolean;
+  totalsStatus?: 'exact' | 'sampled';
+  facets?: { devices: string[]; events: string[]; routes: string[]; communities: Array<{ value: string; label: string }>; partners: Array<{ value: string; label: string }>; sessions: string[] };
   schemaStatus?: 'ready' | 'migration_required';
   schemaMessage?: string;
   totals: {
     events: number;
-    prayerSessions: number;
+    prayerSessions: number | null;
     activeUsers: number;
     pageViews: number;
     communityPageViews: number;
     outboundClicks: number;
     contentCardClicks: number;
     platformOpens: number;
-    sourceOpens: number;
-    completions: number;
+    sourceOpens: number | null;
+    completions: number | null;
     averagePanelOpenSeconds: number;
     averageHighestProgress: number;
   };
@@ -222,6 +227,17 @@ export type AdminAnalyticsData = {
   platformOpensByProvider: AnalyticsCount[];
   outboundByDestination: AnalyticsCount[];
   communityPerformance: AnalyticsCommunityRow[];
+  communityDetails?: Record<string, { topContent: AnalyticsCount[]; destinations: AnalyticsCount[]; daily: AnalyticsCount[] }>;
+  sessionMetricsAvailable?: boolean;
+  prior?: { start: string | null; end: string | null; totals: { events: number; activeUsers: number } | null };
+  explorer?: {
+    page: number;
+    pageSize: number;
+    total: number; exportCap: number; exportTruncated: boolean;
+    rows: Array<{ timestamp: string; sessionId: string | null; anonymousId: string | null; route: string | null; event: string; content: string | null; partner: string | null; community: string | null; destination: string | null; device: string | null; acquisition: string | null }>;
+    exportRows: Array<{ timestamp: string; sessionId: string | null; anonymousId: string | null; route: string | null; event: string; content: string | null; partner: string | null; community: string | null; destination: string | null; device: string | null; acquisition: string | null }>;
+    sessions: Record<string, Array<{ timestamp: string; event: string; route: string | null }>>;
+  };
 };
 
 export type AdminDashboardData = {
@@ -425,8 +441,8 @@ function localAdminApiBase() {
   return ADMIN_API_BASE;
 }
 
-export function loadAdminDashboard() {
-  return adminFetch<AdminDashboardData>('/api/admin/partners');
+export function loadAdminDashboard(search = '') {
+  return adminFetch<AdminDashboardData>(`/api/admin/partners${search ? `?${search.replace(/^\?/, '')}` : ''}`);
 }
 
 export function upsertPartner(partner: PartnerDraft) {

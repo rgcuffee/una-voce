@@ -6,9 +6,10 @@ import {
   showDevotionParticipantLink,
   updateDevotionConfiguration,
   type DevotionAnalyticsData,
-  type DevotionNightResult,
+  type DevotionParticipantResult,
   type DevotionReportOutcome,
 } from './devotionAdminApi';
+import { spreadsheetSafe } from './analyticsWorkflow';
 
 type GeneratedLink = {
   label: string;
@@ -47,13 +48,14 @@ const ALL_TIMEZONES = supportedValuesOf
     )
   : [];
 
-export function DevotionAnalyticsSection() {
+export function DevotionAnalyticsSection({ mode = 'operations' }: { mode?: 'operations' | 'analytics' }) {
   const [data, setData] = useState<DevotionAnalyticsData | null>(null);
   const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
   const [error, setError] = useState<string | null>(null);
   const [busyParticipantId, setBusyParticipantId] = useState<string | null>(null);
   const [generatedLink, setGeneratedLink] = useState<GeneratedLink>(null);
-  const [copyState, setCopyState] = useState<'idle' | 'copied' | 'error'>('idle');
+  const [participantCopyState, setParticipantCopyState] = useState<'idle' | 'copied' | 'error'>('idle');
+  const [canonicalCopyState, setCanonicalCopyState] = useState<'idle' | 'copied' | 'error'>('idle');
 
   async function refresh() {
     setState('loading');
@@ -85,7 +87,7 @@ export function DevotionAnalyticsSection() {
         url: result.generatedLink,
         changedLegacyLink: result.linkChanged,
       });
-      setCopyState('idle');
+      setParticipantCopyState('idle');
       form.reset();
       await refresh();
     } catch (actionError) {
@@ -103,7 +105,7 @@ export function DevotionAnalyticsSection() {
         url: result.generatedLink,
         changedLegacyLink: result.linkChanged,
       });
-      setCopyState('idle');
+      setParticipantCopyState('idle');
       await refresh();
     } catch (actionError) {
       setError(actionError instanceof Error ? actionError.message : 'Unable to show link.');
@@ -129,9 +131,9 @@ export function DevotionAnalyticsSection() {
     if (!generatedLink) return;
     try {
       await navigator.clipboard.writeText(generatedLink.url);
-      setCopyState('copied');
+      setParticipantCopyState('copied');
     } catch {
-      setCopyState('error');
+      setParticipantCopyState('error');
     }
   }
 
@@ -154,6 +156,12 @@ export function DevotionAnalyticsSection() {
     ['Partial', data.metrics.reportedPartial, "Started, didn't finish"],
     ['Not tonight', data.metrics.reportedNotTonight, 'Reported nights'],
   ] as const;
+  const canonicalUrl = `https://unavoce.net/devotions/${data.devotion.slug}/night-prayer`;
+  async function copyCanonicalUrl() { try { await navigator.clipboard.writeText(canonicalUrl); setCanonicalCopyState('copied'); } catch { setCanonicalCopyState('error'); } }
+
+  if (mode === 'analytics') {
+    return <DevotionAnalyticsView data={data} metrics={metrics} onRefresh={refresh} state={state} error={error} />;
+  }
 
   return (
     <section className="engine-section devotion-admin-section">
@@ -178,6 +186,8 @@ export function DevotionAnalyticsSection() {
         ))}
       </section>
 
+      <div className="devotion-public-url"><strong>Canonical public devotion URL</strong><code>{canonicalUrl}</code><a className="admin-button" href={canonicalUrl} target="_blank" rel="noreferrer">Open</a><button type="button" className="admin-button" onClick={() => void copyCanonicalUrl()}>Copy</button>{canonicalCopyState === 'copied' ? <small>Copied to clipboard.</small> : null}{canonicalCopyState === 'error' ? <small role="alert">Copy failed. Select the URL and copy it manually.</small> : null}<span>Status: {data.devotion.status} · Starts: {data.devotion.startDate ?? 'Unavailable'} · {data.devotion.timezone ?? 'Timezone unavailable'}</span></div>
+
       <div className="devotion-admin-tools">
         <section className="devotion-admin-card">
           <div className="engine-section-heading compact">
@@ -201,8 +211,8 @@ export function DevotionAnalyticsSection() {
                 <input aria-label={`Generated participant link for ${generatedLink.label}`} readOnly value={generatedLink.url} onFocus={(event) => event.currentTarget.select()} />
                 <button type="button" className="admin-button primary" onClick={() => void copyGeneratedLink()}>Copy</button>
               </div>
-              {copyState === 'copied' ? <small>Copied to clipboard.</small> : null}
-              {copyState === 'error' ? <small role="alert">Copy failed. Select the URL and copy it manually.</small> : null}
+              {participantCopyState === 'copied' ? <small>Copied to clipboard.</small> : null}
+              {participantCopyState === 'error' ? <small role="alert">Copy failed. Select the URL and copy it manually.</small> : null}
             </div>
           ) : null}
         </section>
@@ -210,71 +220,36 @@ export function DevotionAnalyticsSection() {
         <DevotionConfiguration data={data} onSaved={refresh} onError={setError} />
       </div>
 
-      <div className="engine-section-heading compact devotion-matrix-heading">
-        <div><span>Seven-night results</span><h3>Participant activity</h3></div>
-      </div>
-      {data.participants.length === 0 ? (
-        <div className="engine-empty">No participants enrolled yet.</div>
-      ) : (
-        <div className="engine-table-wrap devotion-matrix-wrap">
-          <table className="engine-table devotion-matrix">
-            <thead>
-              <tr>
-                <th scope="col">Participant</th>
-                {Array.from({ length: 7 }, (_, index) => <th scope="col" key={index}>Night {index + 1}</th>)}
-              </tr>
-            </thead>
-            <tbody>
-              {data.participants.map((participant) => (
-                <tr key={participant.id}>
-                  <th scope="row" className="devotion-participant-cell">
-                    <strong>{participant.label}</strong>
-                    <code>{participant.safeId}</code>
-                    <span className={`devotion-link-status ${participant.linkStatus}`}>{participant.linkStatus}</span>
-                    <div>
-                      <button type="button" className="admin-button" disabled={busyParticipantId === participant.id || participant.linkStatus === 'revoked'} onClick={() => void showLink(participant.id, participant.label)}>Show link</button>
-                      <button type="button" className="admin-button danger" disabled={busyParticipantId === participant.id || participant.linkStatus === 'revoked'} onClick={() => void revoke(participant.id)}>Revoke</button>
-                    </div>
-                  </th>
-                  {participant.nights.map((night) => <NightCell key={night.pilotDay} night={night} />)}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      <div className="engine-section-heading compact devotion-matrix-heading"><div><span>Participant security</span><h3>Links and enrollment state</h3></div></div>
+      {data.participants.length === 0 ? <div className="engine-empty">No participants enrolled yet.</div> : <div className="admin-list">{data.participants.map((participant) => <div key={participant.id} className="devotion-participant-cell"><strong>{participant.label}</strong><code>{participant.safeId}</code><span className={`devotion-link-status ${participant.linkStatus}`}>{participant.linkStatus}</span><div><button type="button" className="admin-button" disabled={busyParticipantId === participant.id || participant.linkStatus === 'revoked'} onClick={() => void showLink(participant.id, participant.label)}>Show link</button><button type="button" className="admin-button danger" disabled={busyParticipantId === participant.id || participant.linkStatus === 'revoked'} onClick={() => void revoke(participant.id)}>Revoke</button></div></div>)}</div>}
     </section>
   );
 }
 
-function NightCell({ night }: { night: DevotionNightResult }) {
-  return (
-    <td className={night.opened || night.outcome ? 'has-evidence' : ''}>
-      <div className="devotion-night-cell">
-        <strong>{night.opened ? `Opened ×${night.openCount}` : 'Not opened'}</strong>
-        {night.resources.map((resource) => (
-          <span className="devotion-resource-result" key={`${resource.resourceId}:${resource.provider}:${resource.mediaType}`}>
-            <strong>{resource.label}</strong>
-            <small>
-              {formatResourceType(resource.provider, resource.mediaType)} · {resource.count} {resource.count === 1 ? 'click' : 'clicks'}
-              {resource.measuredMinutes > 0 ? ` · ${resource.measuredMinutes} min open` : ''}
-            </small>
-          </span>
-        ))}
-        {night.measuredMediaMinutes > 0 ? <span>{night.measuredMediaMinutes} total measured min</span> : null}
-        <em>{night.outcome ? OUTCOME_LABELS[night.outcome] : 'No report'}</em>
-      </div>
-    </td>
-  );
-}
-
-function formatResourceType(provider: string, mediaType: string) {
-  const providerLabel = provider
-    .split(/[-_]/)
-    .map((part) => part ? `${part[0].toUpperCase()}${part.slice(1)}` : part)
-    .join(' ');
-  const mediaLabel = mediaType.replace(/_/g, ' ');
-  return `${providerLabel} · ${mediaLabel}`;
+function DevotionAnalyticsView({ data, metrics, onRefresh, state, error }: { data: DevotionAnalyticsData; metrics: ReadonlyArray<readonly [string, number, string]>; onRefresh: () => Promise<void>; state: 'loading' | 'ready' | 'error'; error: string | null }) {
+  const [outcome, setOutcome] = useState<DevotionReportOutcome | 'all'>('all');
+  const [night, setNight] = useState('all');
+  const [participantId, setParticipantId] = useState('all');
+  const selectedNights = (participant: DevotionParticipantResult) => participant.nights.filter((item) => (night === 'all' || item.pilotDay === Number(night)) && (outcome === 'all' || item.outcome === outcome));
+  const rows = data.participants.filter((participant) => (participantId === 'all' || participant.safeId === participantId) && selectedNights(participant).length > 0);
+  const rollup = Array.from({ length: data.devotion.durationDays }, (_, index) => {
+    if (night !== 'all' && Number(night) !== index + 1) return null;
+    const items = rows.flatMap((participant) => participant.nights.filter((item) => item.pilotDay === index + 1 && (outcome === 'all' || item.outcome === outcome)));
+    return { night: index + 1, opened: items.filter((item) => item.opened).length, engaged: items.filter((item) => item.resourceEngaged).length, reported: items.filter((item) => item.outcome).length, minutes: items.reduce((sum, item) => sum + item.measuredMediaMinutes, 0) };
+  }).filter(Boolean) as Array<{ night: number; opened: number; engaged: number; reported: number; minutes: number }>;
+  const exportRows = () => {
+    const content = ['participant,night,opened,resources,measured_minutes,outcome', ...rows.flatMap((participant) => selectedNights(participant).map((item) => [participant.safeId, item.pilotDay, item.opened, item.resourceCount, item.measuredMediaMinutes, item.outcome ?? ''].map((value) => `"${spreadsheetSafe(value).replace(/"/g, '""')}"`).join(',')))].join('\n');
+    const anchor = document.createElement('a'); anchor.href = URL.createObjectURL(new Blob([content], { type: 'text/csv' })); anchor.download = 'devotion-analytics.csv'; anchor.click(); URL.revokeObjectURL(anchor.href);
+  };
+  return <section className="engine-section devotion-admin-section">
+    <div className="engine-section-heading"><div><span>Analytics</span><h2>{data.devotion.name}</h2><p>Only reported, opened, and measured activity is shown. Enrollment is available; survey completion is unavailable in the current payload.</p></div><button type="button" className="admin-button" onClick={() => void onRefresh()}>Refresh</button></div>{state === 'loading' ? <div className="admin-analytics-comparison" role="status">Updating devotion analytics…</div> : null}{error ? <div className="engine-empty engine-error" role="alert">{error}</div> : null}
+    <section className="engine-metrics devotion-admin-metrics" aria-label="Devotion analytics summary">{metrics.map(([label, value, detail]) => <div className="engine-metric" key={label}><span>{label}</span><strong>{value}</strong><p>{detail}</p></div>)}</section>
+    <div className="devotion-funnel"><strong>Enrollment {data.metrics.participantsEnrolled} participants</strong><span>·</span><strong>Opened {data.metrics.nightsOpened} participant-nights</strong><span>·</span><strong>Engaged {data.metrics.resourceEngagements} opens</strong><span>·</span><strong>Reported {data.metrics.reportedPrayed + data.metrics.reportedPartial + data.metrics.reportedNotTonight} nights</strong><small>Evidence counts use different units; this is not a conversion funnel.</small></div>
+    <div className="admin-analytics-filters"><label>Night<select value={night} onChange={(event) => setNight(event.target.value)}><option value="all">All nights</option>{Array.from({ length: data.devotion.durationDays }, (_, index) => <option value={index + 1} key={index}>Night {index + 1}</option>)}</select></label><label>Outcome<select value={outcome} onChange={(event) => setOutcome(event.target.value as DevotionReportOutcome | 'all')}><option value="all">All outcomes</option>{Object.entries(OUTCOME_LABELS).map(([value, label]) => <option value={value} key={value}>{label}</option>)}</select></label><label>Participant<select value={participantId} onChange={(event) => setParticipantId(event.target.value)}><option value="all">All participants</option>{data.participants.map((participant) => <option value={participant.safeId} key={participant.id}>{participant.label}</option>)}</select></label><button type="button" className="admin-button" onClick={exportRows}>Export CSV</button></div>
+    <section className="devotion-heatmap" aria-label="Seven-night rollup"><h3>Seven-night rollup</h3>{rollup.map((item) => <article key={item.night}><strong>Night {item.night}</strong><div><span className={item.opened ? 'has-evidence' : ''}>Opened: {item.opened}</span><span className={item.engaged ? 'has-evidence' : ''}>Engaged: {item.engaged}</span><span className={item.reported ? 'has-evidence' : ''}>Reported: {item.reported}</span><span>Measured: {item.minutes} min</span></div></article>)}</section>
+    <div className="devotion-heatmap" aria-label="Seven-night engagement heatmap">{rows.length === 0 ? <p>Unavailable: no participant-nights match these filters.</p> : rows.map((participant) => <article key={participant.id}><strong>{participant.label}</strong><div>{selectedNights(participant).map((item) => <span className={item.opened || item.outcome ? 'has-evidence' : ''} key={item.pilotDay}>N{item.pilotDay}: {item.opened ? 'opened' : '—'}{item.outcome ? ` · ${OUTCOME_LABELS[item.outcome]}` : ''}{item.resources.length ? ` · ${item.resources.map((resource) => `${resource.label} (${resource.count} clicks, ${resource.measuredMinutes} min)`).join(', ')}` : ''}</span>)}</div></article>)}</div>
+    <p className="devotion-analytics-boundary">Measured minutes are player-duration evidence only. External links can record a click but cannot measure time on a third-party page.</p>
+  </section>;
 }
 
 function DevotionConfiguration({

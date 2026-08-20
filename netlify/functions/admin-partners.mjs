@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { createHash } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 import { createAdminAuthorizer } from './lib/admin-auth.mjs';
 
@@ -126,7 +127,7 @@ export async function handler(event) {
 
   try {
     if (event.httpMethod === 'GET') {
-      return response(200, await dashboardResponse());
+      return response(200, await dashboardResponse(requestSearchParams(event)));
     }
 
     const payload = parsePayload(event.body);
@@ -143,7 +144,12 @@ export async function handler(event) {
   }
 }
 
-async function dashboardResponse() {
+export function requestSearchParams(event = {}) {
+  if (event.rawUrl) return new URL(event.rawUrl, 'http://localhost').searchParams;
+  return new URLSearchParams(Object.entries(event.queryStringParameters ?? {}).filter(([, value]) => value !== undefined && value !== null));
+}
+
+async function dashboardResponse(searchParams = new URLSearchParams()) {
   const today = new Date().toISOString().slice(0, 10);
   const [
     partnersResult,
@@ -231,7 +237,7 @@ async function dashboardResponse() {
   const summaries = partners.map((partner) =>
     partnerSummary(partner.id, feeds, spotifyFeeds, applePodcastFeeds, rules, videos, episodes, today),
   );
-  const analytics = await analyticsSummary(partners);
+  const analytics = await analyticsSummary(partners, analyticsRequest(searchParams));
 
   return {
     ok: true,
@@ -419,56 +425,54 @@ function preferredReviewItem(left, right) {
   return Date.parse(left.published_at) >= Date.parse(right.published_at) ? left : right;
 }
 
-async function analyticsSummary(partners) {
-  const windowDays = 30;
-  const since = new Date(Date.now() - windowDays * 24 * 60 * 60 * 1000).toISOString();
-  const [eventsResult, sessionsResult] = await Promise.all([
-    supabase
-      .from('analytics_events')
-      .select(
-        [
-          'occurred_at',
-          'event_name',
-          'anonymous_id',
-          'page_path',
-          'page_context',
-          'utm_source',
-          'utm_medium',
-          'utm_campaign',
-          'device_class',
-          'partner_id',
-          'community_slug',
-          'content_id',
-          'content_type',
-          'provider',
-          'source_url',
-          'ministry_id',
-          'hour',
-        ].join(','),
-      )
-      .gte('occurred_at', since)
-      .order('occurred_at', { ascending: true })
-      .limit(10000),
-    supabase
-      .from('analytics_sessions')
-      .select(
-        [
-          'started_at',
-          'anonymous_id',
-          'completed',
-          'opened_source',
-          'panel_open_seconds',
-          'highest_progress',
-          'provider',
-          'hour',
-          'ministry_id',
-          'source_type',
-          'page_context',
-        ].join(','),
-      )
-      .gte('started_at', since)
-      .order('started_at', { ascending: true })
-      .limit(10000),
+export function analyticsRequest(params) {
+  const range = ['today', '7d', 'custom'].includes(params.get('range')) ? params.get('range') : '30d';
+  const days = range === 'today' ? 1 : range === '7d' ? 7 : range === '30d' ? 30 : 366;
+  const validDate = (value) => {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value ?? '')) return null;
+    const [year, month, day] = value.split('-').map(Number); const date = new Date(Date.UTC(year, month - 1, day));
+    return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day ? value : null;
+  };
+  const today = new Date().toISOString().slice(0, 10);
+  const end = (validDate(params.get('end')) ?? today) > today ? today : (validDate(params.get('end')) ?? today);
+  const requestedStart = range === 'custom' ? validDate(params.get('start')) : null;
+  const start = requestedStart ?? new Date(Date.parse(`${end}T00:00:00Z`) - (days - 1) * 86400000).toISOString().slice(0, 10);
+  const normalizedStart = start <= end ? (Date.parse(`${end}T00:00:00Z`) - Date.parse(`${start}T00:00:00Z`) > 365 * 86400000 ? new Date(Date.parse(`${end}T00:00:00Z`) - 365 * 86400000).toISOString().slice(0, 10) : start) : end;
+  const text = (key) => String(params.get(key) ?? '').slice(0, 160);
+  return { range, grain: ['daily', 'weekly', 'monthly'].includes(params.get('grain')) ? params.get('grain') : 'daily', start: normalizedStart, end, pageNumber: Math.min(100, Math.max(1, Number.parseInt(params.get('pageNumber') ?? '1', 10) || 1)), filters: Object.fromEntries(['device', 'event', 'page', 'community', 'partner', 'session'].map((key) => [key, text(key)])) };
+}
+
+export function analyticsFilterScope(filters) {
+  const sessionOnly = Boolean(filters.session) && !filters.device && !filters.event && !filters.page && !filters.community && !filters.partner;
+  return { sessionMetricsAvailable: !filters.device && !filters.event && !filters.page && !filters.community && !filters.partner, sessionOnly };
+}
+
+export async function readAnalyticsWindow(queryPage, { cap = 10000, batchSize = 1000 } = {}) {
+  const rows = [];
+  for (let offset = 0; offset <= cap; offset += batchSize) {
+    const size = Math.min(batchSize, cap + 1 - offset);
+    const result = await queryPage({ from: offset, to: offset + size - 1 });
+    if (result?.error) return { rows: [], truncated: false, error: result.error };
+    const page = result?.data ?? [];
+    rows.push(...page);
+    if (rows.length > cap) return { rows: rows.slice(0, cap), truncated: true, error: null };
+    if (page.length < size) return { rows, truncated: false, error: null };
+  }
+  return { rows, truncated: rows.length >= cap, error: null };
+}
+
+async function analyticsSummary(partners, request) {
+  const windowDays = Math.max(1, Math.round((Date.parse(`${request.end}T00:00:00Z`) - Date.parse(`${request.start}T00:00:00Z`)) / 86400000) + 1);
+  const since = `${request.start}T00:00:00.000Z`;
+  const until = `${request.end}T23:59:59.999Z`;
+  const priorEnd = new Date(Date.parse(since) - 1).toISOString();
+  const priorStart = new Date(Date.parse(since) - windowDays * 86400000).toISOString();
+  const eventFields = 'occurred_at,session_id,event_name,anonymous_id,page_path,referrer,utm_source,device_class,partner_id,community_slug,content_id,content_type,provider,source_url';
+  const sessionFields = 'started_at,session_id,anonymous_id,completed,opened_source,panel_open_seconds,highest_progress,provider,hour,ministry_id,source_type,page_context';
+  const eventWindow = (start, end, fields = eventFields) => readAnalyticsWindow(({ from, to }) => supabase.from('analytics_events').select(fields).gte('occurred_at', start).lte('occurred_at', end).order('occurred_at', { ascending: false }).order('id', { ascending: false }).range(from, to));
+  const sessionWindow = (start, end, fields = sessionFields) => readAnalyticsWindow(({ from, to }) => supabase.from('analytics_sessions').select(fields).gte('started_at', start).lte('started_at', end).order('started_at', { ascending: false }).order('session_id', { ascending: false }).range(from, to));
+  const [eventsResult, sessionsResult, priorEventsResult, priorSessionsResult] = await Promise.all([
+    eventWindow(since, until), sessionWindow(since, until), eventWindow(priorStart, priorEnd, 'anonymous_id,session_id,event_name,page_path,device_class,partner_id,community_slug'), sessionWindow(priorStart, priorEnd, 'anonymous_id,session_id'),
   ]);
 
   throwIfError(sessionsResult.error);
@@ -478,20 +482,23 @@ async function analyticsSummary(partners) {
       code: eventsResult.error.code,
       message: eventsResult.error.message,
     });
-    return legacyAnalyticsSummary(windowDays, sessionsResult.data ?? [], eventsResult.error);
+    return legacyAnalyticsSummary(windowDays, sessionsResult.rows ?? [], eventsResult.error);
   }
 
-  const events = eventsResult.data ?? [];
-  const sessions = sessionsResult.data ?? [];
   const communityPartners = new Map();
-
   for (const partner of partners) {
     communityPartners.set(partner.slug, partner);
-    if (partner.community_page_slug) {
-      communityPartners.set(partner.community_page_slug, partner);
-    }
+    if (partner.community_page_slug) communityPartners.set(partner.community_page_slug, partner);
   }
-
+  const scope = analyticsFilterScope(request.filters);
+  const sourceCap = 10000;
+  const sourceTruncated = eventsResult.truncated || sessionsResult.truncated;
+  const events = [...eventsResult.rows].reverse().filter((event) => matchesAnalyticsFilters(event, request.filters, communityPartners));
+  const rawSessions = [...sessionsResult.rows].reverse();
+  const sessions = request.filters.session ? rawSessions.filter((session) => displayIdentifier('session', session.session_id) === request.filters.session) : rawSessions;
+  const sessionMetrics = scope.sessionMetricsAvailable ? sessions : [];
+  const priorEvents = priorEventsResult.rows.filter((event) => matchesAnalyticsFilters(event, request.filters, communityPartners));
+  const priorSessions = request.filters.session ? priorSessionsResult.rows.filter((session) => displayIdentifier('session', session.session_id) === request.filters.session) : priorSessionsResult.rows;
   const pageViews = events.filter((event) => event.event_name === 'page_viewed');
   const communityPageViews = events.filter((event) => event.event_name === 'community_page_viewed');
   const outboundClicks = events.filter((event) => event.event_name === 'community_outbound_clicked');
@@ -500,7 +507,7 @@ async function analyticsSummary(partners) {
     event.event_name === 'platform_opened' || event.event_name === 'source_opened',
   );
   const activeUsers = new Set(
-    [...events, ...sessions].map((item) => item.anonymous_id).filter(Boolean),
+    [...events, ...(scope.sessionMetricsAvailable ? sessions : [])].map((item) => item.anonymous_id).filter(Boolean),
   );
 
   return {
@@ -508,32 +515,45 @@ async function analyticsSummary(partners) {
     generatedAt: new Date().toISOString(),
     totals: {
       events: events.length,
-      prayerSessions: sessions.length,
+      prayerSessions: scope.sessionMetricsAvailable ? sessions.length : null,
       activeUsers: activeUsers.size,
       pageViews: pageViews.length,
       communityPageViews: communityPageViews.length,
       outboundClicks: outboundClicks.length,
       contentCardClicks: contentCardClicks.length,
       platformOpens: platformOpens.length,
-      sourceOpens: sessions.filter((session) => session.opened_source).length,
-      completions: sessions.filter((session) => session.completed).length,
+      sourceOpens: scope.sessionMetricsAvailable ? sessions.filter((session) => session.opened_source).length : null,
+      completions: scope.sessionMetricsAvailable ? sessions.filter((session) => session.completed).length : null,
       averagePanelOpenSeconds: average(
-        sessions.map((session) => session.panel_open_seconds),
+        sessionMetrics.map((session) => session.panel_open_seconds),
       ),
       averageHighestProgress: average(
-        sessions.map((session) => session.highest_progress),
+        sessionMetrics.map((session) => session.highest_progress),
       ),
     },
-    daily: dailyAnalytics(events, sessions),
-    topPages: topCounts(pageViews, (event) => event.page_path || 'unknown', 8),
-    acquisitionSources: topCounts(events, (event) => event.utm_source || 'direct', 8),
-    deviceClasses: topCounts(events, (event) => event.device_class || 'unknown', 8),
-    prayerByProvider: topCounts(sessions, (session) => session.provider || 'unknown', 8),
-    prayerByHour: topCounts(sessions, (session) => session.hour || 'unknown', 8),
-    platformOpensByProvider: topCounts(platformOpens, (event) => event.provider || 'unknown', 8),
+    sessionMetricsAvailable: scope.sessionMetricsAvailable,
+    rangeBounds: { start: request.start, end: request.end, timezone: 'UTC' },
+    daily: aggregateAnalyticsFromEvents(events, sessionMetrics, request.grain),
+    sourceCap, sourceTruncated,
+    totalsStatus: sourceTruncated ? 'sampled' : 'exact',
+    facets: analyticsFacets(eventsResult.rows, partners, communityPartners),
+    prior: {
+      start: priorStart.slice(0, 10), end: priorEnd.slice(0, 10),
+      totals: priorEventsResult.error || priorSessionsResult.error || priorEventsResult.truncated || priorSessionsResult.truncated || sourceTruncated ? null : {
+        events: priorEvents.length,
+        activeUsers: new Set([...priorEvents, ...(scope.sessionMetricsAvailable ? priorSessions : [])].map((item) => item.anonymous_id).filter(Boolean)).size,
+      },
+    },
+    explorer: analyticsExplorer(events, request, { partnerById: new Map(partners.map((partner) => [partner.id, partner])), communityPartners }),
+    topPages: topCounts(pageViews, (event) => safeAnalyticsUrl(event.page_path, communityPartners) || 'Unavailable', 8),
+    acquisitionSources: topCounts(events, (event) => safeCampaignSource(event.utm_source) || 'Unavailable', 8),
+    deviceClasses: topCounts(events, (event) => safeAnalyticsDimension('device', event.device_class), 8),
+    prayerByProvider: scope.sessionMetricsAvailable ? topCounts(sessions, (session) => safeAnalyticsDimension('provider', session.provider), 8) : [],
+    prayerByHour: scope.sessionMetricsAvailable ? topCounts(sessions, (session) => safeAnalyticsDimension('hour', session.hour), 8) : [],
+    platformOpensByProvider: topCounts(platformOpens, (event) => safeAnalyticsDimension('provider', event.provider), 8),
     outboundByDestination: topCounts(
       outboundClicks,
-      (event) => event.content_type || destinationType(event.source_url),
+      (event) => safeAnalyticsDimension('contentType', event.content_type) || destinationType(event.source_url),
       8,
     ),
     communityPerformance: communityAnalytics(
@@ -542,7 +562,144 @@ async function analyticsSummary(partners) {
       contentCardClicks,
       communityPartners,
     ),
+    communityDetails: communityDetailAnalytics(events, communityPartners),
   };
+}
+
+export function analyticsFacets(events, partners, communityPartners) {
+  const values = (items) => [...new Set(items.filter(Boolean))].sort().slice(0, 50);
+  const partnerById = new Map(partners.map((partner) => [partner.id, partner]));
+  return {
+    devices: values(events.map((item) => safeAnalyticsDimension('device', item.device_class))),
+    events: values(events.map((item) => safeAnalyticsDimension('event', item.event_name))),
+    routes: values(events.map((item) => safeAnalyticsUrl(item.page_path, communityPartners))),
+    communities: values(events.map((item) => item.community_slug && communityPartners.has(item.community_slug) ? item.community_slug : null)).map((value) => ({ value, label: communityPartners.get(value).name })),
+    partners: values(events.map((item) => item.partner_id && partnerById.has(item.partner_id) ? item.partner_id : null)).map((value) => ({ value, label: partnerById.get(value).name })),
+    sessions: values(events.map((item) => displayIdentifier('session', item.session_id))),
+  };
+}
+
+export function communityDetailAnalytics(events, communityPartners = new Map()) {
+  const rows = new Map();
+  for (const event of events.filter((item) => item.community_slug && communityPartners.has(item.community_slug))) {
+    const row = rows.get(event.community_slug) ?? { topContent: new Map(), destinations: new Map(), daily: new Map() };
+    const content = safeContentLabel(event.content_id); if (content) row.topContent.set(content, (row.topContent.get(content) ?? 0) + 1);
+    const destination = safeAnalyticsUrl(event.source_url, communityPartners);
+    if (destination) row.destinations.set(destination, (row.destinations.get(destination) ?? 0) + 1);
+    const date = event.occurred_at.slice(0, 10); row.daily.set(date, (row.daily.get(date) ?? 0) + 1);
+    rows.set(event.community_slug, row);
+  }
+  const counts = (map) => [...map.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8).map(([label, value]) => ({ label, value }));
+  return Object.fromEntries([...rows.entries()].map(([slug, row]) => [slug, { topContent: counts(row.topContent), destinations: counts(row.destinations), daily: [...row.daily.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([label, value]) => ({ label, value })) }]));
+}
+
+export function matchesAnalyticsFilters(event, filters, communityPartners = new Map()) {
+  return (!filters.device || event.device_class === filters.device)
+    && (!filters.event || event.event_name === filters.event)
+    && (!filters.page || safeAnalyticsUrl(event.page_path, communityPartners) === filters.page)
+    && (!filters.community || event.community_slug === filters.community)
+    && (!filters.partner || event.partner_id === filters.partner)
+    && (!filters.session || displayIdentifier('session', event.session_id) === filters.session);
+}
+
+export function displayIdentifier(kind, value) {
+  return value ? `${kind}-${createHash('sha256').update(String(value)).digest('hex').slice(0, 10)}` : null;
+}
+
+export function safeAnalyticsUrl(value, knownCommunities = new Map()) {
+  if (!value) return null;
+  try {
+    const url = new URL(value, 'https://una-voce.invalid');
+    if (!['http:', 'https:'].includes(url.protocol)) return null;
+    const path = decodeURIComponent(url.pathname);
+    if (/[\u0000-\u001f\u007f@]/.test(path) || /(?:token|secret|password|passcode|apikey|authorization|reset|invite)/i.test(path) || /(?:^|\/)[A-Za-z0-9_-]{43}(?:\/|$)/.test(path)) return null;
+    const local = safeLocalAnalyticsPath(path.toLowerCase(), knownCommunities);
+    if (url.origin === 'https://una-voce.invalid') return local;
+    if (['unavoce.net', 'www.unavoce.net'].includes(url.hostname)) return local ? `${url.origin}${local}` : null;
+    if (['youtube.com','www.youtube.com','youtu.be','podcasts.apple.com','open.spotify.com','divineoffice.org','www.divineoffice.org','universalis.com','www.universalis.com'].includes(url.hostname)) return `${url.origin}${path}`;
+    return url.origin;
+  } catch { return null; }
+}
+
+function safeLocalAnalyticsPath(path, knownCommunities) {
+  const routes = new Set(['/','/about','/contact','/discover','/parishes','/pray','/review','/start','/admin','/admin/partners','/admin/partners/review','/admin/partners/sources','/admin/partners/rules','/admin/analytics/activity','/admin/analytics/communities','/admin/devotions','/admin/analytics/devotions','/admin/calendar-engine','/devotions/holy-spirit-mens-ministry/night-prayer']);
+  if (routes.has(path)) return path;
+  const community = path.match(/^\/community\/([a-z0-9]+(?:-[a-z0-9]+)*)$/);
+  if (community && knownCommunities?.has(community[1])) return path;
+  return null;
+}
+
+export function safeAnalyticsScalar(value) {
+  const text = String(value ?? '').replace(/[\u0000-\u001f\u007f]/g, '').trim().slice(0, 160);
+  if (!text || /@|\b(?:bearer|token|secret|password|apikey|authorization)\b/i.test(text) || /^[=+\-@]/.test(text)) return null;
+  return text;
+}
+
+export function safeCampaignSource(value) {
+  const text = String(value ?? '').trim().toLowerCase();
+  return new Set(['direct','organic','google','bing','facebook','instagram','ig','x','twitter','youtube','tiktok','linkedin','newsletter','email','sms','qr','partner','parish','community','referral']).has(text) ? text : null;
+}
+
+export function safeAnalyticsDimension(kind, value) {
+  const text = String(value ?? '').trim().toLowerCase();
+  const values = {
+    device: ['desktop','mobile','tablet','unknown'],
+    provider: ['youtube','spotify','apple-podcast','apple','divine-office','universalis','unknown'],
+    hour: ['office-of-readings','morning-prayer','daytime-prayer','midmorning-prayer','midday-prayer','midafternoon-prayer','evening-prayer','night-prayer'],
+    event: ['app_opened','page_viewed','navigation_clicked','community_page_viewed','community_outbound_clicked','content_card_viewed','content_card_clicked','prayer_session_started','prayer_play_started','prayer_play_paused','prayer_play_resumed','prayer_progress','prayer_completed','prayer_session_ended','source_opened','platform_opened','share_clicked','search_performed','filter_changed','utm_landing_recorded','devotion_page_opened','devotion_resource_opened','devotion_report_submitted','devotion_survey_clicked'],
+    contentType: ['video','audio','podcast','text','article','link','website','resource','prayer','community'],
+  };
+  return values[kind]?.includes(text) ? text : null;
+}
+
+export function safeContentLabel(value) {
+  const text = String(value ?? '').trim().toLowerCase();
+  if (['divine_office','universalis','youtube','spotify','apple-podcast'].includes(text)) return text;
+  return null;
+}
+
+export function analyticsExplorer(events, request, context = { partnerById: new Map(), communityPartners: new Map() }) {
+  const pageSize = 100;
+  const sorted = [...events].sort((a, b) => Date.parse(b.occurred_at) - Date.parse(a.occurred_at));
+  const start = (request.pageNumber - 1) * pageSize;
+  const safeEvent = (event) => ({ timestamp: event.occurred_at, sessionId: displayIdentifier('session', event.session_id), anonymousId: displayIdentifier('visitor', event.anonymous_id), route: safeAnalyticsUrl(event.page_path, context.communityPartners), event: safeAnalyticsDimension('event', event.event_name), content: safeContentLabel(event.content_id), partner: context.partnerById.get(event.partner_id)?.name ?? null, community: context.communityPartners.get(event.community_slug)?.name ?? null, destination: safeAnalyticsUrl(event.source_url, context.communityPartners), device: safeAnalyticsDimension('device', event.device_class), acquisition: safeCampaignSource(event.utm_source) || safeAnalyticsUrl(event.referrer, context.communityPartners) || null });
+  const pageRows = sorted.slice(start, start + pageSize);
+  const exportCap = 1000;
+  return { page: request.pageNumber, pageSize, total: sorted.length, exportCap, exportTruncated: sorted.length > exportCap, rows: pageRows.map(safeEvent), exportRows: sorted.slice(0, exportCap).map(safeEvent), sessions: sessionSequencesForPage(pageRows, sorted, context.communityPartners) };
+}
+
+function sessionSequencesForPage(pageRows, allEvents, communityPartners = new Map()) {
+  const ids = new Set(pageRows.map((item) => item.session_id).filter(Boolean));
+  const output = {};
+  for (const id of ids) output[displayIdentifier('session', id)] = allEvents.filter((item) => item.session_id === id).sort((a, b) => Date.parse(a.occurred_at) - Date.parse(b.occurred_at)).slice(0, 100).map((item) => ({ timestamp: item.occurred_at, event: safeAnalyticsDimension('event', item.event_name) ?? 'Unavailable', route: safeAnalyticsUrl(item.page_path, communityPartners) }));
+  return output;
+}
+
+export function aggregateAnalytics(rows, grain) {
+  if (grain === 'daily') return rows;
+  const grouped = new Map();
+  for (const row of rows) {
+    const date = new Date(`${row.date}T00:00:00Z`);
+    const key = grain === 'monthly' ? row.date.slice(0, 7) : new Date(date.getTime() - ((date.getUTCDay() + 6) % 7) * 86400000).toISOString().slice(0, 10);
+    const item = grouped.get(key) ?? { date: key, events: 0, activeUsers: 0, pageViews: 0, communityPageViews: 0, outboundClicks: 0, contentCardClicks: 0, platformOpens: 0, prayerSessions: 0 };
+    for (const field of ['events', 'pageViews', 'communityPageViews', 'outboundClicks', 'contentCardClicks', 'platformOpens', 'prayerSessions']) item[field] += row[field];
+    item.activeUsers += row.activeUsers;
+    grouped.set(key, item);
+  }
+  return [...grouped.values()];
+}
+
+function aggregateAnalyticsFromEvents(events, sessions, grain) {
+  if (grain === 'daily') return dailyAnalytics(events, sessions);
+  const buckets = new Map();
+  const add = (item, date, isSession) => {
+    const input = new Date(`${date}T00:00:00Z`); const key = grain === 'monthly' ? date.slice(0, 7) : new Date(input.getTime() - ((input.getUTCDay() + 6) % 7) * 86400000).toISOString().slice(0, 10);
+    const row = buckets.get(key) ?? { date: key, events: 0, users: new Set(), pageViews: 0, communityPageViews: 0, outboundClicks: 0, contentCardClicks: 0, platformOpens: 0, prayerSessions: 0 };
+    if (isSession) row.prayerSessions += 1; else { row.events += 1; if (item.event_name === 'page_viewed') row.pageViews += 1; if (item.event_name === 'community_page_viewed') row.communityPageViews += 1; if (item.event_name === 'community_outbound_clicked') row.outboundClicks += 1; if (item.event_name === 'content_card_clicked') row.contentCardClicks += 1; if (item.event_name === 'platform_opened' || item.event_name === 'source_opened') row.platformOpens += 1; }
+    if (item.anonymous_id) row.users.add(item.anonymous_id); buckets.set(key, row);
+  };
+  events.forEach((item) => add(item, item.occurred_at.slice(0, 10), false)); sessions.forEach((item) => add(item, item.started_at.slice(0, 10), true));
+  return [...buckets.values()].sort((a, b) => a.date.localeCompare(b.date)).map(({ users, ...row }) => ({ ...row, activeUsers: users.size }));
 }
 
 function legacyAnalyticsSummary(windowDays, sessions, eventsError) {
@@ -572,6 +729,8 @@ function legacyAnalyticsSummary(windowDays, sessions, eventsError) {
       ),
     },
     daily: dailyAnalytics([], sessions),
+    prior: { start: null, end: null, totals: null },
+    explorer: { page: 1, pageSize: 100, total: 0, exportCap: 1000, exportTruncated: false, rows: [], exportRows: [], sessions: {} },
     topPages: [],
     acquisitionSources: [],
     deviceClasses: [],
@@ -631,11 +790,12 @@ function dailyRow(days, date) {
   return days.get(date);
 }
 
-function communityAnalytics(pageViews, outboundClicks, contentCardClicks, communityPartners) {
+export function communityAnalytics(pageViews, outboundClicks, contentCardClicks, communityPartners) {
   const rows = new Map();
 
   for (const event of [...pageViews, ...outboundClicks, ...contentCardClicks]) {
-    const slug = event.community_slug || 'unknown';
+    const slug = event.community_slug;
+    if (!slug || !communityPartners.has(slug)) continue;
     const row = communityRow(rows, slug, communityPartners.get(slug));
 
     if (event.event_name === 'community_page_viewed') row.pageViews += 1;
@@ -650,7 +810,6 @@ function communityAnalytics(pageViews, outboundClicks, contentCardClicks, commun
       const leftScore = left.pageViews + left.outboundClicks + left.contentClicks;
       return rightScore - leftScore;
     })
-    .slice(0, 12)
     .map((row) => ({
       ...row,
       activeUsers: row.activeUsers.size,
@@ -677,7 +836,8 @@ function topCounts(items, keyForItem, limit) {
   const counts = new Map();
 
   for (const item of items) {
-    const key = keyForItem(item);
+    const key = safeAnalyticsScalar(keyForItem(item));
+    if (!key) continue;
     counts.set(key, (counts.get(key) ?? 0) + 1);
   }
 

@@ -21,6 +21,10 @@ The admin UI lives at:
 
 `/admin` is the action-oriented Home view, including pending content, stale sources, active devotion, and open calendar-review signals. Partner Inventory, Content Review, Sources, and Rules are grouped in a collapsible Partners navigation section. Content Review uses URL-backed `media`, `partner`, `date`, and `status` filters so a filtered queue survives refresh and can be shared internally. These routes reorganize existing records and payloads; they do not require new analytics collection, schema, or ingestion data.
 
+Activity Analytics supports Today, 7-day, 30-day, and bounded custom-date views. Its URL-backed device, event, route, community, partner, and session filters survive refresh/back-forward navigation. The authorized API reads deterministically in pages up to 10,000 source rows; when that cap is reached, values are labeled sampled/lower-bound. The explorer is 100 rows per page and CSV is capped at 1,000 filtered projected events. It exposes timestamp, shortened hashed display identifiers, route, event, safe attribution, device, and acquisition/referrer—not raw anonymous/session IDs, metadata, user IDs, participant tokens, or secrets.
+
+Community Performance derives only from existing community and partner attribution. When an attribution or metric has not been collected, it is shown as unavailable rather than estimated. Devotion Operations keeps enrollment/link actions separate from Devotion Analytics. The public canonical devotion URL can be opened or copied; participant URLs remain visible only after the existing explicit **Show link** or enrollment action.
+
 In production, `AdminAuthGate` uses Google OAuth and checks `VITE_ADMIN_ALLOWED_EMAILS` on the client. The server independently enforces its configured authorization boundary.
 
 In Vite development only, the sign-in screen also accepts `ADMIN_SHARED_SECRET` as a local password. The UI sends the candidate to the local admin API and stores it under `una-voce-admin-secret` only after a successful response. A wrong password is not persisted, and production builds do not render or invoke this local-password path.

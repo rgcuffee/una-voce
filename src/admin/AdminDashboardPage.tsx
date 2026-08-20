@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   loadAdminDashboard,
@@ -29,6 +29,7 @@ import {
 import { supabase } from '../lib/supabase';
 import { AdminSidebar } from './AdminSidebar';
 import { DevotionAnalyticsSection } from './DevotionAnalyticsSection';
+import { analyticsDataSearch, analyticsFiltersFromSearch, metricPresentation, analyticsSearch, comparison, csv, type AnalyticsFilters } from './analyticsWorkflow';
 import { ADMIN_ROUTES, adminLocation, adminSectionForPath, homeSignalsOrUnavailable, reviewSearchParams, type AdminRouteSection } from './adminRoutes';
 import {
   clearLocalAdminPassword,
@@ -177,6 +178,11 @@ function formatDateTime(value: string | null | undefined) {
     hour: 'numeric',
     minute: '2-digit',
   }).format(new Date(value));
+}
+
+export function formatUtcDateTime(value: string | null | undefined) {
+  if (!value) return 'Unavailable';
+  return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'UTC', timeZoneName: 'short' }).format(new Date(value));
 }
 
 function localDate(value: string | null | undefined) {
@@ -556,12 +562,14 @@ export function AdminDashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<AdminNotice | null>(null);
   const [data, setData] = useState<AdminDashboardData | null>(null);
+  const requestVersion = useRef(0);
   const section = adminSectionForPath(location.pathname);
   const query = useMemo(() => new URLSearchParams(location.search), [location.search]);
   const reviewParams = reviewSearchParams(location.search);
   const selectedPartnerId = query.get('partner') || '';
   const reviewPartnerId = reviewParams.partner;
   const reviewDate = reviewParams.date;
+  const analyticsQuery = analyticsDataSearch(location.search);
 
   function updateSearch(next: Record<string, string | null>) {
     const params = new URLSearchParams(location.search);
@@ -588,29 +596,28 @@ export function AdminDashboardPage() {
     return () => window.clearTimeout(timeout);
   }, [notice]);
 
-  async function refresh() {
+  async function refresh(search = '') {
+    const version = ++requestVersion.current;
     setState('loading');
     setError(null);
     try {
-      const nextData = await loadAdminDashboard();
-      setData(nextData);
-      setState('ready');
+      const nextData = await loadAdminDashboard(search);
+      if (version === requestVersion.current) { setData(nextData); setState('ready'); }
     } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : 'Unable to load admin data.');
-      setState('error');
+      if (version === requestVersion.current) { setError(loadError instanceof Error ? loadError.message : 'Unable to load admin data.'); setState('error'); }
     }
   }
 
   useEffect(() => {
     if (localPasswordModeEnabled(import.meta.env.DEV)) {
       setAuthEmail('Local development');
-      void refresh();
+      if (section !== 'activity' && section !== 'communities') void refresh();
       return;
     }
 
     supabase?.auth.getSession().then(({ data: sessionData }) => {
       setAuthEmail(sessionData.session?.user.email ?? '');
-      void refresh();
+      if (section !== 'activity' && section !== 'communities') void refresh();
     });
 
     const {
@@ -620,7 +627,11 @@ export function AdminDashboardPage() {
     }) ?? { data: { subscription: null } };
 
     return () => subscription?.unsubscribe();
-  }, []);
+  }, [section]);
+
+  useEffect(() => {
+    if (section === 'activity' || section === 'communities') void refresh(analyticsQuery);
+  }, [section, analyticsQuery]);
 
   async function signOut() {
     if (localPasswordModeEnabled(import.meta.env.DEV)) {
@@ -687,8 +698,8 @@ export function AdminDashboardPage() {
           <AdminNavGroup id="admin-devotion-links" label="Devotions" active={['devotions', 'devotion-analytics'].includes(section)}>
             <Link className={section === 'devotions' ? 'active' : ''} to={ADMIN_ROUTES.devotions}>Operations</Link>
             <Link className={section === 'devotion-analytics' ? 'active' : ''} to={ADMIN_ROUTES['devotion-analytics']}>Analytics</Link>
-            <a href="/admin/calendar-engine">Calendar Engine</a>
           </AdminNavGroup>
+          <Link className="admin-nav-primary-link" to="/admin/calendar-engine">Liturgical Engine</Link>
         </nav>
       </AdminSidebar>
 
@@ -701,7 +712,7 @@ export function AdminDashboardPage() {
           <div className="engine-controls admin-secret-controls">
             <span className="admin-user-email">{authEmail}</span>
             {section !== 'devotion-analytics' && section !== 'devotions' ? (
-              <button type="button" className="admin-button primary" onClick={() => void refresh()}>
+              <button type="button" className="admin-button primary" onClick={() => void refresh(section === 'activity' || section === 'communities' ? analyticsQuery : '')}>
                 Refresh
               </button>
             ) : null}
@@ -711,13 +722,14 @@ export function AdminDashboardPage() {
           </div>
         </header>
 
-        {section !== 'devotion-analytics' && section !== 'devotions' && state === 'loading' ? <div className="engine-empty">Loading partner operations...</div> : null}
+        {section !== 'devotion-analytics' && section !== 'devotions' && state === 'loading' && !data ? <div className="engine-empty">Loading partner operations...</div> : null}
+        {section !== 'devotion-analytics' && section !== 'devotions' && state === 'loading' && data ? <div className="admin-analytics-comparison" role="status" aria-live="polite">Updating analytics…</div> : null}
         {section !== 'devotion-analytics' && section !== 'devotions' && state === 'error' ? <div className="engine-empty engine-error" role="alert">{error}</div> : null}
         {notice ? <div className={`admin-mutation-notice ${notice.tone}`} role={notice.tone === 'error' ? 'alert' : 'status'}>{notice.message}</div> : null}
 
-        {section === 'devotion-analytics' || section === 'devotions' ? <DevotionAnalyticsSection /> : null}
+        {section === 'devotion-analytics' || section === 'devotions' ? <DevotionAnalyticsSection mode={section === 'devotions' ? 'operations' : 'analytics'} /> : null}
 
-        {section !== 'devotion-analytics' && section !== 'devotions' && data && state !== 'loading' ? (
+        {section !== 'devotion-analytics' && section !== 'devotions' && data ? (
           <>
             <section className="engine-metrics" aria-label="Partner operations summary">
               <Metric label="Partners" value={data.totals.partners} detail={`${data.totals.activePartners} active`} />
@@ -729,7 +741,7 @@ export function AdminDashboardPage() {
 
             {section === 'home' && <HomeSection data={data} onOpen={(destination, params) => goTo(destination, params)} />}
             {section === 'inventory' && <Overview data={data} onSelectPartner={(id) => goTo('inventory', { partner: id })} />}
-            {(section === 'activity' || section === 'communities') && <AnalyticsSection analytics={data.analytics} communityOnly={section === 'communities'} />}
+            {(section === 'activity' || section === 'communities') && <AnalyticsSection analytics={data.analytics} communityOnly={section === 'communities'} search={location.search} onSearch={(next) => navigate({ pathname: location.pathname, search: next ? `?${next}` : '' })} />}
             {section === 'inventory' && (
               <PartnersSection
                 data={data}
@@ -846,17 +858,31 @@ function ReviewDatePicker({
   );
 }
 
-function AnalyticsSection({ analytics, communityOnly = false }: { analytics: AdminAnalyticsData; communityOnly?: boolean }) {
-  const latestDays = analytics.daily.slice(-14);
+function AnalyticsSection({ analytics, communityOnly = false, search, onSearch }: { analytics: AdminAnalyticsData; communityOnly?: boolean; search: string; onSearch: (search: string) => void }) {
+  const latestDays = analytics.daily;
+  const filters = analyticsFiltersFromSearch(search);
+  const grainLabel = filters.grain[0].toUpperCase() + filters.grain.slice(1);
+  const explorer = analytics.explorer;
+  const update = (next: Partial<AnalyticsFilters>) => onSearch(analyticsSearch({ ...filters, ...next, pageNumber: next.pageNumber ?? 1 }));
+  const communities = [...analytics.communityPerformance].sort((left, right) => { const score = (row: typeof left) => filters.communitySort === 'users' ? row.activeUsers : filters.communitySort === 'views' ? row.pageViews : filters.communitySort === 'clicks' ? row.contentClicks + row.outboundClicks : row.activeUsers + row.pageViews + row.contentClicks + row.outboundClicks; return (score(left) - score(right)) * (filters.communityOrder === 'asc' ? 1 : -1); });
+  const selectedCommunity = communities.find((item) => item.communitySlug === filters.selectedCommunity);
+  const communityDetail = selectedCommunity ? analytics.communityDetails?.[selectedCommunity.communitySlug] : null;
+  const exportCsv = () => {
+    if (!explorer?.exportRows.length) return;
+    const content = csv(explorer.exportRows, ['timestamp', 'anonymousId', 'sessionId', 'route', 'event', 'content', 'partner', 'community', 'destination', 'device', 'acquisition']);
+    const anchor = document.createElement('a');
+    anchor.href = URL.createObjectURL(new Blob([content], { type: 'text/csv' })); anchor.download = 'una-voce-activity.csv'; anchor.click(); URL.revokeObjectURL(anchor.href);
+  };
+  const present = (value: number | null, detail: string) => metricPresentation(value, { sampled: analytics.totalsStatus === 'sampled', cap: analytics.sourceCap, detail });
 
   return (
     <section className="engine-section">
       <div className="engine-section-heading">
         <div>
-          <p>Last {analytics.windowDays} days</p>
+          <p>{analytics.rangeBounds ? `${analytics.rangeBounds.start} to ${analytics.rangeBounds.end} UTC` : `Last ${analytics.windowDays} days · UTC`}</p>
           <h2>Audience Analytics</h2>
         </div>
-        <span>Generated {formatDateTime(analytics.generatedAt)}</span>
+        <span>Generated {formatUtcDateTime(analytics.generatedAt)}</span>
       </div>
 
       {analytics.schemaStatus === 'migration_required' ? (
@@ -865,16 +891,30 @@ function AnalyticsSection({ analytics, communityOnly = false }: { analytics: Adm
           page, community, and outbound events will appear after the migration is applied.
         </div>
       ) : null}
+      {analytics.sourceTruncated ? <div className="admin-analytics-warning">Totals are lower bounds from the newest {analytics.sourceCap}-row source sample. Prior-period comparison is unavailable.</div> : null}
 
       {!communityOnly ? <section className="engine-metrics admin-analytics-metrics" aria-label="Audience analytics summary">
-        <Metric label="Active Users" value={analytics.totals.activeUsers} detail="Anonymous browsers" />
-        <Metric label="Page Views" value={analytics.totals.pageViews} detail="All app routes" />
-        <Metric label="Prayer Sessions" value={analytics.totals.prayerSessions} detail="Player opens" />
-        <Metric label="Platform Opens" value={analytics.totals.platformOpens} detail="YouTube, Spotify, Apple" />
-        <Metric label="Community Views" value={analytics.totals.communityPageViews} detail="Profile pages" />
-        <Metric label="Partner Clicks" value={analytics.totals.outboundClicks} detail="Outbound links" />
-        <Metric label="Avg Open" value={`${analytics.totals.averagePanelOpenSeconds}s`} detail="Player panel" />
+        <Metric label="Active Users" value={present(analytics.totals.activeUsers, 'Anonymous browsers').value} detail={present(analytics.totals.activeUsers, 'Anonymous browsers').detail} />
+        <Metric label="Page Views" value={present(analytics.totals.pageViews, 'All app routes').value} detail={present(analytics.totals.pageViews, 'All app routes').detail} />
+        <Metric label="Prayer Sessions" value={analytics.sessionMetricsAvailable === false ? '—' : present(analytics.totals.prayerSessions, 'Player opens').value} detail={analytics.sessionMetricsAvailable === false ? 'Unavailable for event dimensions' : present(analytics.totals.prayerSessions, 'Player opens').detail} />
+        <Metric label="Platform Opens" value={present(analytics.totals.platformOpens, 'YouTube, Spotify, Apple').value} detail={present(analytics.totals.platformOpens, 'YouTube, Spotify, Apple').detail} />
+        <Metric label="Community Views" value={present(analytics.totals.communityPageViews, 'Profile pages').value} detail={present(analytics.totals.communityPageViews, 'Profile pages').detail} />
+        <Metric label="Partner Clicks" value={present(analytics.totals.outboundClicks, 'Outbound links').value} detail={present(analytics.totals.outboundClicks, 'Outbound links').detail} />
+        <Metric label="Avg Open" value={analytics.sessionMetricsAvailable === false || analytics.totalsStatus === 'sampled' ? '—' : `${analytics.totals.averagePanelOpenSeconds}s`} detail={analytics.sessionMetricsAvailable === false ? 'Unavailable for event dimensions' : analytics.totalsStatus === 'sampled' ? 'Sample average unavailable' : 'Player panel'} />
       </section> : null}
+
+      {!communityOnly ? <div className="admin-analytics-comparison" role="status">{analytics.prior?.totals ? <><span>Current vs prior period ({analytics.prior.start}–{analytics.prior.end})</span><strong>Events: {comparison(analytics.totals.events, analytics.prior.totals.events).label}</strong><strong>Users: {comparison(analytics.totals.activeUsers, analytics.prior.totals.activeUsers).label}</strong></> : <span>Prior-period comparison unavailable for this data source.</span>}</div> : null}
+
+      {!communityOnly ? <div className="admin-analytics-filters" aria-label="Activity filters">
+        <label>Range<select value={filters.range} onChange={(event) => update({ range: event.target.value as AnalyticsFilters['range'] })}><option value="today">Today</option><option value="7d">7 days</option><option value="30d">30 days</option><option value="custom">Custom</option></select></label><label>Trend<select value={filters.grain} onChange={(event) => update({ grain: event.target.value as AnalyticsFilters['grain'] })}><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select></label>
+        {filters.range === 'custom' ? <><label>Start<input type="date" value={filters.start} onChange={(event) => update({ start: event.target.value })} /></label><label>End<input type="date" value={filters.end} onChange={(event) => update({ end: event.target.value })} /></label></> : null}
+        <label>Device<select value={filters.device} onChange={(event) => update({ device: event.target.value })}><option value="">All devices</option>{analytics.facets?.devices.map((value) => <option value={value} key={value}>{value}</option>)}</select></label>
+        <label>Event<select value={filters.event} onChange={(event) => update({ event: event.target.value })}><option value="">All events</option>{analytics.facets?.events.map((value) => <option value={value} key={value}>{value}</option>)}</select></label>
+        <label>Page<select value={filters.page} onChange={(event) => update({ page: event.target.value })}><option value="">All pages</option>{analytics.facets?.routes.map((value) => <option value={value} key={value}>{value}</option>)}</select></label>
+        <label>Community<select value={filters.community} onChange={(event) => update({ community: event.target.value })}><option value="">All communities</option>{analytics.facets?.communities.map((item) => <option value={item.value} key={item.value}>{item.label}</option>)}</select></label>
+        <label>Partner<select value={filters.partner} onChange={(event) => update({ partner: event.target.value })}><option value="">All partners</option>{analytics.facets?.partners.map((item) => <option value={item.value} key={item.value}>{item.label}</option>)}</select></label>
+        <label>Session<select value={filters.session} onChange={(event) => update({ session: event.target.value })}><option value="">All sessions</option>{analytics.facets?.sessions.map((value) => <option value={value} key={value}>{value}</option>)}</select></label>
+      </div> : null}
 
       {!communityOnly ? <div className="admin-analytics-grid">
         <AnalyticsList title="Top Pages" items={analytics.topPages} />
@@ -894,6 +934,7 @@ function AnalyticsSection({ analytics, communityOnly = false }: { analytics: Adm
               <h2>Community Performance</h2>
             </div>
           </div>
+          <div className="admin-analytics-filters"><label>Sort<select value={filters.communitySort} onChange={(event) => update({ communitySort: event.target.value as AnalyticsFilters['communitySort'] })}><option value="engagement">Engagement</option><option value="users">Users</option><option value="views">Views</option><option value="clicks">Clicks</option></select></label><label>Order<select value={filters.communityOrder} onChange={(event) => update({ communityOrder: event.target.value as AnalyticsFilters['communityOrder'] })}><option value="desc">High to low</option><option value="asc">Low to high</option></select></label><label>Community<select value={filters.selectedCommunity} onChange={(event) => update({ selectedCommunity: event.target.value })}><option value="">Select for drilldown</option>{communities.map((item) => <option value={item.communitySlug} key={item.communitySlug}>{item.partnerName}</option>)}</select></label></div>
           <div className="engine-table-wrap">
             <table className="engine-table admin-responsive-table">
               <thead>
@@ -911,7 +952,7 @@ function AnalyticsSection({ analytics, communityOnly = false }: { analytics: Adm
                     <td colSpan={5}>No community analytics recorded yet.</td>
                   </tr>
                 ) : (
-                  analytics.communityPerformance.map((community) => (
+                  communities.map((community) => (
                     <tr key={community.communitySlug}>
                       <td data-label="Community">
                         <strong>{community.partnerName}</strong>
@@ -927,20 +968,21 @@ function AnalyticsSection({ analytics, communityOnly = false }: { analytics: Adm
               </tbody>
             </table>
           </div>
+          {selectedCommunity ? <div className="admin-analytics-card"><h3>{selectedCommunity.partnerName} drilldown</h3><p>Trend: {communityDetail?.daily.map((item) => `${item.label}: ${item.value}`).join(' · ') || 'Unavailable'}</p><p>Top content: {communityDetail?.topContent.map((item) => `${item.label} (${item.value})`).join(' · ') || 'Unavailable'}</p><p>Destinations: {communityDetail?.destinations.map((item) => `${item.label} (${item.value})`).join(' · ') || 'Unavailable'}</p></div> : null}
         </div>
 
         {!communityOnly ? <div>
           <div className="engine-section-heading compact">
             <div>
               <p>Trend</p>
-              <h2>Daily Activity</h2>
+              <h2>{grainLabel} Activity</h2>
             </div>
           </div>
           <div className="engine-table-wrap">
             <table className="engine-table admin-responsive-table">
               <thead>
                 <tr>
-                  <th>Date</th>
+                  <th>{grainLabel}</th>
                   <th>Users</th>
                   <th>Pages</th>
                   <th>Community</th>
@@ -952,12 +994,12 @@ function AnalyticsSection({ analytics, communityOnly = false }: { analytics: Adm
               <tbody>
                 {latestDays.length === 0 ? (
                   <tr>
-                    <td colSpan={7}>No daily analytics recorded yet.</td>
+                    <td colSpan={7}>No {filters.grain} analytics recorded yet.</td>
                   </tr>
                 ) : (
                   latestDays.map((day) => (
                     <tr key={day.date}>
-                      <td data-label="Date">{day.date}</td>
+                      <td data-label={grainLabel}>{day.date}</td>
                       <td data-label="Users">{day.activeUsers}</td>
                       <td data-label="Pages">{day.pageViews}</td>
                       <td data-label="Community">{day.communityPageViews}</td>
@@ -972,6 +1014,12 @@ function AnalyticsSection({ analytics, communityOnly = false }: { analytics: Adm
           </div>
         </div> : null}
       </div>
+
+      {!communityOnly ? <div className="admin-analytics-explorer">
+        <div className="engine-section-heading compact"><div><p>Bounded event data · {explorer?.total ?? 0} matching{analytics.totalsStatus === 'sampled' ? ' in newest sample' : ''}, export capped at {explorer?.exportCap ?? 0}{explorer?.exportTruncated ? ' (truncated)' : ''}</p><h2>Daily event explorer</h2></div><button type="button" className="admin-button" onClick={exportCsv} disabled={!explorer?.exportRows.length}>Export filtered CSV</button></div>
+        {!explorer?.rows.length ? <div className="engine-empty">No event rows are available for these filters.</div> : <div className="engine-table-wrap"><table className="engine-table admin-responsive-table"><thead><tr><th>Time</th><th>Anonymous ID</th><th>Route</th><th>Event</th><th>Attribution</th><th>Device / acquisition</th><th>Session</th></tr></thead><tbody>{explorer.rows.map((row) => <tr key={`${row.sessionId}-${row.timestamp}-${row.event}`}><td data-label="Time">{formatUtcDateTime(row.timestamp)}</td><td data-label="Anonymous ID">{row.anonymousId ?? 'Unavailable'}</td><td data-label="Route">{row.route ?? 'Unavailable'}</td><td data-label="Event">{row.event}</td><td data-label="Attribution">{[row.community, row.partner, row.content, row.destination].filter(Boolean).join(' · ') || 'Unavailable'}</td><td data-label="Device / acquisition">{[row.device, row.acquisition].filter(Boolean).join(' · ') || 'Unavailable'}</td><td data-label="Session"><details><summary>{row.sessionId ?? 'Unavailable'}</summary>{row.sessionId && explorer.sessions[row.sessionId] ? <ol>{explorer.sessions[row.sessionId].map((item, index) => <li key={`${item.timestamp}-${index}`}>{formatUtcDateTime(item.timestamp)} · {item.event}{item.route ? ` · ${item.route}` : ''}</li>)}</ol> : 'Unavailable'}</details></td></tr>)}</tbody></table></div>}
+        {explorer && explorer.total > explorer.pageSize ? <div className="admin-pager"><button type="button" className="admin-button" disabled={explorer.page <= 1} onClick={() => update({ pageNumber: explorer.page - 1 })}>Previous</button><span>Page {explorer.page} of {Math.ceil(explorer.total / explorer.pageSize)}</span><button type="button" className="admin-button" disabled={explorer.page * explorer.pageSize >= explorer.total} onClick={() => update({ pageNumber: explorer.page + 1 })}>Next</button></div> : null}
+      </div> : null}
     </section>
   );
 }
