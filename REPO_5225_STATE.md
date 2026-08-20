@@ -2,12 +2,12 @@
 
 - Repository: `/Users/richcuff/Documents/_werk/una-voce`
 - Branch: `main`
-- Upstream: `origin/main` (ahead 3, behind 0 at recovery start)
+- Upstream: `origin/main` (local checkpoint only; not pushed or deployed)
 - Recovery baseline: `841b2507cc4f568fa66d76fd9d9d2818860e0ed6`
-- Last verified commit: `ae33c661d74e235e0b4b2e867bfbede97abf51c1`
-- Last verified: `2026-08-18`
-- Last completed sprint: Sprint 1 — Holy Spirit Men's Ministry 7-Day Night Prayer Devotion
-- QA: PASS — three scoped independent slices plus final integration gate
+- Last verified commit: `d83b293829a1c18c1e7c32356eee9c5c17b07cc1`
+- Last verified: `2026-08-20`
+- Last completed sprint: Admin Redesign Sprint 1 — routed hub and partner reorganization
+- QA: PASS — independent GPT-5.6-Sol xhigh review found no remaining P0-P3 issues
 
 ## Runtime
 
@@ -27,8 +27,18 @@
 - Instagram export checkpoint.
 - Una Voce Studio baseline and source-metadata alignment.
 - Sprint 1 Holy Spirit Men's Ministry 7-Day Night Prayer Devotion: `ae33c661d74e235e0b4b2e867bfbede97abf51c1`.
+- Admin Redesign Sprint 1 routed hub and partner reorganization: `d83b293829a1c18c1e7c32356eee9c5c17b07cc1`.
 
-## Sprint 1 verification
+## Admin redesign Sprint 1 verification
+
+- `npm test`: 61/61 PASS.
+- `npm run build:verify`: PASS; the admin dashboard is emitted as a separate lazy-loaded chunk.
+- Runtime smoke: every new and retained admin SPA route returned HTTP 200; Home, review deep links, partner selection, refresh persistence, and responsive layouts were exercised locally without mutation POSTs.
+- Responsive checks: no page-level horizontal overflow at 768px, 390px, or 320px; mobile navigation and primary controls meet the 44px target.
+- Independent QA: PASS with no remaining P0-P3 findings.
+- No schema, telemetry collection, ingestion behavior, production data, deployment, or push was changed.
+
+## Devotion Sprint 1 verification
 
 - `npm test`: 52/52 PASS.
 - `npm run build:verify`: PASS; production build emitted the nested devotion document and PWA artifacts.
