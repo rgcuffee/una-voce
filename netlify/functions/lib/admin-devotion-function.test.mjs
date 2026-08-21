@@ -1,8 +1,17 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { createAdminDevotionHandler } from '../admin-devotion.mjs';
+import {
+  createAdminDevotionHandler,
+  firstNonEmpty,
+} from '../admin-devotion.mjs';
 
 const LINK_SECRET = 'stable-admin-devotion-test-secret';
+
+test('blank admin secrets do not block the configured fallback secret', () => {
+  assert.equal(firstNonEmpty('', 'ingest-secret'), 'ingest-secret');
+  assert.equal(firstNonEmpty('   ', 'ingest-secret'), 'ingest-secret');
+  assert.equal(firstNonEmpty(undefined, '  dedicated-secret  '), 'dedicated-secret');
+});
 
 test('admin participant creation returns a stable opaque link and allows duplicate labels', async () => {
   const repository = memoryRepository();

@@ -21,10 +21,14 @@ const DEVOTION_STATUSES = new Set(['inactive', 'active', 'completed']);
 
 const supabaseUrl = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const adminSharedSecret =
-  process.env.ADMIN_SHARED_SECRET ?? process.env.INGEST_SHARED_SECRET;
-const participantTokenSecret =
-  process.env.DEVOTION_LINK_SECRET ?? adminSharedSecret;
+const adminSharedSecret = firstNonEmpty(
+  process.env.ADMIN_SHARED_SECRET,
+  process.env.INGEST_SHARED_SECRET,
+);
+const participantTokenSecret = firstNonEmpty(
+  process.env.DEVOTION_LINK_SECRET,
+  adminSharedSecret,
+);
 const adminAllowedEmails = (process.env.ADMIN_ALLOWED_EMAILS ?? '')
   .split(',')
   .map((email) => email.trim())
@@ -35,6 +39,10 @@ const supabase =
         auth: { persistSession: false, autoRefreshToken: false },
       })
     : null;
+
+export function firstNonEmpty(...values) {
+  return values.find((value) => typeof value === 'string' && value.trim())?.trim();
+}
 
 export function createAdminDevotionRepository(client) {
   return {
