@@ -4,9 +4,9 @@
 - Branch: `main`
 - Upstream: `origin/main` (local checkpoint only; not pushed or deployed)
 - Recovery baseline: `841b2507cc4f568fa66d76fd9d9d2818860e0ed6`
-- Last verified commit: `d59fc473b7f573e18762c413c969c86ca444f0b0`
-- Last verified: `2026-08-20`
-- Last completed sprint: Admin Redesign Sprint 2 — analytics and devotion intelligence
+- Last verified commit: `aa626ca267cc657a15bf46b55f2ea12fbdf00f60`
+- Last verified: `2026-08-22`
+- Last completed sprint: Devotion Engine Sprints 4–5 — operations, analytics, and hardening
 - QA: PASS — independent GPT-5.6-Sol xhigh review found no remaining P0-P3 issues
 
 ## Runtime
@@ -29,6 +29,20 @@
 - Sprint 1 Holy Spirit Men's Ministry 7-Day Night Prayer Devotion: `ae33c661d74e235e0b4b2e867bfbede97abf51c1`.
 - Admin Redesign Sprint 1 routed hub and partner reorganization: `d83b293829a1c18c1e7c32356eee9c5c17b07cc1`.
 - Admin Redesign Sprint 2 analytics and devotion intelligence: `d59fc473b7f573e18762c413c969c86ca444f0b0`.
+- Devotion Engine Sprints 4–5 operations, analytics, and hardening: `aa626ca267cc657a15bf46b55f2ea12fbdf00f60`.
+
+## Devotion Engine Sprints 4–5 verification
+
+- `npm test`: 101/101 PASS.
+- `npm run build:verify`: PASS; TypeScript, Vite, nested devotion output, and PWA verification completed successfully.
+- Multi-campaign operations now include cohort scheduling, 1–40-night duration, lifecycle and participant statuses, stable campaign-scoped participant links, bulk revocation, owner/editor/viewer boundaries, and service-role-only audit history.
+- Campaign creation and its General cohort are atomic through a security-invoker RPC with a fixed search path and execute access restricted to `service_role`.
+- Portfolio and campaign analytics retain full bounded-population metrics while participant detail is paged; sampled evidence is disclosed and absence-based alerts are suppressed when sources are truncated.
+- Responsive admin checks passed at phone, tablet, and desktop breakpoints, including the 900/901px navigation boundary and 44px narrow-layout controls.
+- Supabase migrations `20260822000000`, `20260822010000`, and `20260822020000` were applied to production project `lbjtuekhnzbyivjhtlma`; migration history, backfills, RLS, RPC grants, PostgREST schema cache, and read-only REST access were verified.
+- A dedicated write-only production `DEVOTION_LINK_SECRET` was configured for Netlify Functions. No secret value was printed or stored in the repository.
+- Independent GPT-5.6-Sol xhigh QA: PASS with no remaining P0-P3 findings.
+- No application deployment or Git push was performed. Before deployment, configure a dedicated high-entropy production `ADMIN_SHARED_SECRET`; the existing short ingest-secret fallback should not be treated as an acceptable admin credential.
 
 ## Admin redesign Sprint 2 verification
 
