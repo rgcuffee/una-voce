@@ -22,19 +22,32 @@ export type DevotionParticipantState = {
     id: string;
     safeId: string;
     label: string;
+    status: 'enrolled' | 'active' | 'completed' | 'withdrawn';
   };
   devotion: {
     id: string;
     slug: string;
     name: string;
     organizationLabel: string;
+    description: string | null;
     hourKey: 'compline';
     startDate: string | null;
-    durationDays: 7;
+    durationDays: number;
     timezone: string | null;
-    status: 'inactive' | 'active' | 'completed';
+    status: 'inactive' | 'draft' | 'scheduled' | 'active' | 'paused' | 'completed' | 'archived';
     preSurveyUrl: string | null;
     postSurveyUrl: string | null;
+    publishedAt: string | null;
+    archivedAt: string | null;
+  };
+  cohort: {
+    id: string;
+    safeId: string;
+    slug: string;
+    name: string;
+    status: 'inactive' | 'draft' | 'scheduled' | 'active' | 'paused' | 'completed' | 'archived';
+    startDate: string | null;
+    timezone: string | null;
   };
   timing: DevotionTiming;
   report: {
@@ -49,23 +62,25 @@ export type DevotionParticipantState = {
 
 export async function resolveDevotionParticipant(
   token: string,
+  devotionSlug: string,
   signal?: AbortSignal,
 ) {
   return devotionRequest<DevotionParticipantState>(
-    { action: 'resolve', token },
+    { action: 'resolve', token, devotionSlug },
     signal,
   );
 }
 
 export async function submitDevotionReport(
   token: string,
+  devotionSlug: string,
   outcome: DevotionReportOutcome,
 ) {
   return devotionRequest<{
     ok: true;
     report: NonNullable<DevotionParticipantState['report']>;
     attribution: DevotionAttribution;
-  }>({ action: 'report', token, outcome });
+  }>({ action: 'report', token, devotionSlug, outcome });
 }
 
 async function devotionRequest<T>(body: Record<string, unknown>, signal?: AbortSignal) {

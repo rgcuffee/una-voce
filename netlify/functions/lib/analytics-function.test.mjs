@@ -26,7 +26,7 @@ test('devotion telemetry requires safe participant/night attribution', () => {
     'Missing devotion attribution',
   );
   assert.equal(
-    validateAnalyticsEvent({ ...valid, pilotDay: 8 }),
+    validateAnalyticsEvent({ ...valid, pilotDay: 0 }),
     'Invalid pilotDay',
   );
   assert.equal(
@@ -42,6 +42,11 @@ test('devotion telemetry requires safe participant/night attribution', () => {
     validateAnalyticsEvent({ ...valid, resourceId: undefined }),
     'Missing devotion resource attribution',
   );
+});
+
+test('devotion telemetry accepts expanded campaign nights through Night 40 only', () => {
+  assert.equal(validateAnalyticsEvent({ ...valid, pilotDay: 40 }), null);
+  assert.equal(validateAnalyticsEvent({ ...valid, pilotDay: 41 }), 'Invalid pilotDay');
 });
 
 test('analytics rejects JSON primitives without throwing', async () => {

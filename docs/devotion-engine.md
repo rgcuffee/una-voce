@@ -1,0 +1,63 @@
+# Devotion Engine
+
+The devotion engine supports multiple Night Prayer campaigns under `/devotions/:devotionSlug/night-prayer`. The original Holy Spirit Men's Ministry URL remains valid. Every participant link is campaign-scoped and contains an opaque HMAC-derived token; raw participant tokens are never stored.
+
+## Operational model
+
+- A `devotions` row is a campaign. Campaigns have a stable slug, display metadata, a 1–40-night duration, default schedule, surveys, and lifecycle status.
+- A `devotion_cohorts` row is a named group inside a campaign. Cohorts can use independent start dates, IANA timezones, and lifecycle status while sharing the campaign experience.
+- Every participant belongs to exactly one cohort in the same campaign. Participant status is `enrolled`, `active`, `completed`, or `withdrawn`.
+- Revocation is recoverable. Restoring a link clears `revoked_at`; the stable server-derived token remains the same. Campaign and cohort archive states are also reversible through an owner-authorized status change.
+- Scheduling is configuration only. The system does not collect participant email addresses or phone numbers and does not send outbound reminders. Operational attention flags describe missing current-night evidence without claiming delivery or conversion.
+
+Campaign/cohort lifecycle states are `inactive`, `draft`, `scheduled`, `active`, `paused`, `completed`, and `archived`. `scheduled` and `active` records require a start date and timezone. Scheduled records become available according to their configured civil date without a separate background job.
+
+## Admin roles and audit
+
+The devotion API authorizes independently on the server:
+
+- `owner`: full access, including campaign creation and archive actions.
+- `editor`: campaign/cohort configuration and participant operations, excluding owner-only actions.
+- `viewer`: read-only operations and analytics.
+
+`ADMIN_ALLOWED_EMAILS` remains the authorization allowlist. Optional `ADMIN_DEVOTION_EDITOR_EMAILS` and `ADMIN_DEVOTION_VIEWER_EMAILS` assign narrower roles to emails already in that allowlist. The local/shared-secret path is an owner. Successful mutations write a service-role-only `devotion_admin_audit` record. Audit records contain action/target/status metadata, never participant tokens or request credentials. A failed audit write is disclosed in the mutation response and UI without retrying the completed mutation.
+
+## Analytics and bounds
+
+Selected-campaign analytics retain the existing evidence distinction:
+
+- page opened;
+- resource opened;
+- measured in-player duration;
+- participant report outcome.
+
+These units are not presented as a conversion funnel. Portfolio intelligence compares the same raw evidence across campaigns. PostgREST reads are deterministic and paged. Campaign metrics and the per-night campaign rollup use the full bounded population and remain stable while an admin pages through participant detail. Expanded 1–40-night participant detail is returned in explicit 100-participant pages so a maximum-duration campaign cannot create an oversized Function response; detail filters and CSV are labeled as current-page operations. Reports, events, sessions, and portfolio sources are capped at 10,000 rows each. When a cap is reached, the API and UI label the result sampled/lower-bound and name the affected source. Absence-based follow-up alerts are suppressed when report, event, or session evidence is sampled.
+
+Public resource attribution is projected before it reaches the admin response. Dangerous URLs, token-shaped identifiers, unsupported providers/media types, and obvious PII-shaped labels are replaced with bounded generic labels.
+
+## Database migrations
+
+The operations schema is introduced in committed order because PostgreSQL enum additions must be committed before later migrations use them:
+
+1. `20260822000000_devotion_operations_statuses.sql`
+2. `20260822010000_devotion_operations_engine.sql`
+3. `20260822020000_devotion_operations_audit.sql`
+
+The engine migration creates and backfills a `General` cohort for every existing campaign before making participant cohort membership required. New campaign plus `General` cohort creation uses the service-role-only `create_devotion_campaign` database function so both records commit or roll back together. All devotion and audit tables have RLS enabled with no browser policies; public participant/report traffic goes through Netlify Functions.
+
+## Production configuration
+
+Required server configuration remains:
+
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `ADMIN_SHARED_SECRET` or `INGEST_SHARED_SECRET`
+- `ADMIN_ALLOWED_EMAILS` for bearer access
+- `DEVOTION_LINK_SECRET` required for production deployment as a dedicated high-entropy value of at least 32 characters; the admin-secret fallback exists only for compatibility
+
+Optional role configuration:
+
+- `ADMIN_DEVOTION_EDITOR_EMAILS`
+- `ADMIN_DEVOTION_VIEWER_EMAILS`
+
+Schema migration and Netlify environment/deployment are separate operator-approved production actions. Checked-in code does not imply those actions have occurred.

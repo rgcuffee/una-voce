@@ -21,8 +21,8 @@ export function deriveParticipantToken(participantId, secret) {
   if (!PARTICIPANT_ID_PATTERN.test(participantId ?? '')) {
     throw new Error('Invalid participant ID');
   }
-  if (typeof secret !== 'string' || !secret) {
-    throw new Error('Participant link secret is not configured');
+  if (typeof secret !== 'string' || secret.length < 32) {
+    throw new Error('Participant link secret must be configured with at least 32 characters');
   }
 
   return createHmac('sha256', secret)
@@ -42,9 +42,16 @@ export function hashParticipantToken(token) {
   return createHash('sha256').update(token, 'utf8').digest('hex');
 }
 
-export function participantLink(token, siteUrl = 'https://unavoce.net') {
+export function participantLink(
+  token,
+  siteUrl = 'https://unavoce.net',
+  devotionSlug = DEVOTION_SLUG,
+) {
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(devotionSlug ?? '')) {
+    throw new Error('Invalid devotion slug');
+  }
   const base = new URL(siteUrl);
-  base.pathname = DEVOTION_PATH;
+  base.pathname = `/devotions/${devotionSlug}/night-prayer`;
   base.search = '';
   base.hash = '';
   base.searchParams.set('p', token);
@@ -53,14 +60,27 @@ export function participantLink(token, siteUrl = 'https://unavoce.net') {
 
 export function resolvePilotDay(devotion, now = new Date()) {
   const durationDays = Number(devotion?.duration_days ?? 7);
+  const status = devotion?.status;
+
+  if (status === 'completed' || status === 'archived') {
+    return {
+      phase: 'completed',
+      pilotDay: null,
+      prayerDate:
+        typeof devotion?.timezone === 'string' && devotion.timezone.trim()
+          ? prayerDateAt(now, devotion.timezone)
+          : null,
+    };
+  }
 
   if (
-    devotion?.status !== 'active' ||
+    !['active', 'scheduled'].includes(status) ||
     !DATE_PATTERN.test(devotion?.start_date ?? '') ||
     typeof devotion?.timezone !== 'string' ||
     !devotion.timezone.trim() ||
     !Number.isInteger(durationDays) ||
-    durationDays < 1
+    durationDays < 1 ||
+    durationDays > 40
   ) {
     return {
       phase: 'inactive',

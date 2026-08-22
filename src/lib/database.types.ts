@@ -86,7 +86,19 @@ export type PrayerAnalyticsEventName =
     | 'devotion_resource_opened'
     | 'devotion_report_submitted'
     | 'devotion_survey_clicked';
-export type DevotionStatus = 'inactive' | 'active' | 'completed';
+export type DevotionStatus =
+    | 'inactive'
+    | 'draft'
+    | 'scheduled'
+    | 'active'
+    | 'paused'
+    | 'completed'
+    | 'archived';
+export type DevotionParticipantStatus =
+    | 'enrolled'
+    | 'active'
+    | 'completed'
+    | 'withdrawn';
 export type DevotionReportOutcome =
     | 'prayed'
     | 'started_not_finished'
@@ -120,6 +132,7 @@ export type Database = {
                     slug: string;
                     name: string;
                     organization_label: string;
+                    description: string | null;
                     hour_key: LiturgicalHour;
                     start_date: string | null;
                     duration_days: number;
@@ -127,6 +140,8 @@ export type Database = {
                     status: DevotionStatus;
                     pre_survey_url: string | null;
                     post_survey_url: string | null;
+                    published_at: string | null;
+                    archived_at: string | null;
                     created_at: string;
                     updated_at: string;
                 };
@@ -135,6 +150,7 @@ export type Database = {
                     slug: string;
                     name: string;
                     organization_label: string;
+                    description?: string | null;
                     hour_key?: LiturgicalHour;
                     start_date?: string | null;
                     duration_days?: number;
@@ -142,6 +158,8 @@ export type Database = {
                     status?: DevotionStatus;
                     pre_survey_url?: string | null;
                     post_survey_url?: string | null;
+                    published_at?: string | null;
+                    archived_at?: string | null;
                     created_at?: string;
                     updated_at?: string;
                 };
@@ -150,6 +168,7 @@ export type Database = {
                     slug?: string;
                     name?: string;
                     organization_label?: string;
+                    description?: string | null;
                     hour_key?: LiturgicalHour;
                     start_date?: string | null;
                     duration_days?: number;
@@ -157,37 +176,163 @@ export type Database = {
                     status?: DevotionStatus;
                     pre_survey_url?: string | null;
                     post_survey_url?: string | null;
+                    published_at?: string | null;
+                    archived_at?: string | null;
                     created_at?: string;
                     updated_at?: string;
                 };
                 Relationships: [];
             };
+            devotion_cohorts: {
+                Row: {
+                    id: string;
+                    devotion_id: string;
+                    slug: string;
+                    name: string;
+                    status: DevotionStatus;
+                    start_date: string | null;
+                    timezone: string | null;
+                    created_at: string;
+                    updated_at: string;
+                    archived_at: string | null;
+                };
+                Insert: {
+                    id?: string;
+                    devotion_id: string;
+                    slug: string;
+                    name: string;
+                    status?: DevotionStatus;
+                    start_date?: string | null;
+                    timezone?: string | null;
+                    created_at?: string;
+                    updated_at?: string;
+                    archived_at?: string | null;
+                };
+                Update: {
+                    id?: string;
+                    devotion_id?: string;
+                    slug?: string;
+                    name?: string;
+                    status?: DevotionStatus;
+                    start_date?: string | null;
+                    timezone?: string | null;
+                    created_at?: string;
+                    updated_at?: string;
+                    archived_at?: string | null;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: 'devotion_cohorts_devotion_id_fkey';
+                        columns: ['devotion_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'devotions';
+                        referencedColumns: ['id'];
+                    },
+                ];
+            };
+            devotion_admin_audit: {
+                Row: {
+                    id: string;
+                    actor_id: string;
+                    actor_email: string | null;
+                    actor_role: string;
+                    action: string;
+                    devotion_id: string | null;
+                    cohort_id: string | null;
+                    participant_id: string | null;
+                    summary: Json;
+                    created_at: string;
+                };
+                Insert: {
+                    id?: string;
+                    actor_id: string;
+                    actor_email?: string | null;
+                    actor_role: string;
+                    action: string;
+                    devotion_id?: string | null;
+                    cohort_id?: string | null;
+                    participant_id?: string | null;
+                    summary?: Json;
+                    created_at?: string;
+                };
+                Update: {
+                    id?: string;
+                    actor_id?: string;
+                    actor_email?: string | null;
+                    actor_role?: string;
+                    action?: string;
+                    devotion_id?: string | null;
+                    cohort_id?: string | null;
+                    participant_id?: string | null;
+                    summary?: Json;
+                    created_at?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: 'devotion_admin_audit_devotion_id_fkey';
+                        columns: ['devotion_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'devotions';
+                        referencedColumns: ['id'];
+                    },
+                    {
+                        foreignKeyName: 'devotion_admin_audit_cohort_id_fkey';
+                        columns: ['cohort_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'devotion_cohorts';
+                        referencedColumns: ['id'];
+                    },
+                    {
+                        foreignKeyName: 'devotion_admin_audit_participant_id_fkey';
+                        columns: ['participant_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'devotion_participants';
+                        referencedColumns: ['id'];
+                    },
+                ];
+            };
             devotion_participants: {
                 Row: {
                     id: string;
                     devotion_id: string;
+                    cohort_id: string;
                     label: string;
                     token_hash: string;
+                    status: DevotionParticipantStatus;
+                    completed_at: string | null;
                     created_at: string;
                     revoked_at: string | null;
                 };
                 Insert: {
                     id?: string;
                     devotion_id: string;
+                    cohort_id: string;
                     label: string;
                     token_hash: string;
+                    status?: DevotionParticipantStatus;
+                    completed_at?: string | null;
                     created_at?: string;
                     revoked_at?: string | null;
                 };
                 Update: {
                     id?: string;
                     devotion_id?: string;
+                    cohort_id?: string;
                     label?: string;
                     token_hash?: string;
+                    status?: DevotionParticipantStatus;
+                    completed_at?: string | null;
                     created_at?: string;
                     revoked_at?: string | null;
                 };
                 Relationships: [
+                    {
+                        foreignKeyName: 'devotion_participant_cohort_membership';
+                        columns: ['devotion_id', 'cohort_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'devotion_cohorts';
+                        referencedColumns: ['devotion_id', 'id'];
+                    },
                     {
                         foreignKeyName: 'devotion_participants_devotion_id_fkey';
                         columns: ['devotion_id'];
@@ -1669,7 +1814,24 @@ export type Database = {
             };
         };
         Views: Record<string, never>;
-        Functions: Record<string, never>;
+        Functions: {
+            create_devotion_campaign: {
+                Args: {
+                    p_description: string | null;
+                    p_duration_days: number;
+                    p_hour_key: LiturgicalHour;
+                    p_name: string;
+                    p_organization_label: string;
+                    p_post_survey_url: string | null;
+                    p_pre_survey_url: string | null;
+                    p_slug: string;
+                    p_start_date: string | null;
+                    p_status: DevotionStatus;
+                    p_timezone: string | null;
+                };
+                Returns: Json;
+            };
+        };
         Enums: {
             calendar_source_type: CalendarSourceType;
             liturgical_season: LiturgicalSeason;
@@ -1681,6 +1843,7 @@ export type Database = {
             calendar_conflict_reason: CalendarConflictReason;
             prayer_analytics_event_name: PrayerAnalyticsEventName;
             devotion_status: DevotionStatus;
+            devotion_participant_status: DevotionParticipantStatus;
             devotion_report_outcome: DevotionReportOutcome;
             partner_onboarding_status: PartnerOnboardingStatus;
             partner_relationship_status: PartnerRelationshipStatus;

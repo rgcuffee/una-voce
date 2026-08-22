@@ -53,6 +53,7 @@ temp/
 
 /docs/*
 !/docs/architecture.md
+!/docs/devotion-engine.md
 !/docs/brand/
 !/docs/brand/**
 /exports

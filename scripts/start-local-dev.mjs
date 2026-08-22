@@ -1,9 +1,11 @@
 import { spawn } from 'node:child_process';
 import { networkInterfaces } from 'node:os';
+import { loadEnv } from 'vite';
 
 import { localDevelopmentUrls } from './local-runtime.mjs';
 
 const lan = process.argv.includes('--lan');
+Object.assign(process.env, loadEnv('development', process.cwd(), ''));
 const port = 5173;
 const host = lan ? '0.0.0.0' : '127.0.0.1';
 const { localUrl, lanUrls } = localDevelopmentUrls({

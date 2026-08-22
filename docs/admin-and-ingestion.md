@@ -2,7 +2,7 @@
 
 The admin system manages partner communities, partner feeds, classification rules, and imported media review.
 
-The same protected admin shell contains devotion operations and analytics for the Holy Spirit Men's Ministry seven-night alpha. Its separate `/api/admin/devotion` Function reuses the existing shared-secret or Google bearer/server-allowlist authorization boundary.
+The same protected admin shell contains multi-campaign devotion operations and analytics. Its separate `/api/admin/devotion` Function reuses the existing shared-secret or Google bearer/server-allowlist authorization boundary and applies devotion-specific owner/editor/viewer roles. See `docs/devotion-engine.md` for the full lifecycle and data contract.
 
 ## Admin Access
 
@@ -46,7 +46,9 @@ Server-side admin authorization uses:
 
 The API returns a combined dashboard payload with partners, feeds, rules, recent YouTube videos, recent audio episodes, summaries, and totals.
 
-The bounded devotion admin API supports participant label enrollment, explicitly requested opaque-link display, revocation, pilot configuration, and the participant-by-night results matrix. Participant tokens are derived server-side from the participant ID and `DEVOTION_LINK_SECRET`, so raw tokens are not stored or included in dashboard loads. Participants created before this change receive one clearly disclosed link upgrade the first time an admin selects **Show link**.
+The bounded devotion admin API supports multiple campaigns, independently scheduled cohorts, participant label enrollment/status, explicitly requested opaque-link display, bulk revocation, link recovery, reversible archive states, operational attention flags, and participant-by-night results. Participant tokens are derived server-side from the participant ID and `DEVOTION_LINK_SECRET`, so raw tokens are not stored or included in dashboard loads. Participants created before stable derivation receive one clearly disclosed link upgrade the first time an admin selects **Show link**.
+
+Devotion Analytics includes selected-campaign/cohort detail plus a cross-campaign portfolio comparison. Reads page deterministically through the configured PostgREST row limit and disclose sampled/lower-bound results at their explicit caps. Expanded participant-night detail is limited to 100 participants per response with explicit Previous/Next controls; summary metrics retain the full bounded participant population. Successful mutations are recorded in the service-role-only devotion audit history. No participant contact data is collected, so attention flags do not claim that a reminder was sent, and absence-based alerts are unavailable when relevant evidence is sampled.
 
 Devotion reporting presents readable resource labels, click counts, and measured time per media resource. External text links can record the click but cannot measure time spent on the third-party page.
 
@@ -112,6 +114,8 @@ Set `.env.local` with:
 - `INGEST_SHARED_SECRET`
 - `ADMIN_SHARED_SECRET`
 - `ADMIN_ALLOWED_EMAILS`
+- `ADMIN_DEVOTION_EDITOR_EMAILS` (optional subset of the allowlist)
+- `ADMIN_DEVOTION_VIEWER_EMAILS` (optional subset of the allowlist)
 - `DEVOTION_LINK_SECRET` (recommended; otherwise participant links derive from `ADMIN_SHARED_SECRET`)
 
 For client admin access, also set:

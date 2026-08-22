@@ -66,6 +66,7 @@ Production admin authentication remains Google OAuth plus the configured email a
 
 - [Architecture](docs/architecture.md)
 - [Admin and Ingestion](docs/admin-and-ingestion.md)
+- [Devotion Engine](docs/devotion-engine.md)
 - [Liturgical Calendar](docs/liturgical-calendar.md)
 - [Brand and Editorial Documentation](docs/brand/README.md)
 - [Editorial Standards](docs/brand/UNA_VOCE_EDITORIAL_STANDARDS.md)

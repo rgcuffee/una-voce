@@ -1,9 +1,17 @@
 const OPEN_EVENT = 'devotion_page_opened';
 const RESOURCE_EVENT = 'devotion_resource_opened';
+const SAFE_PROVIDERS = new Set([
+  'youtube', 'spotify', 'apple-podcasts', 'apple-podcast', 'universalis',
+  'divine-office', 'divineoffice', 'external', 'text', 'unknown',
+]);
+const SAFE_MEDIA_TYPES = new Set([
+  'text', 'audio', 'video', 'live_video', 'external_link', 'unknown',
+]);
 
 export function aggregateDevotionAnalytics({
   devotion,
   participants,
+  detailParticipants = participants,
   reports,
   events,
   sessions,
@@ -14,11 +22,14 @@ export function aggregateDevotionAnalytics({
   const eventsByCell = groupByCell(events);
   const sessionsByCell = groupByCell(sessions);
 
-  const rows = participants.map((participant) => ({
+  const rows = detailParticipants.map((participant) => ({
     id: participant.id,
     safeId: participant.id.slice(0, 8),
     label: participant.label,
+    cohortId: participant.cohort_id ?? null,
+    status: participant.status ?? 'enrolled',
     linkStatus: participant.revoked_at ? 'revoked' : 'active',
+    completedAt: participant.completed_at ?? null,
     createdAt: participant.created_at,
     nights: Array.from({ length: devotion.duration_days }, (_, index) => {
       const pilotDay = index + 1;
@@ -34,10 +45,10 @@ export function aggregateDevotionAnalytics({
       for (const event of resourceEvents) {
         const resourceKey = resourceKeyFor(event);
         const current = resourceMap.get(resourceKey) ?? {
-          resourceId: event.resource_id ?? event.content_id ?? 'resource',
+          resourceId: safeResourceId(event.resource_id ?? event.content_id),
           label: readableResourceLabel(event),
-          provider: event.provider ?? 'unknown',
-          mediaType: event.media_type ?? event.content_type ?? 'unknown',
+          provider: safeProvider(event.provider),
+          mediaType: safeMediaType(event.media_type ?? event.content_type),
           count: 0,
           measuredSeconds: 0,
         };
@@ -53,10 +64,10 @@ export function aggregateDevotionAnalytics({
         if (!session.resource_id) continue;
         const resourceKey = resourceKeyFor(session);
         const current = resourceMap.get(resourceKey) ?? {
-          resourceId: session.resource_id,
+          resourceId: safeResourceId(session.resource_id),
           label: readableResourceLabel(session),
-          provider: session.provider ?? 'unknown',
-          mediaType: session.media_type ?? 'unknown',
+          provider: safeProvider(session.provider),
+          mediaType: safeMediaType(session.media_type),
           count: 0,
           measuredSeconds: 0,
         };
@@ -107,6 +118,28 @@ export function aggregateDevotionAnalytics({
     (sum, session) => sum + measuredSessionSeconds(session),
     0,
   );
+  const nightRollup = Array.from({ length: devotion.duration_days }, (_, index) => {
+    const pilotDay = index + 1;
+    const dayEvents = events.filter((event) => event.pilot_day === pilotDay);
+    const dayReports = reports.filter((report) => report.pilot_day === pilotDay);
+    const daySessions = sessions.filter((session) => session.pilot_day === pilotDay);
+    const opened = new Set(dayEvents
+      .filter((event) => event.event_name === OPEN_EVENT && event.devotion_participant_id)
+      .map((event) => event.devotion_participant_id)).size;
+    const engaged = new Set(dayEvents
+      .filter((event) => event.event_name === RESOURCE_EVENT && event.devotion_participant_id)
+      .map((event) => event.devotion_participant_id)).size;
+    return {
+      night: pilotDay,
+      opened,
+      engaged,
+      reported: dayReports.length,
+      measuredMediaMinutes: roundMinutes(daySessions.reduce(
+        (sum, session) => sum + measuredSessionSeconds(session),
+        0,
+      )),
+    };
+  });
 
   return {
     devotion: {
@@ -114,15 +147,21 @@ export function aggregateDevotionAnalytics({
       slug: devotion.slug,
       name: devotion.name,
       organizationLabel: devotion.organization_label,
+      description: devotion.description ?? null,
       startDate: devotion.start_date,
       durationDays: devotion.duration_days,
       timezone: devotion.timezone,
       status: devotion.status,
       preSurveyUrl: devotion.pre_survey_url,
       postSurveyUrl: devotion.post_survey_url,
+      publishedAt: devotion.published_at ?? null,
+      archivedAt: devotion.archived_at ?? null,
     },
     metrics: {
       participantsEnrolled: participants.length,
+      participantsActive: participants.filter((participant) => ['enrolled', 'active'].includes(participant.status ?? 'enrolled') && !participant.revoked_at).length,
+      participantsCompleted: participants.filter((participant) => participant.status === 'completed').length,
+      participantsWithdrawn: participants.filter((participant) => participant.status === 'withdrawn').length,
       nightsOpened: openedNights,
       resourceEngagements: events.filter(
         (event) => event.event_name === RESOURCE_EVENT,
@@ -136,6 +175,7 @@ export function aggregateDevotionAnalytics({
         (report) => report.outcome === 'not_tonight',
       ).length,
     },
+    nightRollup,
     participants: rows,
   };
 }
@@ -165,23 +205,50 @@ function resourceKeyFor(item) {
 
 function readableResourceLabel(item) {
   const metadataLabel = item.metadata?.resourceLabel;
-  if (typeof metadataLabel === 'string' && metadataLabel.trim()) {
+  if (safeReadableLabel(metadataLabel)) {
     return metadataLabel.trim();
   }
-  if (typeof item.source_name === 'string' && item.source_name.trim()) {
+  if (safeReadableLabel(item.source_name)) {
     return item.source_name.trim();
   }
 
   const identifier = item.resource_id ?? item.content_id ?? '';
-  if (identifier && !looksOpaque(identifier)) {
+  if (safeReadableLabel(identifier) && !looksOpaque(identifier)) {
     return identifier
       .replace(/[-_]+/g, ' ')
       .replace(/\b\w/g, (character) => character.toUpperCase());
   }
 
-  const provider = item.provider ?? 'Prayer';
-  const mediaType = item.media_type ?? item.content_type ?? 'resource';
+  const provider = safeProvider(item.provider);
+  const mediaType = safeMediaType(item.media_type ?? item.content_type);
   return `${titleCase(provider)} ${mediaType.replace(/_/g, ' ')}`;
+}
+
+function safeReadableLabel(value) {
+  if (typeof value !== 'string') return false;
+  const text = value.trim();
+  return text.length > 0 && text.length <= 120 &&
+    /^[\p{L}\p{N}][\p{L}\p{N}\s'’&.,:()—–_-]*$/u.test(text) &&
+    !/@|https?:|\?.*=|[A-Za-z0-9_-]{32,}|\b\d{7,}\b/.test(text);
+}
+
+function safeResourceId(value) {
+  if (typeof value !== 'string' || !/^[A-Za-z0-9_-]{1,80}$/.test(value) || looksOpaque(value)) {
+    return 'resource';
+  }
+  return value;
+}
+
+function safeProvider(value) {
+  const normalized = String(value ?? '').trim().toLowerCase().replace(/[\s._]+/g, '-');
+  return SAFE_PROVIDERS.has(normalized) ? normalized : 'unknown';
+}
+
+function safeMediaType(value) {
+  const normalized = String(value ?? '').trim().toLowerCase();
+  return SAFE_MEDIA_TYPES.has(normalized)
+    ? normalized
+    : 'unknown';
 }
 
 function preferredLabel(current, candidate) {

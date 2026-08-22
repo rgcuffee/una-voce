@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
 import {
@@ -48,4 +49,11 @@ test('LAN development surfaces usable private-network URLs', () => {
     localUrl: 'http://127.0.0.1:5173',
     lanUrls: ['http://10.0.0.8:5173', 'http://192.168.50.24:5173'],
   });
+});
+
+test('local Vite functions inherit server-only development environment without exposing it to the bundle', async () => {
+  const source = await readFile(new URL('./start-local-dev.mjs', import.meta.url), 'utf8');
+  assert.match(source, /loadEnv\('development', process\.cwd\(\), ''\)/);
+  assert.match(source, /Object\.assign\(process\.env/);
+  assert.doesNotMatch(source, /console\.log\([^\n]*(SECRET|SERVICE_ROLE)/);
 });

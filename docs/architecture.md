@@ -41,8 +41,8 @@ Brand and writing rules live in `docs/brand/`. The current first nine are the re
 Netlify Functions live in `netlify/functions`.
 
 - `analytics.mjs` records prayer-player analytics.
-- `devotion.mjs` resolves opaque participant links and upserts the current nightly report.
-- `admin-devotion.mjs` provides the allowlisted Devotion Analytics cohort and results contract.
+- `devotion.mjs` resolves campaign-scoped opaque participant links and upserts the current cohort-relative nightly report.
+- `admin-devotion.mjs` provides role-aware multi-campaign/cohort operations, bounded analytics, recovery actions, and audit history.
 - `admin-partners.mjs` powers the admin dashboard and partner/media management actions.
 - `youtube-ingest.mjs`, `spotify-ingest.mjs`, and `apple-podcast-ingest.mjs` import partner media.
 - `*-scheduled.mjs` wrappers run ingestion on the schedule configured in `netlify.toml`.
@@ -51,7 +51,7 @@ Netlify Functions live in `netlify/functions`.
 
 Functions that write or read privileged data use `SUPABASE_SERVICE_ROLE_KEY`. Keep those workflows server-only.
 
-The Holy Spirit Men's Ministry alpha uses the existing analytics event/session tables for attributable page, readable resource, and per-resource measurable player-duration evidence. Its participant, devotion, and current nightly report records are separate bounded tables created by the checked-in devotion migration. Public participant/report writes never go directly from the browser to Supabase. Admin-visible participant links use stable HMAC-derived opaque tokens; raw tokens are not stored in devotion records or returned in dashboard loads.
+The devotion engine uses the existing analytics event/session tables for attributable page, projected resource, and per-resource measurable player-duration evidence. Campaign, cohort, participant, nightly-report, and admin-audit records are separate bounded tables created by checked-in devotion migrations. Public participant/report writes never go directly from the browser to Supabase. Admin-visible participant links use stable HMAC-derived opaque tokens; raw tokens are not stored in devotion records, audit history, or dashboard loads. See `docs/devotion-engine.md`.
 
 ## Data
 
@@ -65,6 +65,7 @@ The migration history currently covers:
 - Calendar review items and conflict details.
 - Partner relationship status and partner metadata.
 - Daytime prayer keyword handling for Divine Office content.
+- Multi-campaign devotion cohorts, participant lifecycle, and service-role-only devotion audit history.
 
 Browser-side Supabase access uses `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`. Server-side jobs and functions use `SUPABASE_URL` or `VITE_SUPABASE_URL` plus `SUPABASE_SERVICE_ROLE_KEY`.
 

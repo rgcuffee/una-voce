@@ -13,6 +13,7 @@ const JSON_HEADERS = {
   'cache-control': 'no-store',
   'content-type': 'application/json',
 };
+const DEVOTION_BODY_BYTE_LIMIT = 8 * 1024;
 
 const supabaseUrl = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -32,8 +33,11 @@ export function createDevotionRepository(client) {
           'id',
           'label',
           'devotion_id',
+          'cohort_id',
+          'status',
           'revoked_at',
-          'devotions!inner(id,slug,name,organization_label,hour_key,start_date,duration_days,timezone,status,pre_survey_url,post_survey_url)',
+          'devotions!inner(id,slug,name,organization_label,description,hour_key,start_date,duration_days,timezone,status,pre_survey_url,post_survey_url,published_at,archived_at)',
+          'devotion_cohorts!inner(id,slug,name,status,start_date,timezone,archived_at)',
         ].join(','))
         .eq('token_hash', tokenHash)
         .maybeSingle();
@@ -77,6 +81,9 @@ export function createDevotionHandler({ repository, now = () => new Date() }) {
       return response(500, { error: 'Devotion API is not configured' });
     }
 
+    if (typeof event.body === 'string' && Buffer.byteLength(event.body, 'utf8') > DEVOTION_BODY_BYTE_LIMIT) {
+      return response(413, { error: 'Request body is too large' });
+    }
     const parsed = parsePayload(event.body);
     if (!parsed.ok) return response(400, { error: parsed.error });
     const { action, token } = parsed.value;
@@ -88,7 +95,7 @@ export function createDevotionHandler({ repository, now = () => new Date() }) {
       const participant = await repository.findParticipant(
         hashParticipantToken(token),
       );
-      if (!participant || participant.revoked_at) {
+      if (!participant || participant.revoked_at || participant.status === 'withdrawn') {
         return response(404, { error: 'This participant link is invalid or unavailable.' });
       }
 
@@ -96,7 +103,17 @@ export function createDevotionHandler({ repository, now = () => new Date() }) {
       if (!devotion) {
         return response(404, { error: 'This devotion is unavailable.' });
       }
-      const timing = resolvePilotDay(devotion, now());
+      if (devotion.status === 'archived' || devotion.archived_at) {
+        return response(404, { error: 'This devotion is unavailable.' });
+      }
+      if (parsed.value.devotionSlug !== devotion.slug) {
+        return response(404, { error: 'This participant link is invalid or unavailable.' });
+      }
+      const cohort = relatedCohort(participant.devotion_cohorts);
+      if (!cohort || cohort.archived_at) {
+        return response(404, { error: 'This devotion is unavailable.' });
+      }
+      const timing = resolvePilotDay(effectiveSchedule(devotion, cohort, participant), now());
 
       if (action === 'resolve') {
         const report =
@@ -107,7 +124,7 @@ export function createDevotionHandler({ repository, now = () => new Date() }) {
                 pilotDay: timing.pilotDay,
               })
             : null;
-        return response(200, participantState(participant, devotion, timing, report));
+        return response(200, participantState(participant, devotion, cohort, timing, report));
       }
 
       if (action === 'report') {
@@ -140,19 +157,21 @@ export function createDevotionHandler({ repository, now = () => new Date() }) {
   };
 }
 
-function participantState(participant, devotion, timing, report) {
+function participantState(participant, devotion, cohort, timing, report) {
   return {
     ok: true,
     participant: {
       id: participant.id,
       safeId: safeParticipantId(participant.id),
       label: participant.label,
+      status: participant.status,
     },
     devotion: {
       id: devotion.id,
       slug: devotion.slug,
       name: devotion.name,
       organizationLabel: devotion.organization_label,
+      description: devotion.description,
       hourKey: devotion.hour_key,
       startDate: devotion.start_date,
       durationDays: devotion.duration_days,
@@ -160,6 +179,17 @@ function participantState(participant, devotion, timing, report) {
       status: devotion.status,
       preSurveyUrl: devotion.pre_survey_url,
       postSurveyUrl: devotion.post_survey_url,
+      publishedAt: devotion.published_at,
+      archivedAt: devotion.archived_at,
+    },
+    cohort: {
+      id: cohort.id,
+      safeId: safeParticipantId(cohort.id),
+      slug: cohort.slug,
+      name: cohort.name,
+      status: cohort.status,
+      startDate: cohort.start_date,
+      timezone: cohort.timezone,
     },
     timing,
     report: safeReport(report),
@@ -191,11 +221,32 @@ function relatedDevotion(value) {
   return Array.isArray(value) ? value[0] : value;
 }
 
+function relatedCohort(value) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function effectiveSchedule(devotion, cohort, participant) {
+  const campaignClosed = ['inactive', 'draft', 'paused', 'completed', 'archived'].includes(devotion.status);
+  return {
+    ...devotion,
+    status: participant.status === 'completed'
+      ? 'completed'
+      : campaignClosed
+        ? devotion.status
+        : cohort.status,
+    start_date: cohort.start_date ?? devotion.start_date,
+    timezone: cohort.timezone ?? devotion.timezone,
+  };
+}
+
 function parsePayload(body) {
   if (!body) return { ok: false, error: 'Missing request body' };
   try {
     const value = JSON.parse(body);
     if (!value || typeof value !== 'object') throw new Error('invalid');
+    if (typeof value.devotionSlug !== 'string' || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value.devotionSlug)) {
+      return { ok: false, error: 'Invalid devotion route' };
+    }
     return { ok: true, value };
   } catch {
     return { ok: false, error: 'Invalid JSON body' };

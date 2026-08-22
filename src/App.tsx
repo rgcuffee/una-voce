@@ -29,7 +29,7 @@ export default function App() {
         <Route path='/admin/analytics/devotions' element={<AdminPage />} />
         <Route path='/admin/analytics' element={<Navigate to='/admin/analytics/activity' replace />} />
         <Route path='/admin/calendar-engine' element={<AdminAuthGate><CalendarEngineAdminPage /></AdminAuthGate>} />
-        <Route path='/devotions/holy-spirit-mens-ministry/night-prayer' element={<DevotionPage />} />
+        <Route path='/devotions/:devotionSlug/night-prayer' element={<DevotionPage />} />
         <Route path='*' element={<PrayerOfficeMockup />} />
       </Routes>
     </BrowserRouter>

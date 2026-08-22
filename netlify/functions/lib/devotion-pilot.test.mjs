@@ -29,15 +29,23 @@ test('opaque participant tokens are URL-safe, non-recoverable hashes', () => {
     participantLink(token, 'http://127.0.0.1:8888'),
     `http://127.0.0.1:8888/devotions/holy-spirit-mens-ministry/night-prayer?p=${token}`,
   );
+  assert.equal(
+    participantLink(token, 'https://unavoce.net', 'parish-advent-prayer'),
+    `https://unavoce.net/devotions/parish-advent-prayer/night-prayer?p=${token}`,
+  );
+  assert.throws(
+    () => participantLink(token, 'https://unavoce.net', '../unsafe'),
+    /Invalid devotion slug/,
+  );
 });
 
 test('participant tokens can be derived again without storing the raw link', () => {
   const participantId = '11111111-1111-4111-8111-111111111111';
-  const first = deriveParticipantToken(participantId, 'stable-test-secret');
-  const second = deriveParticipantToken(participantId, 'stable-test-secret');
+  const first = deriveParticipantToken(participantId, 'stable-test-secret-at-least-32-chars');
+  const second = deriveParticipantToken(participantId, 'stable-test-secret-at-least-32-chars');
   const other = deriveParticipantToken(
     '22222222-2222-4222-8222-222222222222',
-    'stable-test-secret',
+    'stable-test-secret-at-least-32-chars',
   );
 
   assert.equal(first, second);
@@ -45,7 +53,11 @@ test('participant tokens can be derived again without storing the raw link', () 
   assert.equal(isParticipantToken(first), true);
   assert.throws(
     () => deriveParticipantToken(participantId, ''),
-    /link secret is not configured/,
+    /at least 32 characters/,
+  );
+  assert.throws(
+    () => deriveParticipantToken(participantId, 'too-short'),
+    /at least 32 characters/,
   );
 });
 
@@ -120,4 +132,12 @@ test('an unconfigured devotion remains inactive', () => {
     resolvePilotDay({ ...configured, status: 'inactive', start_date: null }),
     { phase: 'inactive', pilotDay: null, prayerDate: null },
   );
+});
+
+test('scheduled cohorts resolve by their configured duration and closed states stop reporting', () => {
+  const twelveNights = { ...configured, status: 'scheduled', duration_days: 12 };
+  assert.equal(resolvePilotDay(twelveNights, '2026-08-21T19:00:00.000Z').pilotDay, 12);
+  assert.equal(resolvePilotDay(twelveNights, '2026-08-22T19:00:00.000Z').phase, 'completed');
+  assert.equal(resolvePilotDay({ ...configured, status: 'paused' }).phase, 'inactive');
+  assert.equal(resolvePilotDay({ ...configured, status: 'archived' }).phase, 'completed');
 });

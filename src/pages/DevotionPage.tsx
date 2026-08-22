@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import {
   DevotionNightPrayerResources,
   type DevotionResourceAttribution,
@@ -34,6 +34,7 @@ type PageState =
 
 export function DevotionPage() {
   const location = useLocation();
+  const { devotionSlug = '' } = useParams<{ devotionSlug: string }>();
   const token = useMemo(
     () => new URLSearchParams(location.search).get('p') ?? '',
     [location.search],
@@ -43,21 +44,25 @@ export function DevotionPage() {
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [saveError, setSaveError] = useState<string | null>(null);
   const trackedOpenRef = useRef<string | null>(null);
+  const readyDevotion = pageState.status === 'ready' ? pageState.data.devotion : null;
 
   useEffect(() => {
     const originalTitle = document.title;
-    document.title = "7-Day Night Prayer | Holy Spirit Men's Ministry | Una Voce";
+    document.title = readyDevotion
+      ? `${readyDevotion.name} | ${readyDevotion.organizationLabel} | Una Voce`
+      : 'Night Prayer Devotion | Una Voce';
     const description = ensureMeta('description');
     const ogTitle = ensureMeta('og:title', true);
     const ogDescription = ensureMeta('og:description', true);
-    description.element.setAttribute('content', 'A seven-night invitation to pray Night Prayer with Una Voce.');
-    ogTitle.element.setAttribute('content', "Holy Spirit Men's Ministry: 7-Day Night Prayer");
-    ogDescription.element.setAttribute('content', 'Open tonight’s Night Prayer resources and record your response.');
+    const summary = readyDevotion?.description ?? 'Pray Night Prayer with Una Voce and record your response.';
+    description.element.setAttribute('content', summary);
+    ogTitle.element.setAttribute('content', readyDevotion ? `${readyDevotion.organizationLabel}: ${readyDevotion.name}` : 'Night Prayer Devotion');
+    ogDescription.element.setAttribute('content', summary);
     return () => {
       document.title = originalTitle;
       [description, ogTitle, ogDescription].forEach(restoreMeta);
     };
-  }, []);
+  }, [readyDevotion?.description, readyDevotion?.name, readyDevotion?.organizationLabel]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -65,7 +70,7 @@ export function DevotionPage() {
     setSaveState('idle');
     setSaveError(null);
 
-    if (!token) {
+    if (!token || !devotionSlug) {
       setPageState({
         status: 'error',
         message: 'This participant link is invalid or unavailable.',
@@ -73,7 +78,7 @@ export function DevotionPage() {
       return () => controller.abort();
     }
 
-    resolveDevotionParticipant(token, controller.signal)
+    resolveDevotionParticipant(token, devotionSlug, controller.signal)
       .then((data) => {
         setPageState({ status: 'ready', data });
         setSelectedOutcome(data.report?.outcome ?? null);
@@ -90,7 +95,7 @@ export function DevotionPage() {
       });
 
     return () => controller.abort();
-  }, [token]);
+  }, [devotionSlug, token]);
 
   useEffect(() => {
     if (pageState.status !== 'ready' || pageState.data.timing.phase !== 'active') return;
@@ -111,7 +116,7 @@ export function DevotionPage() {
     setSaveState('saving');
     setSaveError(null);
     try {
-      const saved = await submitDevotionReport(token, selectedOutcome);
+      const saved = await submitDevotionReport(token, devotionSlug, selectedOutcome);
       setPageState({
         status: 'ready',
         data: { ...pageState.data, report: saved.report },
@@ -143,14 +148,14 @@ export function DevotionPage() {
       </header>
       <main className="devotion-main">
         {pageState.status === 'loading' ? (
-          <StateCard eyebrow="7-Day Night Prayer" title="Preparing tonight’s prayer…">
+          <StateCard eyebrow="Night Prayer Devotion" title="Preparing tonight’s prayer…">
             <p>Please wait a moment.</p>
           </StateCard>
         ) : null}
         {pageState.status === 'error' ? (
-          <StateCard eyebrow="Holy Spirit Men's Ministry" title="This link isn’t available" error>
+          <StateCard eyebrow="Night Prayer Devotion" title="This link isn’t available" error>
             <p>{pageState.message}</p>
-            <p>Ask the ministry organizer to reissue your participant link.</p>
+            <p>Ask the campaign organizer to reissue your participant link.</p>
           </StateCard>
         ) : null}
         {pageState.status === 'ready' ? (
@@ -194,7 +199,7 @@ function DevotionContent({
     return (
       <StateCard
         eyebrow={devotion.organizationLabel}
-        title={completed ? 'The seven-night devotion is complete' : 'This devotion has not begun'}
+        title={completed ? 'This devotion is complete' : 'This devotion has not begun'}
       >
         <p>
           {completed
@@ -227,7 +232,7 @@ function DevotionContent({
             <span key={index} className={index < timing.pilotDay! ? 'complete' : ''} aria-hidden="true" />
           ))}
         </div>
-        <p>Settle in, let the day grow quiet, and choose the Night Prayer resource that will help you pray tonight.</p>
+        <p>{devotion.description ?? 'Settle in, let the day grow quiet, and choose the Night Prayer resource that will help you pray tonight.'}</p>
       </section>
 
       <DevotionNightPrayerResources

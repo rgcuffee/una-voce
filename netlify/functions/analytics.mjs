@@ -283,7 +283,7 @@ export function validateAnalyticsEvent(detail) {
   if (
     detail.pilotDay !== undefined &&
     detail.pilotDay !== null &&
-    !isIntegerBetween(detail.pilotDay, 1, 7)
+    !isIntegerBetween(detail.pilotDay, 1, 40)
   ) {
     return 'Invalid pilotDay';
   }

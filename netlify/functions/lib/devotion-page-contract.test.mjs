@@ -31,6 +31,7 @@ test('the devotion route builds a crawler-visible campaign document', async () =
     viteConfig,
     /navigateFallbackDenylist:\s*\[\/\^\\\/devotions\\\/\//,
   );
+  assert.match(viteConfig, /server\.middlewares\.use\(\s*'\/api\/devotion'/);
   assert.match(
     netlifyConfig,
     /from = "\/devotions\/holy-spirit-mens-ministry\/night-prayer"[\s\S]*to = "\/devotions\/holy-spirit-mens-ministry\/night-prayer\/index\.html"[\s\S]*force = true/,
@@ -54,14 +55,15 @@ test('invalid-link and focus styles expose accessible state', async () => {
 });
 
 test('devotion admin uses a timezone picker and readable resource results', async () => {
-  const admin = await readFile(
-    new URL('src/admin/DevotionAnalyticsSection.tsx', root),
-    'utf8',
-  );
+  const [admin, app] = await Promise.all([
+    readFile(new URL('src/admin/DevotionAnalyticsSection.tsx', root), 'utf8'),
+    readFile(new URL('src/App.tsx', root), 'utf8'),
+  ]);
 
-  assert.match(admin, /<select name="timezone"/);
+  assert.match(admin, /<TimezoneField name="timezone"/);
   assert.match(admin, /America\/Los_Angeles/);
   assert.match(admin, />Show link<\/button>/);
   assert.match(admin, /resource\.label/);
   assert.match(admin, /resource\.measuredMinutes/);
+  assert.match(app, /path=['"]\/devotions\/:devotionSlug\/night-prayer['"]/);
 });
