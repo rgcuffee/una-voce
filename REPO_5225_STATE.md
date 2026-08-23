@@ -4,10 +4,10 @@
 - Branch: `main`
 - Upstream: `origin/main` (local checkpoint only; not pushed or deployed)
 - Recovery baseline: `841b2507cc4f568fa66d76fd9d9d2818860e0ed6`
-- Last verified commit: `b3dd6f741de5d8db97201d294a012d3465919893`
-- Last verified: `2026-08-22`
-- Last completed sprint: Smart Prayer Links integration — deterministic direct Hour hash navigation
-- QA: PASS — independent GPT-5.6-Sol xhigh read-only review found no remaining P0-P3 issues.
+- Last verified commit: `4282d3d8eec4c4edd6025a89813da61672d2b592`
+- Last verified: `2026-08-23`
+- Last completed sprint: Pre-Alpha Campaign Sprint A — Current-State Reconciliation + Pilot Gap Closure
+- QA: PASS — independent GPT-5.6-Sol xhigh read-only review found zero blocking defects.
 
 ## Runtime
 
@@ -31,6 +31,16 @@
 - Admin Redesign Sprint 2 analytics and devotion intelligence: `d59fc473b7f573e18762c413c969c86ca444f0b0`.
 - Devotion Engine Sprints 4–5 operations, analytics, and hardening: `aa626ca267cc657a15bf46b55f2ea12fbdf00f60`.
 - Smart Prayer Links deterministic direct-Hour hash navigation, including StrictMode safety: `b3dd6f741de5d8db97201d294a012d3465919893`.
+- Pre-Alpha Campaign Sprint A pilot-operability reconciliation: `4282d3d8eec4c4edd6025a89813da61672d2b592`.
+
+## Pre-Alpha Campaign Sprint A verification
+
+- Sprint A collapsed to a documentation-only reconciliation checkpoint: no P0/P1 pilot-operability code gap was found, and no runtime, schema, telemetry, authorization, or UI change was required.
+- The durable `SATISFIED / DEFERRED` matrix in `docs/devotion-engine.md` reconciles the original single-campaign alpha against the authoritative Devotion Engine Sprints 4–5 operations model.
+- The current stable HMAC-derived participant-link model, authorized Show link, revoke/restore behavior, one-time legacy upgrade, token-hash-only storage, route isolation, configured-timezone 4:00 a.m. boundary, idempotent nightly reports, and existing resource/player attribution all remain satisfied.
+- Focused Builder verification: 47/47 PASS. Full `npm test`: 108/108 PASS. `npm run build:verify`: PASS. Independent QA: 49/49 focused PASS with zero blocking defects.
+- Read-only local Function smoke passed for the public campaign route, invalid participant failure, unauthenticated admin denial, authenticated admin read, and the active/date/timezone configuration of the target campaign. No production mutation endpoint was called.
+- Unrelated untracked operator files were preserved. No production mutation, participant-link disclosure, report submission, deployment, Git push, or schema change was performed.
 
 ## Smart Prayer Links integration verification
 
@@ -84,8 +94,8 @@
 
 ## Documentation reconnaissance note
 
-- This file, `README.md`, and `docs/architecture.md` contain loopback-only language for the Netlify development stack. Dev-function binding behavior was explicitly outside the devotion recovery scope and was not changed or re-authorized by Sprint 1.
-- The sprint source names `docs/5225/REPO_5225_STATE.md` as canonical, while this repository contract and verifier use this root file. Both are maintained at this checkpoint pending a documentation-only canonical-path reconciliation.
+- `docs/5225/REPO_5225_STATE.md` is the living 5225 narrative required by the orchestration standard; this root file remains the contract/verifier surface used by `npm run verify:5225-state`. Sprint A reconciled both surfaces to the same approved product truth.
+- Loopback-only development behavior remains unchanged. The successful Function smoke used alternate loopback ports because port 5173 was occupied by another repository; no repository configuration changed.
 
 ## 5225 update gate
 
