@@ -2,6 +2,7 @@ export function schedulePrayerHashScroll(
   hash,
   validSegmentIds,
   environment = window,
+  onComplete,
 ) {
   const segmentId = typeof hash === 'string' ? hash.replace(/^#/, '') : '';
 
@@ -13,9 +14,11 @@ export function schedulePrayerHashScroll(
   const frameId = environment.requestAnimationFrame(() => {
     if (cancelled) return;
 
-    environment.document
-      .getElementById(segmentId)
-      ?.scrollIntoView({ behavior: 'auto', block: 'start' });
+    const target = environment.document.getElementById(segmentId);
+    if (!target) return;
+
+    target.scrollIntoView({ behavior: 'auto', block: 'start' });
+    onComplete?.(segmentId);
   });
 
   return () => {

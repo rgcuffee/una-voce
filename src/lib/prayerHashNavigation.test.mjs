@@ -84,3 +84,42 @@ test('cleanup cancels a queued direct-hash scroll before it can run', () => {
   assert.deepEqual(environment.cancelledFrames, [17]);
   assert.deepEqual(scrollCalls, []);
 });
+
+test('a StrictMode setup-cleanup-setup cycle retains the initial hash until its second frame scrolls', () => {
+  const scrollCalls = [];
+  const environment = createEnvironment({
+    'segment-night': {
+      scrollIntoView(options) {
+        scrollCalls.push(options);
+      },
+    },
+  });
+  let initialHash = '#segment-night';
+  let completed = false;
+  const setup = () => {
+    if (completed) return () => {};
+    return schedulePrayerHashScroll(
+      initialHash,
+      ['segment-night'],
+      environment,
+      () => {
+        completed = true;
+        initialHash = '';
+      },
+    );
+  };
+
+  const firstCleanup = setup();
+  firstCleanup();
+  const secondCleanup = setup();
+  environment.runFrame();
+  secondCleanup();
+
+  assert.equal(completed, true);
+  assert.equal(initialHash, '');
+  assert.deepEqual(scrollCalls, [{ behavior: 'auto', block: 'start' }]);
+  assert.deepEqual(environment.cancelledFrames, [17, 17]);
+  setup();
+  environment.runFrame();
+  assert.deepEqual(scrollCalls, [{ behavior: 'auto', block: 'start' }]);
+});

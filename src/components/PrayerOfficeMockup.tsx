@@ -2866,6 +2866,7 @@ export function PrayerOfficeMockup() {
   const initialHashRef = useRef(
     typeof window === 'undefined' ? '' : window.location.hash,
   );
+  const initialHashScrollCompletedRef = useRef(false);
   const selectedDate = selectedDateFromSearch(location.search);
   const dateControlRef = useRef<HTMLDivElement | null>(null);
   const dateInputRef = useRef<HTMLInputElement | null>(null);
@@ -3125,13 +3126,19 @@ export function PrayerOfficeMockup() {
 
   useEffect(() => {
     const initialHash = initialHashRef.current;
-    initialHashRef.current = '';
 
-    if (activeView !== 'today' || !segmentIdFromHash(initialHash)) {
+    if (
+      activeView !== 'today' ||
+      initialHashScrollCompletedRef.current ||
+      !segmentIdFromHash(initialHash)
+    ) {
       return;
     }
 
-    return schedulePrayerHashScroll(initialHash, SEGMENT_IDS);
+    return schedulePrayerHashScroll(initialHash, SEGMENT_IDS, window, () => {
+      initialHashScrollCompletedRef.current = true;
+      initialHashRef.current = '';
+    });
   }, [activeView]);
 
   useEffect(() => {
