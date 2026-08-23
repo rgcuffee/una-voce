@@ -20,6 +20,7 @@ import {
   type LiturgicalDayOption,
 } from '../lib/liturgicalCalendar';
 import { trackAnalyticsEvent } from '../lib/prayerAnalytics';
+import { schedulePrayerHashScroll } from '../lib/prayerHashNavigation.mjs';
 import {
   getTextPrayerProviders,
   shiftCivilDate,
@@ -1277,6 +1278,7 @@ const SEGMENT_SUBTITLES: Record<string, string> = {
 };
 
 const DEFAULT_TODAY_SEGMENT_ID = 'segment-morning';
+const SEGMENT_IDS = SEGMENTS.map((segment) => segment.id);
 
 function segmentIdFromHash(hash: string) {
   const segmentId = hash.replace(/^#/, '');
@@ -2861,6 +2863,9 @@ function usePrayerResources(
 export function PrayerOfficeMockup() {
   const location = useLocation();
   const routerNavigate = useNavigate();
+  const initialHashRef = useRef(
+    typeof window === 'undefined' ? '' : window.location.hash,
+  );
   const selectedDate = selectedDateFromSearch(location.search);
   const dateControlRef = useRef<HTMLDivElement | null>(null);
   const dateInputRef = useRef<HTMLInputElement | null>(null);
@@ -3117,6 +3122,17 @@ export function PrayerOfficeMockup() {
       segmentIdFromHash(location.hash) ?? DEFAULT_TODAY_SEGMENT_ID,
     );
   }, [activeView, location.hash]);
+
+  useEffect(() => {
+    const initialHash = initialHashRef.current;
+    initialHashRef.current = '';
+
+    if (activeView !== 'today' || !segmentIdFromHash(initialHash)) {
+      return;
+    }
+
+    return schedulePrayerHashScroll(initialHash, SEGMENT_IDS);
+  }, [activeView]);
 
   useEffect(() => {
     if (!isDatePickerOpen) {

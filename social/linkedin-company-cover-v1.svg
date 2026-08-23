@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="4000" height="700" viewBox="0 0 4000 700">
+  <defs>
+    <linearGradient id="base" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#121310"/>
+      <stop offset="0.46" stop-color="#171411"/>
+      <stop offset="1" stop-color="#090909"/>
+    </linearGradient>
+    <linearGradient id="photo-mask-gradient" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#fff"/>
+      <stop offset="0.48" stop-color="#fff"/>
+      <stop offset="0.76" stop-color="#777"/>
+      <stop offset="1" stop-color="#000"/>
+    </linearGradient>
+    <linearGradient id="photo-vignette" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#000" stop-opacity="0.25"/>
+      <stop offset="0.5" stop-color="#000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0.38"/>
+    </linearGradient>
+    <mask id="photo-mask" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse"
+      x="0" y="0" width="2000" height="700">
+      <rect x="0" y="0" width="1950" height="700" fill="url(#photo-mask-gradient)"/>
+    </mask>
+  </defs>
+
+  <rect width="4000" height="700" fill="url(#base)"/>
+
+  <g mask="url(#photo-mask)">
+    <image href="assets/linkedin-prayer-book-source.png"
+      x="0" y="-110" width="1950" height="920"
+      preserveAspectRatio="xMidYMid slice"/>
+    <rect x="0" y="0" width="1950" height="700" fill="url(#photo-vignette)"/>
+  </g>
+
+  <rect x="38" y="38" width="3924" height="624" rx="30"
+    fill="none" stroke="#C8A25A" stroke-width="2" stroke-opacity="0.72"/>
+
+  <text x="2070" y="208"
+    fill="#F7F4EE" font-family="Didot" font-size="118" font-weight="400"
+    letter-spacing="28">UNA <tspan fill="#C8A25A">VOCE</tspan></text>
+
+  <line x1="2074" y1="264" x2="2450" y2="264" stroke="#C8A25A" stroke-width="3"/>
+  <text x="2500" y="279" fill="#C8A25A" font-family="Baskerville" font-size="48">✝</text>
+  <line x1="2562" y1="264" x2="2938" y2="264" stroke="#C8A25A" stroke-width="3"/>
+
+  <text x="2070" y="342"
+    fill="#F7F4EE" font-family="Avenir" font-size="35" font-weight="400"
+    letter-spacing="14">THE CHURCH AT PRAYER</text>
+
+  <text x="2070" y="488"
+    fill="#F7F4EE" font-family="Didot" font-size="92" font-weight="400"
+    letter-spacing="1">Begin praying with the Church today.</text>
+
+  <text x="2074" y="590"
+    fill="#F7F4EE" font-family="Avenir" font-size="30" font-weight="400"
+    letter-spacing="11">UNAVOCE.NET</text>
+</svg>
