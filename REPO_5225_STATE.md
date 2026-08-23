@@ -4,10 +4,10 @@
 - Branch: `main`
 - Upstream: `origin/main` (local checkpoint only; not pushed or deployed)
 - Recovery baseline: `841b2507cc4f568fa66d76fd9d9d2818860e0ed6`
-- Last verified commit: `aa626ca267cc657a15bf46b55f2ea12fbdf00f60`
+- Last verified commit: `b3dd6f741de5d8db97201d294a012d3465919893`
 - Last verified: `2026-08-22`
-- Last completed sprint: Devotion Engine Sprints 4–5 — operations, analytics, and hardening
-- QA: PASS — independent GPT-5.6-Sol xhigh review found no remaining P0-P3 issues
+- Last completed sprint: Smart Prayer Links integration — deterministic direct Hour hash navigation
+- QA: PASS — independent GPT-5.6-Sol xhigh read-only review found no remaining P0-P3 issues.
 
 ## Runtime
 
@@ -30,6 +30,16 @@
 - Admin Redesign Sprint 1 routed hub and partner reorganization: `d83b293829a1c18c1e7c32356eee9c5c17b07cc1`.
 - Admin Redesign Sprint 2 analytics and devotion intelligence: `d59fc473b7f573e18762c413c969c86ca444f0b0`.
 - Devotion Engine Sprints 4–5 operations, analytics, and hardening: `aa626ca267cc657a15bf46b55f2ea12fbdf00f60`.
+- Smart Prayer Links deterministic direct-Hour hash navigation, including StrictMode safety: `b3dd6f741de5d8db97201d294a012d3465919893`.
+
+## Smart Prayer Links integration verification
+
+- `npm test`: 108/108 PASS.
+- `npm run build:verify`: PASS. The verification build used its temporary output and did not update tracked `dist` artifacts.
+- All four valid anchors, `segment-morning`, `segment-midday`, `segment-evening`, and `segment-night`, receive a post-mount `scrollIntoView({ behavior: 'auto', block: 'start' })` after direct hash entry.
+- The direct-hash helper retains the hash through a React StrictMode setup, cancellation, and retry cycle; it marks completion only after the mounted target is successfully scrolled and does not repeat during later normal view changes.
+- Existing in-app navigation retains its smooth scrolling and date selection behavior.
+- No Git push or deployment was performed by agents for this integration. This checkpoint documents only the deterministic hash-navigation work, not unrelated operator changes.
 
 ## Devotion Engine Sprints 4–5 verification
 
