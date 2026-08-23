@@ -61,3 +61,26 @@ Optional role configuration:
 - `ADMIN_DEVOTION_VIEWER_EMAILS`
 
 Schema migration and Netlify environment/deployment are separate operator-approved production actions. Checked-in code does not imply those actions have occurred.
+
+## Sprint A pilot-operability reconciliation
+
+Inspected checkpoint: `fa127729d374f3e7636642b116000bf592e8a37d` (2026-08-23).
+Sprint A reconciles the original single-campaign alpha with the landed Devotion
+Engine Sprints 4–5 model; the latter is authoritative where they differ and
+does not introduce a second architecture.
+
+| Pilot requirement | Status | Reconciliation evidence |
+| --- | --- | --- |
+| Configure/start without production DB edits | **SATISFIED** | Owner creates a draft campaign and atomic `General` cohort; owner/editor configuration requires an IANA timezone and start date before `scheduled`/`active`. Operations UI exposes the lifecycle form. |
+| Create/show/revoke/restore participant links | **SATISFIED** | Authorized create/show derives a campaign-scoped HMAC token and stores only its SHA-256 hash. Revoke blocks resolve and disclosure; restore is recoverable. The UI provides Copy plus select/copy fallback for manual reminder/SMS use. |
+| Sprint 1 one-time random-token “reissue” wording | **SATISFIED — superseded intentionally** | The current stable, server-derived token is reconstructed only for authorized Show link; a legacy random hash upgrades once. This intentionally replaces token rotation with recoverable revocation/restoration, route matching, role checks, and no raw-token persistence. |
+| Timezone, 4 a.m. boundary, and participant identity isolation | **SATISFIED** | Server resolution uses cohort schedule with campaign fallback, configured timezone, 04:00 local rollover, and campaign-route matching. Tests cover pre-start, Nights 1–7, completion, DST, and invalid/revoked/cross-campaign links without roster disclosure. |
+| Idempotent nightly outcome visible to operator | **SATISFIED** | Reports upsert on `devotion_id + participant_id + pilot_day`; participant/night evidence and campaign rollups expose the resulting outcome. |
+| Existing resource/player telemetry attribution | **SATISFIED** | Page, resource, report, and player/session telemetry carries devotion, participant, pilot-day, and prayer-date attribution where designed; validation rejects incomplete attribution and storage removes participant tokens. |
+| Automated SMS, generalized CMS, UX redesign, later analytics concepts | **DEFERRED** | Outside Sprint A; the engine intentionally collects no contact data and sends no outbound reminders. |
+
+No P0/P1 pilot-operability gap was found at this checkpoint. Repository state
+records the operations migrations as applied to production and a dedicated
+production `DEVOTION_LINK_SECRET` as configured. Sprint A performed no
+production mutation or deployment; any environment-specific deployment action
+remains operator-controlled.

@@ -3,39 +3,39 @@
 - Repository: `/Users/richcuff/Documents/_werk/una-voce`
 - Branch: `main`
 - Recovery baseline: `841b2507cc4f568fa66d76fd9d9d2818860e0ed6`
-- Sprint mode: `LONG-SPRINT`
+- Sprint mode: `STANDARD`
 - 5225 version: `1.8`
-- Last completed sprint: `Sprint 1 — Holy Spirit Men's Ministry 7-Day Night Prayer Devotion`
-- Current Approved Checkpoint: `SELF`
-- Verified: `2026-08-18`
-- QA: `PASS — three scoped slices plus final independent integration gate`
+- Last completed sprint: `Pre-Alpha Campaign Sprint A — Current-State Reconciliation + Pilot Gap Closure`
+- Current Approved Checkpoint: `SELF (commit containing this state update)`
+- Previous approved checkpoint: `fa127729d374f3e7636642b116000bf592e8a37d`
+- Verified: `2026-08-23`
+- QA: `PASS — one bounded independent GPT-5.6 Sol xhigh review; zero blocking defects`
 
-## Approved product truth
+## Sprint A result
 
-- The checked-in migration adds the bounded devotion, participant, nightly-report, and attributable analytics schema. The Holy Spirit Men's Ministry alpha seed remains inactive and unconfigured until an operator supplies the start date, timezone, survey URLs, and participant labels.
-- Participant links use one stable opaque token at a time. Only the SHA-256 token hash is stored. The complete URL is disclosed once on create or reissue; later admin loads expose only a safe participant ID and link status.
-- Participant resolution and current nightly-report upserts run through the existing Netlify Function/service-role boundary. Report identity is `devotion + participant + pilot_day`; `prayer_date` remains recorded data.
-- Pilot-night resolution uses the configured IANA timezone and a 4:00 a.m. local rollover. Active Night 1–7, pre-start, completed, invalid, and revoked states are implemented without browser-timezone dependence.
-- The participant page reuses the existing Night Prayer resource/provider/date/media engine. Resource opens and measurable prayer-player sessions retain structured devotion, participant, night, provider, resource, media, and duration attribution.
-- The existing admin application has a native top-level **Devotion Analytics** tab with the required summary metrics, enrollment and one-time link display, configuration controls, link reissue/revoke actions, and participant × Night 1–7 evidence matrix.
-- The campaign document has route-specific crawler metadata and privacy headers. The PWA navigation fallback excludes `/devotions/*`, so service-worker-controlled visits retain the campaign document's referrer protections.
-- Analytics removes participant-token keys, token-shaped values, and devotion `p` query parameters before persistence. Raw participant tokens are not stored in analytics, emitted in logs, returned by later dashboard loads, or embedded in the campaign document.
+- Sprint A collapsed to a documentation-only reconciliation checkpoint because the landed Devotion Engine satisfies every pilot-core P0/P1 acceptance criterion. No runtime, schema, telemetry, authorization, or UI change was required.
+- The durable `SATISFIED / DEFERRED` matrix is recorded in `docs/devotion-engine.md`.
+- The Devotion Engine Sprints 4–5 operations model is authoritative where it supersedes the original single-campaign alpha: participant links are stable, campaign-scoped HMAC derivations exposed only through authorized create/show actions; only their SHA-256 hashes are stored; revocation blocks resolution and disclosure; restoration is recoverable; legacy random hashes upgrade once.
+- Campaign and cohort configuration, owner/editor/viewer boundaries, participant operations, idempotent nightly reporting, 4:00 a.m. configured-timezone resolution, participant isolation, and existing resource/player attribution remain on the established Netlify Functions, Supabase, analytics, and admin seams.
+- Automated SMS, generalized campaign CMS, devotion UX redesign, and later campaign analytics concepts remain deferred.
 
 ## Validation and QA
 
-- Canonical tests: `npm test` — `52/52 PASS`.
-- Production-equivalent build: `npm run build:verify` — `PASS` (`103` modules; nested devotion document and PWA artifacts emitted).
-- Repository hygiene: `git diff --check` — `PASS`.
-- Independent QA: Slice 1 data/security/telemetry `PASS`; Slice 2 participant/accessibility/visual `PASS`; Slice 3 admin/integration/privacy `PASS`; final integration gate `PASS`.
-- Representative local smoke: participant active/pre-start/completed/invalid states, report create/update, admin dashboard, one-time link generation, protected APIs, route-specific HTTP metadata, and token-free referrer/service-worker behavior `PASS`.
+- Focused Builder devotion verification: `47/47 PASS`.
+- Full repository suite: `npm test` — `108/108 PASS`.
+- Production-equivalent build: `npm run build:verify` — `PASS`.
+- Independent read-only QA: `49/49` focused tests — `PASS`; zero blocking defects.
+- Repository hygiene: `git diff --check` — `PASS`; unrelated untracked operator files were preserved.
+- Read-only local Function smoke: public campaign route `200`; invalid participant resolution `404`; unauthenticated admin read `401`; authenticated admin read `200`; target campaign present, active, start-dated, and timezone-configured.
+- The canonical port `5173` was already owned by another repository, so the successful Netlify Function smoke used loopback ports `5174/8889` in offline mode. No behavior or configuration was changed to accommodate the port conflict.
 
-## Operator follow-up before the alpha runs
+## Production and operator boundary
 
-- Apply the checked-in Supabase migration through the normal operator-controlled release process.
-- Configure the real start date, IANA timezone, pre/post survey URLs, and participant labels in Devotion Analytics, then explicitly activate the devotion.
-- No migration was applied, no production data was mutated, and nothing was pushed or deployed in Sprint 1.
+- Repository truth records the devotion operations migrations as applied to production and a dedicated production `DEVOTION_LINK_SECRET` as configured.
+- Sprint A performed no production mutation, participant enrollment, participant-link disclosure, report submission, deployment, or Git push.
+- Environment-specific deployment and the later pre-alpha campaign sprints remain operator-controlled.
 
-## Documentation and reconnaissance debt
+## Documentation reconciliation
 
-- The sprint source names this file as canonical, while the repository's current `AGENTS.md`, completion contract, and verifier use root `REPO_5225_STATE.md`. Both state surfaces are maintained for this checkpoint; a later documentation-only reconciliation should select one canonical path.
-- Root `REPO_5225_STATE.md`, `README.md`, and `docs/architecture.md` contain loopback-only language for the Netlify development stack. Runtime binding behavior is outside this devotion sprint; no `dev:functions`, LAN, or loopback behavior was changed or re-authorized here.
+- This canonical state is reconciled to current Git and the root `REPO_5225_STATE.md` contract surface at the Sprint A checkpoint.
+- Root `REPO_5225_STATE.md` remains the path enforced by `npm run verify:5225-state`; this file remains the canonical living 5225 narrative required by the orchestration standard.
