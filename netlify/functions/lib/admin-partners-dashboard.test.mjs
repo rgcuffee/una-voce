@@ -87,6 +87,8 @@ test('analytics dimension allowlists reject arbitrary public strings', () => {
   assert.equal(safeAnalyticsDimension('event', 'john.smith'), null);
   assert.equal(safeCampaignSource('google'), 'google');
   assert.equal(safeCampaignSource('campaign-john-smith'), null);
+  assert.equal(safeCampaignSource('links_page'), 'links_page');
+  assert.equal(safeAnalyticsDimension('event', 'current_hour_cta_clicked'), 'current_hour_cta_clicked');
   assert.equal(safeContentLabel('AbC123dEf45'), null);
   assert.equal(safeContentLabel('5551234567'), null);
 });

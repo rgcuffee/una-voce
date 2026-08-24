@@ -5,10 +5,13 @@ import {
   validateAnalyticsEvent,
 } from '../analytics.mjs';
 
+const NOW = new Date();
+const STARTED_AT = NOW.toISOString();
+const ENDED_AT = new Date(NOW.getTime() + 5 * 60 * 1000).toISOString();
 const valid = {
   sessionId: '11111111-1111-4111-8111-111111111111',
   eventName: 'devotion_resource_opened',
-  startedAt: '2026-08-19T00:00:00.000Z',
+  startedAt: STARTED_AT,
   anonymousId: 'anonymous',
   devotionId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
   devotionParticipantId: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
@@ -99,7 +102,7 @@ test('devotion prayer-player sessions persist structured media attribution', asy
   const endResult = await handler(request({
     ...started,
     eventName: 'prayer_session_ended',
-    occurredAt: '2026-08-19T00:12:00.000Z',
+    occurredAt: ENDED_AT,
     panelOpenSeconds: 720,
   }));
 
@@ -130,7 +133,7 @@ test('devotion prayer-player sessions persist structured media attribution', asy
     prayer_date: '2026-08-18',
     resource_id: 'video-123',
     media_type: 'video',
-    ended_at: '2026-08-19T00:12:00.000Z',
+    ended_at: ENDED_AT,
     panel_open_seconds: 720,
     active_play_seconds: 0,
   });

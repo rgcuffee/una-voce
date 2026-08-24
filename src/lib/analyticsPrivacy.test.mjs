@@ -44,3 +44,9 @@ test('participant token-shaped metadata keys are recursively discarded', () => {
     },
   );
 });
+
+test('camelCase credential fields and token-shaped campaign values never survive recursion', () => {
+  const token = 'b'.repeat(43);
+  assert.deepEqual(sanitizeAnalyticsMetadata({ rawToken: 'x', authToken: 'x', clientSecret: 'x', nested: { apiKey: 'x', campaign: token } }), { nested: { campaign: '[redacted-participant-token]' } });
+  assert.equal(sanitizeAnalyticsPagePath(`/pray?utm_campaign=${token}&clientSecret=x`), '/pray');
+});

@@ -1,36 +1,19 @@
 import { createClient } from '@supabase/supabase-js';
+import { createHash } from 'node:crypto';
 import {
   sanitizeAnalyticsMetadata,
   sanitizeAnalyticsPagePath,
   sanitizeAnalyticsReferrer,
 } from '../../src/lib/analyticsPrivacy.mjs';
+import {
+  ANALYTICS_EVENT_NAMES,
+  isRfc3339Timestamp,
+  isCanonicalAcquisitionSource,
+  isCanonicalAcquisitionSurface,
+  validateAnalyticsEventContract,
+} from '../../src/lib/analyticsContract.mjs';
 
-const EVENT_NAMES = new Set([
-  'app_opened',
-  'page_viewed',
-  'navigation_clicked',
-  'community_page_viewed',
-  'community_outbound_clicked',
-  'content_card_viewed',
-  'content_card_clicked',
-  'prayer_session_started',
-  'prayer_play_started',
-  'prayer_play_paused',
-  'prayer_play_resumed',
-  'prayer_progress',
-  'prayer_completed',
-  'prayer_session_ended',
-  'source_opened',
-  'platform_opened',
-  'share_clicked',
-  'search_performed',
-  'filter_changed',
-  'utm_landing_recorded',
-  'devotion_page_opened',
-  'devotion_resource_opened',
-  'devotion_report_submitted',
-  'devotion_survey_clicked',
-]);
+const EVENT_NAMES = new Set(ANALYTICS_EVENT_NAMES);
 
 const JSON_HEADERS = {
   'content-type': 'application/json',
@@ -71,9 +54,9 @@ export function createAnalyticsHandler(client) {
   }
 
   const detail = sanitizeAnalyticsMetadata(payload.value);
-  detail.pagePath = sanitizeAnalyticsPagePath(detail.pagePath);
-  detail.referrer = sanitizeAnalyticsReferrer(detail.referrer);
-  detail.sourceUrl = sanitizeAnalyticsReferrer(detail.sourceUrl);
+  detail.pagePath = sanitizeAnalyticsPagePath(detail.pagePath) || undefined;
+  detail.referrer = sanitizeAnalyticsReferrer(detail.referrer) || undefined;
+  detail.sourceUrl = sanitizeAnalyticsReferrer(detail.sourceUrl) || undefined;
   const validationError = validateAnalyticsEvent(detail);
   if (validationError) {
     return response(400, { error: validationError });
@@ -107,10 +90,18 @@ export function createAnalyticsHandler(client) {
     prayerDate: detail.prayerDate,
     resourceId: detail.resourceId,
     mediaType: detail.mediaType,
+    acquisitionSource: detail.acquisitionSource,
+    acquisitionSurface: detail.acquisitionSurface,
+    acquisitionMedium: detail.acquisitionMedium,
+    acquisitionCampaign: detail.acquisitionCampaign,
+    acquisitionContent: detail.acquisitionContent,
+    acquisitionTerm: detail.acquisitionTerm,
+    installSurface: detail.installSurface,
   });
   if (Buffer.byteLength(JSON.stringify(metadata), 'utf8') > 16 * 1024) return response(400, { error: 'Analytics metadata too large' });
 
-  const eventError = await insertAnalyticsEvent(client, {
+  const eventRow = {
+    event_id: detail.eventId,
     occurred_at: occurredAt,
     session_id: detail.sessionId,
     event_name: detail.eventName,
@@ -143,9 +134,31 @@ export function createAnalyticsHandler(client) {
     prayer_date: detail.prayerDate ?? null,
     resource_id: detail.resourceId ?? null,
     media_type: detail.mediaType ?? null,
-  });
+    acquisition_source: detail.acquisitionSource ?? null,
+    acquisition_surface: detail.acquisitionSurface ?? null,
+    acquisition_medium: detail.acquisitionMedium ?? null,
+    acquisition_campaign: detail.acquisitionCampaign ?? null,
+    acquisition_content: detail.acquisitionContent ?? null,
+    acquisition_term: detail.acquisitionTerm ?? null,
+  };
+  eventRow.payload_fingerprint = analyticsPayloadFingerprint(detail);
 
-  if (eventError === UNSUPPORTED_EVENT_WITHOUT_MIGRATION) {
+  // New schemas use one database transaction for the event and its rollup.
+  // A two-step fallback is deliberately used only before that RPC exists.
+  const sessionDetail = {
+    ...detail,
+    anonymousId,
+    locale,
+    occurredAt,
+  };
+  const atomic = await recordAnalyticsAtomically(client, eventRow, sessionDetail);
+  if (atomic?.error) return response(500, { error: 'Unable to record analytics event' });
+  if (atomic?.duplicate) return response(202, { ok: true, duplicate: true });
+  if (atomic?.inserted) return response(202, { ok: true });
+
+  const inserted = await insertAnalyticsEvent(client, eventRow);
+
+  if (inserted === UNSUPPORTED_EVENT_WITHOUT_MIGRATION) {
     return response(202, {
       ok: true,
       skipped: true,
@@ -153,16 +166,19 @@ export function createAnalyticsHandler(client) {
     });
   }
 
-  if (eventError) {
+  if (inserted?.error) {
     return response(500, { error: 'Unable to record analytics event' });
   }
+  if (inserted?.duplicate) {
+    // A non-atomic insert may have committed while its session mutation
+    // failed. Always run the idempotent session mutation before acknowledging
+    // an exact retry (it is a no-op for events without a session rollup).
+    const repairError = await updateAnalyticsSession(client, sessionDetail);
+    if (repairError) return response(500, { error: 'Unable to update analytics session' });
+    return response(202, { ok: true, duplicate: true });
+  }
 
-  const sessionError = await updateAnalyticsSession(client, {
-    ...detail,
-    anonymousId,
-    locale,
-    occurredAt,
-  });
+  const sessionError = await updateAnalyticsSession(client, sessionDetail);
 
   if (sessionError) {
     return response(500, { error: 'Unable to update analytics session' });
@@ -175,10 +191,20 @@ export function createAnalyticsHandler(client) {
 export const handler = createAnalyticsHandler(supabase);
 
 async function insertAnalyticsEvent(client, row) {
-  const { error } = await client.from('analytics_events').insert(row);
+  const table = client.from('analytics_events');
+  // The unique event_id constraint makes the first insert authoritative. A
+  // duplicate is looked up only to distinguish a retry from cross-session ID
+  // reuse; an exact retry repairs its idempotent session rollup in the caller.
+  const { error } = await table.insert(row);
 
   if (!error) {
-    return null;
+    return { inserted: true };
+  }
+
+  if (isDuplicateEventIdError(error) && row.event_id && typeof table.select === 'function') {
+    const existing = await table.select('session_id, payload_fingerprint').eq('event_id', row.event_id).maybeSingle();
+    if (!existing?.error && existing?.data?.session_id === row.session_id && existing?.data?.payload_fingerprint === row.payload_fingerprint) return { duplicate: true };
+    return { error: new Error('Conflicting analytics event ID') };
   }
 
   if (isUnsupportedEventNameError(error)) {
@@ -186,7 +212,7 @@ async function insertAnalyticsEvent(client, row) {
   }
 
   if (!isMissingAnalyticsMigrationError(error)) {
-    return error;
+    return { error };
   }
 
   const legacyRow = {
@@ -201,19 +227,61 @@ async function insertAnalyticsEvent(client, row) {
     anonymous_id: row.anonymous_id,
     progress_percent: row.progress_percent,
     playback_seconds: row.playback_seconds,
-    metadata: row.metadata,
+    metadata: { ...row.metadata, _analyticsEventId: row.event_id, _analyticsPayloadFingerprint: row.payload_fingerprint },
   };
+  const priorLegacy = await findLegacyEvent(client, row.event_id);
+  if (priorLegacy) {
+    const priorFingerprint = priorLegacy.metadata?._analyticsPayloadFingerprint;
+    if (priorLegacy.session_id === row.session_id && priorFingerprint === row.payload_fingerprint) return { duplicate: true, legacy: true };
+    return { error: new Error('Conflicting analytics event ID') };
+  }
   const { error: legacyError } = await client.from('analytics_events').insert(legacyRow);
 
   if (!legacyError) {
-    return null;
+    return { inserted: true, legacy: true };
   }
 
   if (isUnsupportedEventNameError(legacyError)) {
     return UNSUPPORTED_EVENT_WITHOUT_MIGRATION;
   }
 
-  return legacyError;
+  return { error: legacyError };
+}
+
+async function findLegacyEvent(client, eventId) {
+  if (!eventId) return null;
+  try {
+    const table = client.from('analytics_events');
+    if (typeof table.select !== 'function') return null;
+    const query = table.select('session_id, metadata');
+    if (typeof query.contains !== 'function') return null;
+    const result = await query.contains('metadata', { _analyticsEventId: eventId }).limit(1).maybeSingle();
+    return result?.data ?? null;
+  } catch { return null; }
+}
+
+async function recordAnalyticsAtomically(client, eventRow, sessionDetail) {
+  if (typeof client.rpc !== 'function') return null;
+  const { data, error } = await client.rpc('record_campaign_analytics_event', {
+    p_event: eventRow,
+    p_session: sessionDetail,
+  });
+  if (error && isMissingAnalyticsRpcError(error)) return null;
+  if (error) return { error };
+  const result = Array.isArray(data) ? data[0] : data;
+  if (result?.status === 'duplicate') return { duplicate: true };
+  if (result?.status === 'inserted') return { inserted: true };
+  return { error: new Error('Unexpected analytics RPC response') };
+}
+
+function analyticsPayloadFingerprint(detail) {
+  return createHash('sha256').update(stableJson(detail)).digest('hex');
+}
+
+function stableJson(value) {
+  if (Array.isArray(value)) return `[${value.map(stableJson).join(',')}]`;
+  if (value && typeof value === 'object') return `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${stableJson(value[key])}`).join(',')}}`;
+  return JSON.stringify(value);
 }
 
 function parsePayload(body) {
@@ -245,11 +313,15 @@ export function validateAnalyticsEvent(detail) {
     return 'Invalid eventName';
   }
 
-  if (!isIsoDate(detail.startedAt)) {
+  if (detail.eventId !== undefined && !isBoundedString(detail.eventId, 160)) {
+    return 'Invalid eventId';
+  }
+
+  if (!isRfc3339Timestamp(detail.startedAt)) {
     return 'Invalid startedAt';
   }
 
-  if (detail.occurredAt !== undefined && !isIsoDate(detail.occurredAt)) {
+  if (detail.occurredAt !== undefined && !isRfc3339Timestamp(detail.occurredAt)) {
     return 'Invalid occurredAt';
   }
 
@@ -259,6 +331,12 @@ export function validateAnalyticsEvent(detail) {
 
   for (const [field, limit] of Object.entries({ anonymousId: 160, locale: 35, prayerId: 160, ministryId: 160, hour: 80, sourceName: 200, sourceType: 120, provider: 120, videoId: 120, pageContext: 120, pagePath: 2048, referrer: 2048, sourceUrl: 2048, utmSource: 160, utmMedium: 160, utmCampaign: 160, utmContent: 160, deviceClass: 32, communitySlug: 160, contentId: 500, contentType: 80 })) {
     if (detail[field] !== undefined && !isBoundedString(detail[field], limit)) return `Invalid ${field}`;
+  }
+
+  if (detail.acquisitionSource !== undefined && !isCanonicalAcquisitionSource(detail.acquisitionSource)) return 'Invalid acquisitionSource';
+  if (detail.acquisitionSurface !== undefined && !isCanonicalAcquisitionSurface(detail.acquisitionSurface)) return 'Invalid acquisitionSurface';
+  for (const field of ['acquisitionMedium', 'acquisitionCampaign', 'acquisitionContent', 'acquisitionTerm']) {
+    if (detail[field] !== undefined && detail[field] !== null && !isBoundedString(detail[field], 120)) return `Invalid ${field}`;
   }
 
   if (detail.partnerId !== undefined && detail.partnerId !== null && !isUuid(detail.partnerId)) {
@@ -304,19 +382,15 @@ export function validateAnalyticsEvent(detail) {
     return 'Invalid mediaType';
   }
 
-  if (
-    detail.eventName === 'devotion_resource_opened' &&
-    (!detail.resourceId || !detail.provider || !detail.mediaType)
-  ) {
-    return 'Missing devotion resource attribution';
-  }
+  const contractError = validateAnalyticsEventContract(detail);
+  if (contractError) return contractError;
 
   if (detail.devotionId || detail.devotionParticipantId || detail.eventName.startsWith('devotion_')) {
     if (!detail.devotionId || !detail.devotionParticipantId) {
       return 'Missing devotion attribution';
     }
     if (
-      detail.eventName !== 'devotion_survey_clicked' &&
+      !['devotion_survey_clicked', 'devotion_survey_started', 'devotion_survey_submitted'].includes(detail.eventName) &&
       (!detail.pilotDay || !detail.prayerDate)
     ) {
       return 'Missing devotion night attribution';
@@ -377,11 +451,20 @@ async function updateAnalyticsSession(client, detail) {
         prayer_date: detail.prayerDate ?? null,
         resource_id: detail.resourceId ?? null,
         media_type: detail.mediaType ?? null,
+        ...(detail.acquisitionSource !== undefined ? {
+          acquisition_source: detail.acquisitionSource,
+          acquisition_surface: detail.acquisitionSurface,
+          acquisition_medium: detail.acquisitionMedium,
+          acquisition_campaign: detail.acquisitionCampaign,
+          acquisition_content: detail.acquisitionContent,
+          acquisition_term: detail.acquisitionTerm,
+        } : {}),
       },
       { onConflict: 'session_id' },
     );
 
-    return error;
+    if (!error || !isMissingAnalyticsMigrationError(error)) return error;
+    return legacySessionUpsert(client, detail);
   }
 
   const updates = sessionUpdatesFor(detail);
@@ -389,11 +472,33 @@ async function updateAnalyticsSession(client, detail) {
     return null;
   }
 
-  const { error } = await client
+  const query = client
     .from('analytics_sessions')
     .update(updates)
     .eq('session_id', detail.sessionId);
+  const result = typeof query.select === 'function'
+    ? await query.select('session_id').maybeSingle()
+    : await query;
 
+  if (result.error) return result.error;
+  if ('data' in result && !result.data) return new Error('Missing prayer analytics session for rollup');
+  return null;
+}
+
+async function legacySessionUpsert(client, detail) {
+  const { error } = await client.from('analytics_sessions').upsert(
+    {
+      session_id: detail.sessionId,
+      started_at: detail.startedAt,
+      ministry_id: detail.ministryId,
+      prayer_id: detail.prayerId,
+      hour: detail.hour,
+      locale: detail.locale,
+      user_id: detail.userId ?? null,
+      anonymous_id: detail.anonymousId,
+    },
+    { onConflict: 'session_id' },
+  );
   return error;
 }
 
@@ -465,11 +570,23 @@ function isMissingAnalyticsMigrationError(error) {
   );
 }
 
+function isMissingAnalyticsRpcError(error) {
+  const message = error?.message ?? '';
+  return (error?.code === 'PGRST202' || error?.code === '42883') &&
+    /record_campaign_analytics_event/i.test(message) &&
+    /function|schema cache|does not exist|could not find/i.test(message);
+}
+
+
 function isUnsupportedEventNameError(error) {
   return (
     error?.code === '22P02' ||
     /invalid input value for enum/i.test(error?.message ?? '')
   );
+}
+
+function isDuplicateEventIdError(error) {
+  return error?.code === '23505' || /duplicate key|unique constraint/i.test(error?.message ?? '');
 }
 
 function isNonEmptyString(value) {

@@ -52,6 +52,7 @@ temp/
 
 
 /docs/*
+!/docs/analytics-architecture.md
 !/docs/architecture.md
 !/docs/devotion-engine.md
 !/docs/brand/

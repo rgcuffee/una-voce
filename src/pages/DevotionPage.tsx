@@ -287,15 +287,23 @@ function SurveyLink({
       href={url}
       target="_blank"
       rel="noreferrer"
-      onClick={() =>
+      onClick={() => {
         trackAnalyticsEvent('devotion_survey_clicked', {
           ...data.attribution,
           resourceId: `${kind}-survey`,
           mediaType: 'survey_link',
           sourceUrl: url,
           pageContext: `devotion_${kind}_survey`,
-        })
-      }
+          metadata: { surveyKind: kind },
+        });
+        trackAnalyticsEvent('devotion_survey_started', {
+          ...data.attribution,
+          resourceId: `${kind}-survey`,
+          mediaType: 'survey_link',
+          pageContext: `devotion_${kind}_survey`,
+          metadata: { surveyKind: kind },
+        });
+      }}
     >
       Open the {kind === 'pre' ? 'pre-devotion' : 'post-devotion'} survey
     </a>

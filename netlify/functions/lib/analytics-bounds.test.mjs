@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createAnalyticsHandler, validateAnalyticsEvent } from '../analytics.mjs';
 
-const valid = { sessionId: '11111111-1111-4111-8111-111111111111', eventName: 'page_viewed', startedAt: '2026-08-19T00:00:00.000Z', anonymousId: 'anonymous' };
+const valid = { sessionId: '11111111-1111-4111-8111-111111111111', eventName: 'page_viewed', startedAt: new Date().toISOString(), anonymousId: 'anonymous' };
 
 test('analytics bounds reject oversized public strings with field errors', () => {
   assert.equal(validateAnalyticsEvent({ ...valid, pagePath: 'x'.repeat(2049) }), 'Invalid pagePath');

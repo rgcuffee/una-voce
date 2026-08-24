@@ -3,6 +3,7 @@ import { resolve } from 'node:path';
 import { createHash } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 import { createAdminAuthorizer } from './lib/admin-auth.mjs';
+import { ANALYTICS_EVENT_NAMES, CANONICAL_ACQUISITION_SOURCES } from '../../src/lib/analyticsContract.mjs';
 
 loadLocalEnv();
 
@@ -467,11 +468,11 @@ async function analyticsSummary(partners, request) {
   const until = `${request.end}T23:59:59.999Z`;
   const priorEnd = new Date(Date.parse(since) - 1).toISOString();
   const priorStart = new Date(Date.parse(since) - windowDays * 86400000).toISOString();
-  const eventFields = 'occurred_at,session_id,event_name,anonymous_id,page_path,referrer,utm_source,device_class,partner_id,community_slug,content_id,content_type,provider,source_url';
+  const eventFields = 'occurred_at,session_id,event_name,anonymous_id,page_path,referrer,utm_source,acquisition_source,device_class,partner_id,community_slug,content_id,content_type,provider,source_url';
   const sessionFields = 'started_at,session_id,anonymous_id,completed,opened_source,panel_open_seconds,highest_progress,provider,hour,ministry_id,source_type,page_context';
   const eventWindow = (start, end, fields = eventFields) => readAnalyticsWindow(({ from, to }) => supabase.from('analytics_events').select(fields).gte('occurred_at', start).lte('occurred_at', end).order('occurred_at', { ascending: false }).order('id', { ascending: false }).range(from, to));
   const sessionWindow = (start, end, fields = sessionFields) => readAnalyticsWindow(({ from, to }) => supabase.from('analytics_sessions').select(fields).gte('started_at', start).lte('started_at', end).order('started_at', { ascending: false }).order('session_id', { ascending: false }).range(from, to));
-  const [eventsResult, sessionsResult, priorEventsResult, priorSessionsResult] = await Promise.all([
+  let [eventsResult, sessionsResult, priorEventsResult, priorSessionsResult] = await Promise.all([
     eventWindow(since, until), sessionWindow(since, until), eventWindow(priorStart, priorEnd, 'anonymous_id,session_id,event_name,page_path,device_class,partner_id,community_slug'), sessionWindow(priorStart, priorEnd, 'anonymous_id,session_id'),
   ]);
 
@@ -482,7 +483,10 @@ async function analyticsSummary(partners, request) {
       code: eventsResult.error.code,
       message: eventsResult.error.message,
     });
-    return legacyAnalyticsSummary(windowDays, sessionsResult.rows ?? [], eventsResult.error);
+    // Acquisition columns arrive with this sprint. Preserve legacy events and
+    // views when an older database rejects only the extended projection.
+    eventsResult = await eventWindow(since, until, eventFields.replace(',acquisition_source', ''));
+    if (eventsResult.error) return legacyAnalyticsSummary(windowDays, sessionsResult.rows ?? [], eventsResult.error);
   }
 
   const communityPartners = new Map();
@@ -546,7 +550,7 @@ async function analyticsSummary(partners, request) {
     },
     explorer: analyticsExplorer(events, request, { partnerById: new Map(partners.map((partner) => [partner.id, partner])), communityPartners }),
     topPages: topCounts(pageViews, (event) => safeAnalyticsUrl(event.page_path, communityPartners) || 'Unavailable', 8),
-    acquisitionSources: topCounts(events, (event) => safeCampaignSource(event.utm_source) || 'Unavailable', 8),
+    acquisitionSources: topCounts(events, (event) => safeCampaignSource(event.acquisition_source) || safeCampaignSource(event.utm_source) || 'Unavailable', 10),
     deviceClasses: topCounts(events, (event) => safeAnalyticsDimension('device', event.device_class), 8),
     prayerByProvider: scope.sessionMetricsAvailable ? topCounts(sessions, (session) => safeAnalyticsDimension('provider', session.provider), 8) : [],
     prayerByHour: scope.sessionMetricsAvailable ? topCounts(sessions, (session) => safeAnalyticsDimension('hour', session.hour), 8) : [],
@@ -637,7 +641,7 @@ export function safeAnalyticsScalar(value) {
 
 export function safeCampaignSource(value) {
   const text = String(value ?? '').trim().toLowerCase();
-  return new Set(['direct','organic','google','bing','facebook','instagram','ig','x','twitter','youtube','tiktok','linkedin','newsletter','email','sms','qr','partner','parish','community','referral']).has(text) ? text : null;
+  return new Set([...Object.values(CANONICAL_ACQUISITION_SOURCES), 'organic','google','bing','facebook','ig','x','twitter','youtube','tiktok','linkedin','newsletter','email','partner','parish','community','referral']).has(text) ? text : null;
 }
 
 export function safeAnalyticsDimension(kind, value) {
@@ -646,7 +650,7 @@ export function safeAnalyticsDimension(kind, value) {
     device: ['desktop','mobile','tablet','unknown'],
     provider: ['youtube','spotify','apple-podcast','apple','divine-office','universalis','unknown'],
     hour: ['office-of-readings','morning-prayer','daytime-prayer','midmorning-prayer','midday-prayer','midafternoon-prayer','evening-prayer','night-prayer'],
-    event: ['app_opened','page_viewed','navigation_clicked','community_page_viewed','community_outbound_clicked','content_card_viewed','content_card_clicked','prayer_session_started','prayer_play_started','prayer_play_paused','prayer_play_resumed','prayer_progress','prayer_completed','prayer_session_ended','source_opened','platform_opened','share_clicked','search_performed','filter_changed','utm_landing_recorded','devotion_page_opened','devotion_resource_opened','devotion_report_submitted','devotion_survey_clicked'],
+    event: ANALYTICS_EVENT_NAMES,
     contentType: ['video','audio','podcast','text','article','link','website','resource','prayer','community'],
   };
   return values[kind]?.includes(text) ? text : null;
@@ -662,7 +666,7 @@ export function analyticsExplorer(events, request, context = { partnerById: new 
   const pageSize = 100;
   const sorted = [...events].sort((a, b) => Date.parse(b.occurred_at) - Date.parse(a.occurred_at));
   const start = (request.pageNumber - 1) * pageSize;
-  const safeEvent = (event) => ({ timestamp: event.occurred_at, sessionId: displayIdentifier('session', event.session_id), anonymousId: displayIdentifier('visitor', event.anonymous_id), route: safeAnalyticsUrl(event.page_path, context.communityPartners), event: safeAnalyticsDimension('event', event.event_name), content: safeContentLabel(event.content_id), partner: context.partnerById.get(event.partner_id)?.name ?? null, community: context.communityPartners.get(event.community_slug)?.name ?? null, destination: safeAnalyticsUrl(event.source_url, context.communityPartners), device: safeAnalyticsDimension('device', event.device_class), acquisition: safeCampaignSource(event.utm_source) || safeAnalyticsUrl(event.referrer, context.communityPartners) || null });
+  const safeEvent = (event) => ({ timestamp: event.occurred_at, sessionId: displayIdentifier('session', event.session_id), anonymousId: displayIdentifier('visitor', event.anonymous_id), route: safeAnalyticsUrl(event.page_path, context.communityPartners), event: safeAnalyticsDimension('event', event.event_name), content: safeContentLabel(event.content_id), partner: context.partnerById.get(event.partner_id)?.name ?? null, community: context.communityPartners.get(event.community_slug)?.name ?? null, destination: safeAnalyticsUrl(event.source_url, context.communityPartners), device: safeAnalyticsDimension('device', event.device_class), acquisition: safeCampaignSource(event.acquisition_source) || safeCampaignSource(event.utm_source) || safeAnalyticsUrl(event.referrer, context.communityPartners) || null });
   const pageRows = sorted.slice(start, start + pageSize);
   const exportCap = 1000;
   return { page: request.pageNumber, pageSize, total: sorted.length, exportCap, exportTruncated: sorted.length > exportCap, rows: pageRows.map(safeEvent), exportRows: sorted.slice(0, exportCap).map(safeEvent), sessions: sessionSequencesForPage(pageRows, sorted, context.communityPartners) };

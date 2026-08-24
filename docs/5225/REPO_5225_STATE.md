@@ -3,13 +3,28 @@
 - Repository: `/Users/richcuff/Documents/_werk/una-voce`
 - Branch: `main`
 - Recovery baseline: `841b2507cc4f568fa66d76fd9d9d2818860e0ed6`
-- Sprint mode: `STANDARD`
+- Sprint mode: `LONG-SPRINT`
 - 5225 version: `1.8`
-- Last completed sprint: `Pre-Alpha Campaign Sprint A — Current-State Reconciliation + Pilot Gap Closure`
+- Last completed sprint: `Pre-Alpha Campaign Sprint B — Links, Attribution + Telemetry Contract`
 - Current Approved Checkpoint: `SELF (commit containing this state update)`
-- Previous approved checkpoint: `fa127729d374f3e7636642b116000bf592e8a37d`
-- Verified: `2026-08-23`
-- QA: `PASS — one bounded independent GPT-5.6 Sol xhigh review; zero blocking defects`
+- Previous approved checkpoint: `dbfb47f1c1c232d8a59e8a89bacc905235175e78`
+- Verified: `2026-08-24`
+- QA: `PASS — independent contract and cross-repository GPT-5.6 Sol xhigh reviews; zero remaining P0–P3 defects`
+
+## Sprint B result
+
+- `links.unavoce.net` and the parent application now share one credential-free handoff contract for canonical acquisition, raw UTM dimensions, UUID/session-start continuity, current surface, and links/current-hour/continuation events.
+- Migrated delivery uses the service-role-only `record_campaign_analytics_event` security-invoker RPC to atomically insert events, compare payload fingerprints for exact retry deduplication, and apply prayer-session rollups. The pre-migration path is bounded, privacy-scrubbed, and repairs idempotent session mutations on exact retry.
+- The public event dictionary reserves the survey and PWA families required by later campaign work. Admin projection recognizes all ten canonical acquisition sources without exposing raw event metadata.
+- The links property retains no analytics credential or backend write path; React routes and generated static fallbacks preserve only allowlisted public attribution and never forward devotion participant tokens or credentials.
+- The checked-in migration was exercised locally with PGlite but was not applied to Supabase. No deployment, Git push, or production mutation was performed.
+
+## Sprint B validation and QA
+
+- Main repository: `npm test` — `125/125 PASS`; `npx tsc -b` — `PASS`; `npm run build:verify` — `PASS`; `npm run checkpoint:verify` — `PASS` before metadata finalization.
+- Links repository: `npm test` — `18/18 PASS`; `npm run lint` — `PASS`; `npm run test:routes` — `PASS`.
+- Independent contract and cross-repository review exercised RPC privilege boundaries, exact/conflicting retries, rollback and rollout fallback, malformed attribution, recursive URL privacy, PWA/web surface semantics, survey/event requirements, all four Hour routes, and admin source/event visibility. Final frozen-diff result: `PASS`, zero remaining P0–P3 findings.
+- Repository hygiene: unrelated untracked operator files were preserved; no reviewer-created files remained.
 
 ## Sprint A result
 

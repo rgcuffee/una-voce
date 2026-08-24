@@ -85,7 +85,18 @@ export type PrayerAnalyticsEventName =
     | 'devotion_page_opened'
     | 'devotion_resource_opened'
     | 'devotion_report_submitted'
-    | 'devotion_survey_clicked';
+    | 'devotion_survey_clicked'
+    | 'devotion_survey_started'
+    | 'devotion_survey_submitted'
+    | 'links_page_viewed'
+    | 'current_hour_cta_viewed'
+    | 'current_hour_cta_clicked'
+    | 'session_started'
+    | 'session_returned'
+    | 'pwa_install_eligible'
+    | 'pwa_install_prompted'
+    | 'pwa_install_installed'
+    | 'continuation_opened';
 export type DevotionStatus =
     | 'inactive'
     | 'draft'
@@ -957,6 +968,14 @@ export type Database = {
                     prayer_date: string | null;
                     resource_id: string | null;
                     media_type: string | null;
+                    event_id: string | null;
+                    payload_fingerprint: string | null;
+                    acquisition_source: string | null;
+                    acquisition_surface: string | null;
+                    acquisition_medium: string | null;
+                    acquisition_campaign: string | null;
+                    acquisition_content: string | null;
+                    acquisition_term: string | null;
                     metadata: Json;
                 };
                 Insert: {
@@ -992,6 +1011,14 @@ export type Database = {
                     prayer_date?: string | null;
                     resource_id?: string | null;
                     media_type?: string | null;
+                    event_id?: string | null;
+                    payload_fingerprint?: string | null;
+                    acquisition_source?: string | null;
+                    acquisition_surface?: string | null;
+                    acquisition_medium?: string | null;
+                    acquisition_campaign?: string | null;
+                    acquisition_content?: string | null;
+                    acquisition_term?: string | null;
                     metadata?: Json;
                 };
                 Update: {
@@ -1027,6 +1054,14 @@ export type Database = {
                     prayer_date?: string | null;
                     resource_id?: string | null;
                     media_type?: string | null;
+                    event_id?: string | null;
+                    payload_fingerprint?: string | null;
+                    acquisition_source?: string | null;
+                    acquisition_surface?: string | null;
+                    acquisition_medium?: string | null;
+                    acquisition_campaign?: string | null;
+                    acquisition_content?: string | null;
+                    acquisition_term?: string | null;
                     metadata?: Json;
                 };
                 Relationships: [];
@@ -1058,6 +1093,12 @@ export type Database = {
                     prayer_date: string | null;
                     resource_id: string | null;
                     media_type: string | null;
+                    acquisition_source: string | null;
+                    acquisition_surface: string | null;
+                    acquisition_medium: string | null;
+                    acquisition_campaign: string | null;
+                    acquisition_content: string | null;
+                    acquisition_term: string | null;
                     created_at: string;
                     updated_at: string;
                 };
@@ -1087,6 +1128,12 @@ export type Database = {
                     prayer_date?: string | null;
                     resource_id?: string | null;
                     media_type?: string | null;
+                    acquisition_source?: string | null;
+                    acquisition_surface?: string | null;
+                    acquisition_medium?: string | null;
+                    acquisition_campaign?: string | null;
+                    acquisition_content?: string | null;
+                    acquisition_term?: string | null;
                     created_at?: string;
                     updated_at?: string;
                 };
@@ -1116,6 +1163,12 @@ export type Database = {
                     prayer_date?: string | null;
                     resource_id?: string | null;
                     media_type?: string | null;
+                    acquisition_source?: string | null;
+                    acquisition_surface?: string | null;
+                    acquisition_medium?: string | null;
+                    acquisition_campaign?: string | null;
+                    acquisition_content?: string | null;
+                    acquisition_term?: string | null;
                     created_at?: string;
                     updated_at?: string;
                 };
@@ -1815,6 +1868,10 @@ export type Database = {
         };
         Views: Record<string, never>;
         Functions: {
+            record_campaign_analytics_event: {
+                Args: { p_event: Json; p_session: Json };
+                Returns: Json;
+            };
             create_devotion_campaign: {
                 Args: {
                     p_description: string | null;
