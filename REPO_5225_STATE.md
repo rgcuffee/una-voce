@@ -4,10 +4,10 @@
 - Branch: `main`
 - Upstream: `origin/main` (local checkpoint only; not pushed or deployed)
 - Recovery baseline: `841b2507cc4f568fa66d76fd9d9d2818860e0ed6`
-- Last verified commit: `4282d3d8eec4c4edd6025a89813da61672d2b592`
-- Last verified: `2026-08-23`
-- Last completed sprint: Pre-Alpha Campaign Sprint A — Current-State Reconciliation + Pilot Gap Closure
-- QA: PASS — independent GPT-5.6-Sol xhigh read-only review found zero blocking defects.
+- Last verified commit: `9c4ac9992f0e3e9280a97b156d3dc5523de5ec90`
+- Last verified: `2026-08-24`
+- Last completed sprint: Pre-Alpha Campaign Sprint B — Links, Attribution + Telemetry Contract
+- QA: PASS — independent contract and cross-repository GPT-5.6-Sol xhigh read-only reviews found zero remaining P0–P3 defects.
 
 ## Runtime
 
@@ -32,6 +32,15 @@
 - Devotion Engine Sprints 4–5 operations, analytics, and hardening: `aa626ca267cc657a15bf46b55f2ea12fbdf00f60`.
 - Smart Prayer Links deterministic direct-Hour hash navigation, including StrictMode safety: `b3dd6f741de5d8db97201d294a012d3465919893`.
 - Pre-Alpha Campaign Sprint A pilot-operability reconciliation: `4282d3d8eec4c4edd6025a89813da61672d2b592`.
+- Pre-Alpha Campaign Sprint B links, attribution, and telemetry contract: `9c4ac9992f0e3e9280a97b156d3dc5523de5ec90`.
+
+## Pre-Alpha Campaign Sprint B verification
+
+- Canonical analytics sources, web/PWA surface, public campaign dimensions, event requirements, UUID session lifecycle, and links-to-parent handoff behavior are defined in `src/lib/analyticsContract.mjs` and `docs/analytics-architecture.md`.
+- Migrated ingestion uses a service-role-only security-invoker RPC for atomic event insertion, exact payload-fingerprint retry deduplication, conflict rejection, and prayer-session rollups. The guarded pre-migration path scrubs credentials and repairs idempotent session mutations on retry.
+- `links.unavoce.net` retains no analytics credential or backend write path. React and static Hour routes preserve one safe session and allowlisted attribution while excluding devotion participant tokens and other credentials.
+- Main verification: `npm test` — 125/125 PASS; `npx tsc -b` — PASS; `npm run build:verify` — PASS. Local PGlite migration/RPC smoke and independent final frozen-diff QA passed with zero P0–P3 findings.
+- The migration is checked in but was not applied remotely. No production data, schema, deployment, or Git push was performed.
 
 ## Pre-Alpha Campaign Sprint A verification
 
