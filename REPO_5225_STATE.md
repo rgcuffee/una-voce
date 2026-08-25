@@ -4,10 +4,10 @@
 - Branch: `main`
 - Upstream: `origin/main` (local checkpoint only; not pushed or deployed)
 - Recovery baseline: `841b2507cc4f568fa66d76fd9d9d2818860e0ed6`
-- Last verified commit: `4f7a300c1a78fc7877d9c2317c5c572e2777c68c`
+- Last verified commit: `fcc8901317009491fd326d649ff43c702280372b`
 - Last verified: `2026-08-25`
 - Last completed sprint: Pre-Alpha Campaign Sprint D — Session + Devotion Analytics Rebuild
-- QA: PASS — three independent GPT-5.6-Sol read-only slices found zero remaining P0–P3 defects after three bounded remediation rounds.
+- QA: PASS — three independent GPT-5.6-Sol read-only Sprint D slices found zero remaining P0–P3 defects; the production migration ledger, schema, RLS, constraints, triggers, RPCs, grants, cache refresh, and project health were verified on 2026-08-25.
 
 ## Runtime
 
@@ -35,6 +35,14 @@
 - Pre-Alpha Campaign Sprint B links, attribution, and telemetry contract: `9c4ac9992f0e3e9280a97b156d3dc5523de5ec90`.
 - Pre-Alpha Campaign Sprint C pre/post surveys and research linkage: `20d47c42d5a4d88926e0657e9f0134170496d31d`.
 - Pre-Alpha Campaign Sprint D session and devotion analytics rebuild: `4f7a300c1a78fc7877d9c2317c5c572e2777c68c`.
+- Pre-Alpha Campaign production migration rollout: `fcc8901317009491fd326d649ff43c702280372b`.
+
+## Pre-Alpha Campaign production migration rollout
+
+- Supabase migrations `20260824000000_campaign_analytics_contract.sql` and `20260825000000_devotion_campaign_surveys.sql` were applied in order to production project `lbjtuekhnzbyivjhtlma` on 2026-08-25 and recorded in `supabase_migrations.schema_migrations`.
+- Read-only production checks verified the analytics enum and acquisition columns, the survey table and constraints, RLS with no browser policies, the update trigger, both RPC signatures, and execute access revoked from `public`/`anon`/`authenticated` and granted to `service_role`.
+- PostgREST received a schema-cache reload notification. The Supabase project returned to `Healthy` and displayed `devotion_campaign_surveys` as the last migration.
+- No participant, survey, analytics, or other application row was inserted, updated, or deleted. No application deployment, environment change, Git push, or participant-link disclosure was performed.
 
 ## Pre-Alpha Campaign Sprint D verification
 
@@ -43,7 +51,7 @@
 - Exact, sampled, partial, and unavailable states survive missing Sprint B/C schema, capped sources, nullable durations, and zero-campaign responses. Analytics and Operations remount across their privacy/mutation boundary.
 - Stable global/local detail budgets keep the stronger full-cap authenticated fixture at 3,498,358 bytes while preserving complete bounded aggregates and naming truncation sources.
 - Full verification: `npm test` — 157/157 PASS; `npx tsc -b` — PASS; `npm run build:verify` — PASS. Three final independent QA slices passed with zero remaining P0–P3 findings; viewport, privacy, reconciliation, payload, auth, compatibility, and hygiene checks passed.
-- No migration, production data, deployment, Git push, participant-link disclosure, or remote mutation was performed.
+- Sprint D itself introduced no migration and performed no production data mutation, deployment, Git push, participant-link disclosure, or remote mutation; the separately authorized rollout above applied the already-reviewed Sprint B/C migrations afterward.
 
 ## Pre-Alpha Campaign Sprint C verification
 
@@ -52,7 +60,7 @@
 - The authenticated devotion admin exposes bounded partial/submitted response evidence and a spreadsheet-safe CSV joined through shortened devotion and participant identifiers. Missing survey schema is disclosed without masking unrelated repository failures.
 - Full verification: `npm test` — 138/138 PASS; `npx tsc -b` — PASS; `npm run build:verify` — PASS; isolated PGlite migration/RPC privilege, linkage, validation, retry, and update smoke — PASS.
 - Independent read-only QA: 44/44 focused adversarial checks PASS after one remediation round; zero remaining P0–P3 findings. `git diff --check` and the 5225 checkpoint gate passed.
-- The survey migration is checked in but was not applied remotely. No production data, deployment, Git push, or participant-link disclosure was performed.
+- The survey migration was applied to production project `lbjtuekhnzbyivjhtlma` on 2026-08-25 and verified as described in the rollout section above. No survey rows, deployment, Git push, or participant links were changed or disclosed.
 
 ## Pre-Alpha Campaign Sprint B verification
 
@@ -60,7 +68,7 @@
 - Migrated ingestion uses a service-role-only security-invoker RPC for atomic event insertion, exact payload-fingerprint retry deduplication, conflict rejection, and prayer-session rollups. The guarded pre-migration path scrubs credentials and repairs idempotent session mutations on retry.
 - `links.unavoce.net` retains no analytics credential or backend write path. React and static Hour routes preserve one safe session and allowlisted attribution while excluding devotion participant tokens and other credentials.
 - Main verification: `npm test` — 125/125 PASS; `npx tsc -b` — PASS; `npm run build:verify` — PASS. Local PGlite migration/RPC smoke and independent final frozen-diff QA passed with zero P0–P3 findings.
-- The migration is checked in but was not applied remotely. No production data, schema, deployment, or Git push was performed.
+- The analytics migration was applied to production project `lbjtuekhnzbyivjhtlma` on 2026-08-25 and verified as described in the rollout section above. No analytics rows, deployment, or Git push was performed.
 
 ## Pre-Alpha Campaign Sprint A verification
 
