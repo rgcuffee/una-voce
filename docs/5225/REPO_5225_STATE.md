@@ -32,7 +32,7 @@
 - Server-side participant-token resolution links each response pseudonymously to its devotion and participant without storing the raw token or token hash. One row per phase records partial versus submitted state plus stable first-start/first-submit and update timestamps.
 - The participant UI distinguishes view, start, partial save, and successful submission. Consent/privacy copy states that responses are pseudonymously linked to participation and activity and are not anonymous.
 - Authenticated operators can inspect and export bounded response evidence using shortened behavioral identifiers. CSV values are spreadsheet-safe, partial responses remain distinct from completed submissions, and missing-schema rollout state is disclosed.
-- The checked-in migration was exercised locally with PGlite but was not applied to Supabase. No deployment, Git push, participant-link disclosure, or production mutation was performed.
+- Migration `20260825000000_devotion_campaign_surveys.sql` was applied to production project `lbjtuekhnzbyivjhtlma` on 2026-08-25 after its local PGlite verification. Migration history, the response table, RLS-with-no-browser-policies, constraints, update trigger, service-role-only RPC grant, and PostgREST schema-cache refresh were verified. No application deployment, Git push, participant-link disclosure, or survey-row mutation was performed.
 
 ## Sprint C validation and QA
 
@@ -47,7 +47,7 @@
 - Migrated delivery uses the service-role-only `record_campaign_analytics_event` security-invoker RPC to atomically insert events, compare payload fingerprints for exact retry deduplication, and apply prayer-session rollups. The pre-migration path is bounded, privacy-scrubbed, and repairs idempotent session mutations on exact retry.
 - The public event dictionary reserves the survey and PWA families required by later campaign work. Admin projection recognizes all ten canonical acquisition sources without exposing raw event metadata.
 - The links property retains no analytics credential or backend write path; React routes and generated static fallbacks preserve only allowlisted public attribution and never forward devotion participant tokens or credentials.
-- The checked-in migration was exercised locally with PGlite but was not applied to Supabase. No deployment, Git push, or production mutation was performed.
+- Migration `20260824000000_campaign_analytics_contract.sql` was applied to production project `lbjtuekhnzbyivjhtlma` on 2026-08-25 after its local PGlite verification. Migration history, enum/column additions, the transactional RPC, its service-role-only execute boundary, and PostgREST schema-cache refresh were verified. No application deployment, Git push, or analytics-row mutation was performed.
 
 ## Sprint B validation and QA
 
@@ -76,7 +76,7 @@
 
 ## Production and operator boundary
 
-- Repository truth records the devotion operations migrations as applied to production and a dedicated production `DEVOTION_LINK_SECRET` as configured.
+- Repository truth records the devotion operations, campaign analytics, and campaign survey migrations as applied to production and a dedicated production `DEVOTION_LINK_SECRET` as configured.
 - Sprint A performed no production mutation, participant enrollment, participant-link disclosure, report submission, deployment, or Git push.
 - Environment-specific deployment and the later pre-alpha campaign sprints remain operator-controlled.
 

@@ -107,6 +107,8 @@ The operations schema is introduced in committed order because PostgreSQL enum a
 
 The engine migration creates and backfills a `General` cohort for every existing campaign before making participant cohort membership required. New campaign plus `General` cohort creation uses the service-role-only `create_devotion_campaign` database function so both records commit or roll back together. All devotion and audit tables have RLS enabled with no browser policies; public participant/report traffic goes through Netlify Functions.
 
+All five migrations are recorded as applied to production project `lbjtuekhnzbyivjhtlma`. The campaign analytics and survey migrations were applied on 2026-08-25; their ledger entries, schema objects, RLS posture, service-role-only RPC execute grants, and PostgREST schema-cache refresh were verified without inserting participant, survey, or analytics rows.
+
 ## Production configuration
 
 Required server configuration remains:
