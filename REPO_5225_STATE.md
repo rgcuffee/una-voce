@@ -4,10 +4,10 @@
 - Branch: `main`
 - Upstream: `origin/main` (local checkpoint only; not pushed or deployed)
 - Recovery baseline: `841b2507cc4f568fa66d76fd9d9d2818860e0ed6`
-- Last verified commit: `20d47c42d5a4d88926e0657e9f0134170496d31d`
+- Last verified commit: `4f7a300c1a78fc7877d9c2317c5c572e2777c68c`
 - Last verified: `2026-08-25`
-- Last completed sprint: Pre-Alpha Campaign Sprint C — Pre/Post Surveys + Research Linkage
-- QA: PASS — independent GPT-5.6-Sol read-only review found zero remaining P0–P3 defects after one bounded remediation round.
+- Last completed sprint: Pre-Alpha Campaign Sprint D — Session + Devotion Analytics Rebuild
+- QA: PASS — three independent GPT-5.6-Sol read-only slices found zero remaining P0–P3 defects after three bounded remediation rounds.
 
 ## Runtime
 
@@ -34,6 +34,16 @@
 - Pre-Alpha Campaign Sprint A pilot-operability reconciliation: `4282d3d8eec4c4edd6025a89813da61672d2b592`.
 - Pre-Alpha Campaign Sprint B links, attribution, and telemetry contract: `9c4ac9992f0e3e9280a97b156d3dc5523de5ec90`.
 - Pre-Alpha Campaign Sprint C pre/post surveys and research linkage: `20d47c42d5a4d88926e0657e9f0134170496d31d`.
+- Pre-Alpha Campaign Sprint D session and devotion analytics rebuild: `4f7a300c1a78fc7877d9c2317c5c572e2777c68c`.
+
+## Pre-Alpha Campaign Sprint D verification
+
+- Authenticated devotion analytics now projects privacy-safe session/event timelines, source/device/surface evidence, submitted survey comparisons, nightly resource/report detail, and a deterministic participant funnel without introducing schema or event names.
+- Funnel and raw evidence totals reconcile to one-way participant drilldowns. Click, survey completion, explicit participant completion, continuation self-report, and active/panel/elapsed/timeline durations retain separate meanings.
+- Exact, sampled, partial, and unavailable states survive missing Sprint B/C schema, capped sources, nullable durations, and zero-campaign responses. Analytics and Operations remount across their privacy/mutation boundary.
+- Stable global/local detail budgets keep the stronger full-cap authenticated fixture at 3,498,358 bytes while preserving complete bounded aggregates and naming truncation sources.
+- Full verification: `npm test` — 157/157 PASS; `npx tsc -b` — PASS; `npm run build:verify` — PASS. Three final independent QA slices passed with zero remaining P0–P3 findings; viewport, privacy, reconciliation, payload, auth, compatibility, and hygiene checks passed.
+- No migration, production data, deployment, Git push, participant-link disclosure, or remote mutation was performed.
 
 ## Pre-Alpha Campaign Sprint C verification
 
