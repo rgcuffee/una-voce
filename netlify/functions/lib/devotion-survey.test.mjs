@@ -50,7 +50,7 @@ test('survey phase and equality rules are deterministic', () => {
   assert.equal(sameSurveyAnswers(completePre, { ...completePre, hourConfidence: 4 }), false);
 });
 
-test('admin survey projection exposes only shortened linkage identifiers', () => {
+test('admin survey projection exposes only one-way linkage identifiers', () => {
   const projected = safeAdminSurveyResponse({
     devotion_id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
     participant_id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
@@ -62,7 +62,7 @@ test('admin survey projection exposes only shortened linkage identifiers', () =>
     updated_at: '2026-08-25T00:00:00Z',
     token_hash: 'should-not-project',
   });
-  assert.equal(projected.devotionSafeId, 'aaaaaaaa');
-  assert.equal(projected.participantSafeId, 'bbbbbbbb');
+  assert.equal(projected.devotionSafeId, 'devotion-303617b973');
+  assert.equal(projected.participantSafeId, 'participant-00f765af1c');
   assert.equal(JSON.stringify(projected).includes('token'), false);
 });

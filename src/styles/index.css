@@ -6598,6 +6598,11 @@ body {
 .admin-pager { justify-content: center; align-items: center; }
 .admin-pager span { color: #725b4d; font-size: 13px; font-weight: 700; }
 .devotion-funnel { justify-content: center; align-items: center; background: #f8ede1; color: #5c4034; }
+.devotion-funnel article { display: grid; align-self: stretch; min-width: 150px; flex: 1 1 150px; gap: 6px; padding: 12px; border: 1px solid #e4d6c6; border-radius: 8px; background: #fffaf3; overflow-wrap: anywhere; }
+.devotion-funnel article strong { font-size: 24px; }
+.devotion-funnel article small { color: #725b4d; }
+.devotion-funnel details, .devotion-activity-evidence details, .devotion-night-evidence details { min-width: 0; }
+.devotion-funnel summary, .devotion-activity-evidence summary, .devotion-night-evidence summary { min-height: 44px; cursor: pointer; color: #5c4034; font-weight: 800; }
 .devotion-heatmap { display: grid; gap: 10px; padding: 16px; }
 .devotion-heatmap article { display: grid; gap: 8px; padding: 12px; border: 1px solid #e4d6c6; border-radius: 8px; background: #fffaf3; }
 .devotion-heatmap article > div { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -6606,6 +6611,23 @@ body {
 .devotion-analytics-boundary { padding: 0 16px 16px; color: #725b4d; font-size: 13px; line-height: 1.45; }
 .devotion-survey-evidence { margin: 20px 0; padding: 18px; border: 1px solid #e4ded3; border-radius: 14px; background: #fffdf9; }
 .devotion-survey-evidence .engine-section-heading { align-items: flex-start; }
+.devotion-research-summary, .devotion-activity-evidence { margin: 20px 0; border: 1px solid #e4ded3; border-radius: 14px; overflow: hidden; background: #fffdf9; }
+.devotion-research-summary > .engine-section-heading, .devotion-activity-evidence > .engine-section-heading { padding: 18px; }
+.devotion-research-grids { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 0 16px 16px; }
+.devotion-research-card { min-width: 0; padding: 14px; border: 1px solid #e4d6c6; border-radius: 8px; background: #fffaf3; }
+.devotion-research-card h4 { margin: 0 0 10px; }
+.devotion-research-card ul { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.devotion-research-card li { display: flex; justify-content: space-between; gap: 12px; overflow-wrap: anywhere; }
+.devotion-raw-evidence { display: grid; gap: 8px; padding: 0 16px 16px; }
+.devotion-raw-evidence h4, .devotion-raw-evidence p { margin: 0; }
+.devotion-raw-evidence details { padding: 8px 10px; border: 1px solid #e4d6c6; border-radius: 8px; background: #fffaf3; overflow-wrap: anywhere; }
+.devotion-night-evidence { display: grid; gap: 8px; padding: 16px; }
+.devotion-night-evidence details { padding: 10px 12px; border: 1px solid #e4d6c6; border-radius: 8px; background: #fffaf3; overflow-wrap: anywhere; }
+.devotion-survey-summary { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.devotion-survey-summary span { padding: 8px 10px; border-radius: 6px; background: #f8ede1; color: #5c4034; font-size: 12px; font-weight: 700; }
+.devotion-activity-evidence .admin-table-wrap { max-height: 720px; overflow: auto; }
+.devotion-activity-evidence td { vertical-align: top; }
+.devotion-activity-evidence ol { min-width: 280px; max-width: 720px; padding-left: 22px; overflow-wrap: anywhere; }
 
 .admin-dashboard .devotion-admin-card,
 .admin-dashboard .devotion-cohort-operations,
@@ -7171,6 +7193,8 @@ body {
     .admin-analytics-filters label { width: 100%; }
     .admin-analytics-filters input, .admin-analytics-filters select { width: 100%; min-height: 44px; }
     .devotion-funnel { justify-content: flex-start; }
+    .devotion-research-grids { grid-template-columns: 1fr; padding: 0 12px 12px; }
+    .devotion-research-card li { flex-direction: column; gap: 3px; }
 
     .devotion-campaign-controls,
     .devotion-inline-form,

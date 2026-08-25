@@ -5,11 +5,26 @@
 - Recovery baseline: `841b2507cc4f568fa66d76fd9d9d2818860e0ed6`
 - Sprint mode: `LONG-SPRINT`
 - 5225 version: `1.8`
-- Last completed sprint: `Pre-Alpha Campaign Sprint C — Pre/Post Surveys + Research Linkage`
+- Last completed sprint: `Pre-Alpha Campaign Sprint D — Session + Devotion Analytics Rebuild`
 - Current Approved Checkpoint: `SELF (commit containing this state update)`
-- Previous approved checkpoint: `4ee8486cfb3bad6a49ea5b60ec94141095d6a297`
+- Previous approved checkpoint: `aa77b785868af2590d4efc41bf5c397b83888de3`
 - Verified: `2026-08-25`
-- QA: `PASS — independent GPT-5.6 Sol read-only review; zero remaining P0–P3 defects after one bounded remediation round`
+- QA: `PASS — three independent GPT-5.6 Sol read-only slices; zero remaining P0–P3 defects after three bounded remediation rounds`
+
+## Sprint D result
+
+- Authenticated devotion analytics now exposes privacy-safe chronological session/event evidence, stored versus derived duration measures, source/device/surface context, nightly resource/report detail, submitted survey comparisons, and explicit readiness/sampling states without adding schema or telemetry semantics.
+- The participant funnel is deterministic and nested: enrolled, opened, engaged/prayed, returned on two canonical campaign days, explicit completed status, and explicit continued self-report. Every stage and raw non-nested evidence total reconciles to one-way participant drilldowns.
+- Clicks remain click evidence only; external time is unavailable; active-play, panel-open, elapsed-session, and observed-timeline measures remain separate. Missing duration evidence is unavailable or a labeled partial known-only sum, never an invented exact zero.
+- Activity and research detail uses stable global/local projection budgets, names capped sources, preserves aggregate totals, and distinguishes exact, sampled, partial, and unavailable evidence. Analytics and operations routes remount across their privacy/mutation boundary.
+- No migration, new event name, deployment, Git push, participant-link disclosure, or production mutation was performed.
+
+## Sprint D validation and QA
+
+- `npm test` — `157/157 PASS`; `npx tsc -b` — `PASS`; `npm run build:verify` — `PASS`.
+- The exact authenticated maximum fixture covered 2,000 participants, 40 nights, 10,000 events, 10,000 sessions, and 250 survey rows. The stronger 40-session × 20-event projection serialized to `3,498,358` bytes, below the enforced 4 MiB regression ceiling and Netlify's 6 MB buffered limit.
+- Final independent slices passed session/privacy (`36/36` focused), funnel/reconciliation (`46/46` focused plus `61/61` adversarial), and integration (`9/9` focused) with zero remaining P0–P3 findings.
+- Final review also passed zero-campaign and pre-migration readiness, duration null/partial/zero states, stable resource-budget ordering, auth and mode isolation, three viewport contracts, `git diff --check`, and repository hygiene.
 
 ## Sprint C result
 

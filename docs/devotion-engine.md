@@ -33,6 +33,15 @@ Selected-campaign analytics retain the existing evidence distinction:
 
 These units are not presented as a conversion funnel. Portfolio intelligence compares the same raw evidence across campaigns. PostgREST reads are deterministic and paged. Campaign metrics and the per-night campaign rollup use the full bounded population and remain stable while an admin pages through participant detail. Expanded 1–40-night participant detail is returned in explicit 100-participant pages so a maximum-duration campaign cannot create an oversized Function response; detail filters and CSV are labeled as current-page operations. Reports, events, sessions, and portfolio sources are capped at 10,000 rows each. When a cap is reached, the API and UI label the result sampled/lower-bound and name the affected source. Absence-based follow-up alerts are suppressed when report, event, or session evidence is sampled.
 
+Research projections add smaller response caps inside that bounded source read:
+40 activity sessions, 20 events in each timeline, 25 resource rows in each
+participant-night cell, 50 resource rows in each nightly research row, and 250
+privacy-safe survey-response detail rows. Reaching a projection cap labels the
+affected evidence lower-bound and exposes observed, shown, and cap values.
+Participant-night and nightly resource detail share a deterministic global
+budget of 1,000 rows (600 and 400 respectively), and nightly prayer-date arrays
+are capped at 10. Aggregates still consume the full bounded evidence source.
+
 Public resource attribution is projected before it reaches the admin response. Dangerous URLs, token-shaped identifiers, unsupported providers/media types, and obvious PII-shaped labels are replaced with bounded generic labels.
 
 ## Campaign surveys
@@ -41,7 +50,50 @@ Campaign research uses a bounded first-party pre/post survey rather than an exte
 
 Opening the survey, beginning it, and completing it are distinct states. Opening emits the existing survey-click event, choosing Begin creates a `partial` response and emits the survey-start event, and only a successful complete server submission emits the survey-submit event. Partial saves never count as completion. An identical completed retry returns the existing row without changing its timestamps; a later changed completion is allowed only through another complete submission and updates `updated_at` while preserving the original `started_at` and `submitted_at`.
 
-Pre surveys are available before and during an active devotion; post surveys become available after completion. The concise participant notice states that responses are pseudonymously linked to participation and activity and are not anonymous. Authenticated devotion analytics exposes partial and submitted rows separately, joined only to shortened devotion/participant identifiers for display and CSV. Legacy `pre_survey_url` and `post_survey_url` columns remain for schema compatibility but are not rendered as completion-capable campaign surveys.
+Pre surveys are available before and during an active devotion; post surveys become available after completion. The concise participant notice states that responses are pseudonymously linked to participation and activity and are not anonymous. Authenticated devotion analytics exposes partial and submitted rows separately, joined only to one-way devotion/participant display identifiers for display and CSV. Legacy `pre_survey_url` and `post_survey_url` columns remain for schema compatibility but are not rendered as completion-capable campaign surveys.
+
+## Operator and research evidence
+
+Authenticated devotion analytics consumes the existing campaign evidence and
+does not write derived dashboard state. It exposes bounded chronological
+session/event evidence, cohort and participant-by-day summaries, nightly
+resource/provider/media and report detail, submitted pre/post comparisons, and
+canonical source/surface plus device breakdowns. Stored fields and deterministic derived
+fields are labeled separately. Any source or response cap is disclosed as an
+exact-versus-lower-bound status.
+
+The deterministic six-stage participant funnel and duration definitions live
+in `docs/analytics-architecture.md`. Funnel stages are nested by construction,
+and every displayed stage count reconciles to its safe participant-ID
+drilldown. Raw non-nested evidence remains visible separately; clicks never
+stand in for survey, prayer, campaign, or third-party completion.
+
+Pilot-day evidence is normalized to an integer within the selected campaign's
+configured duration before participant-day aggregation or distinct-day return
+logic. Page-open, resource-open, and prayed-report evidence still supports the
+Opened and Engaged / prayed stages when its day is missing or out of range; it
+does not enter day views or advance Returned. Duration projections use `exact`,
+`partial`, and `unavailable`: a stored
+numeric zero is exact, mixed known and null/blank values produce a partial
+known-only lower-bound sum, and all-missing evidence produces null/unavailable.
+This applies to campaign, night, participant-day/resource, and portfolio
+totals. Stored prayer-player completion, source-opened state, and highest progress
+are shown in Activity as player evidence and remain distinct from explicit
+campaign completion and submitted survey completion.
+
+Schema compatibility is readiness, not zero evidence: when first-party survey
+storage is unavailable, Continued and survey comparisons render unavailable;
+when the Sprint B acquisition-column fallback is used, canonical source and
+surface breakdowns render unavailable. Device evidence and independently valid
+funnel stages keep their own exact/lower-bound state. Operations and Analytics
+mount separate dashboard instances so Operations keeps mutation UUIDs while
+Analytics receives only one-way portfolio identifiers and other privacy-safe
+projections.
+
+Analytics-mode responses retain this full evidence shape even before the first
+campaign exists. Activity, funnel, survey, source/surface/device, and comparison
+sections are explicitly unavailable; arrays are empty, survey detail is
+unavailable, and the access email remains removed.
 
 ## Database migrations
 

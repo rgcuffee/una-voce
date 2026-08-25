@@ -727,7 +727,7 @@ export function AdminDashboardPage() {
         {section !== 'devotion-analytics' && section !== 'devotions' && state === 'error' ? <div className="engine-empty engine-error" role="alert">{error}</div> : null}
         {notice ? <div className={`admin-mutation-notice ${notice.tone}`} role={notice.tone === 'error' ? 'alert' : 'status'}>{notice.message}</div> : null}
 
-        {section === 'devotion-analytics' || section === 'devotions' ? <DevotionAnalyticsSection mode={section === 'devotions' ? 'operations' : 'analytics'} /> : null}
+        {section === 'devotion-analytics' || section === 'devotions' ? <DevotionAnalyticsSection key={section} mode={section === 'devotions' ? 'operations' : 'analytics'} /> : null}
 
         {section !== 'devotion-analytics' && section !== 'devotions' && data ? (
           <>

@@ -12,6 +12,7 @@ import {
   updateDevotionConfiguration,
   updateDevotionParticipantStatus,
   type DevotionAnalyticsData,
+  type DevotionActivitySession,
   type DevotionCampaign,
   type DevotionCampaignDraft,
   type DevotionCohort,
@@ -141,7 +142,7 @@ export function DevotionAnalyticsSection({ mode = 'operations' }: { mode?: 'oper
     ['Completed', data.metrics.participantsCompleted, 'Participant status'],
     ['Nights opened', data.metrics.nightsOpened, 'Unique participant-nights'],
     ['Resource engagements', data.metrics.resourceEngagements, 'Attributed opens'],
-    ['Measured media', data.metrics.measuredMediaMinutes, 'Minutes'],
+    ['Measured media', durationLabel(data.metrics.measuredMediaMinutes, data.metrics.measuredMediaStatus, 'min'), 'Known player-active evidence'],
   ] as const;
   const canonicalUrl = `https://unavoce.net/devotions/${data.devotion.slug}/night-prayer`;
   const isOwner = data.access.role === 'owner';
@@ -220,7 +221,7 @@ function DevotionConfiguration({ campaign, canArchive, onSave }: { campaign: Dev
   return <section className="devotion-admin-card"><div className="engine-section-heading compact"><div><span>Campaign settings</span><h3>Configuration and publishing</h3><p>Scheduled publishes on its civil start date; Active is available immediately. Draft, inactive, and paused do not accept reports. Pre/post research uses the built-in campaign survey.</p></div></div><form className="devotion-config-form" onSubmit={save}><label>Name<input name="campaign-name" defaultValue={campaign.name} maxLength={160} required /></label><label>Organization<input name="campaign-organization" defaultValue={campaign.organizationLabel} maxLength={160} required /></label><label>Description<textarea name="campaign-description" defaultValue={campaign.description ?? ''} maxLength={2000} /></label><label>Default start<input type="date" name="start-date" defaultValue={campaign.startDate ?? ''} /></label><label>Duration<input type="number" name="duration-days" min="1" max="40" defaultValue={campaign.durationDays} required /></label><TimezoneField name="timezone" defaultValue={campaign.timezone ?? ''} /><label>Status<StatusSelect name="status" defaultValue={campaign.status} canArchive={canArchive} /></label><button type="submit" className="admin-button primary" disabled={saving}>{saving ? 'Saving…' : 'Save and apply lifecycle'}</button></form></section>;
 }
 
-function DevotionAnalyticsView({ data, metrics, campaignControls, onRefresh, state, error }: { data: DevotionAnalyticsData; metrics: ReadonlyArray<readonly [string, number, string]>; campaignControls: ReactNode; onRefresh: () => Promise<void>; state: 'loading' | 'ready' | 'error'; error: string | null }) {
+function DevotionAnalyticsView({ data, metrics, campaignControls, onRefresh, state, error }: { data: DevotionAnalyticsData; metrics: ReadonlyArray<readonly [string, number | string, string]>; campaignControls: ReactNode; onRefresh: () => Promise<void>; state: 'loading' | 'ready' | 'error'; error: string | null }) {
   const [outcome, setOutcome] = useState<DevotionReportOutcome | 'all'>('all');
   const [night, setNight] = useState('all');
   const [participantId, setParticipantId] = useState('all');
@@ -238,14 +239,15 @@ function DevotionAnalyticsView({ data, metrics, campaignControls, onRefresh, sta
   const rollup = data.nightRollup.filter((item) => night === 'all' || item.night === Number(night));
   const exportRows = () => {
     const content = [
-      'participant,cohort,night,opened,resources,measured_minutes,outcome',
+      'participant,cohort,night,opened,resources,measured_minutes,measured_status,outcome',
       ...rows.flatMap((participant) => selectedNights(participant).map((item) => [
         participant.safeId,
         data.cohorts.find((cohort) => cohort.id === participant.cohortId)?.name ?? '',
         item.pilotDay,
         item.opened,
         item.resourceCount,
-        item.measuredMediaMinutes,
+        item.measuredMediaMinutes ?? '',
+        item.measuredMediaStatus,
         item.outcome ?? '',
       ].map((value) => `"${spreadsheetSafe(value).replace(/"/g, '""')}"`).join(','))),
     ].join('\n');
@@ -261,25 +263,120 @@ function DevotionAnalyticsView({ data, metrics, campaignControls, onRefresh, sta
     {campaignControls}
     {state === 'loading' ? <div className="admin-analytics-comparison" role="status">Updating devotion analytics…</div> : null}
     {error ? <div className="engine-empty engine-error" role="alert">{error}</div> : null}
-    {data.sourceStatus?.status === 'sampled' ? <div className="admin-analytics-warning">Selected-campaign evidence is capped and shown as a lower bound.</div> : null}
+    {data.sourceStatus?.status === 'sampled' ? <div className="admin-analytics-warning" role="status">Selected-campaign evidence reached its configured cap for {data.sourceStatus.truncatedSources.map((source) => `${source} (${data.sourceStatus?.caps[source]?.toLocaleString() ?? 'bounded'})`).join(', ')}. Counts from those sources are lower bounds; sampled averages remain partial observations.</div> : null}
+    {data.resourceProjection.status === 'sampled' ? <div className="admin-analytics-warning">Resource evidence detail uses a deterministic global budget: showing {data.resourceProjection.shownRows} of {data.resourceProjection.observedRows} rows (global cap {data.resourceProjection.globalCap}). Counts and duration aggregates use the full bounded source read.</div> : null}
     <PortfolioAnalytics portfolio={data.portfolio} />
     <section className="engine-metrics devotion-admin-metrics" aria-label="Devotion analytics summary">{metrics.map(([label, value, detail]) => <div className="engine-metric" key={label}><span>{label}</span><strong>{value}</strong><p>{detail}</p></div>)}</section>
+    <ResearchFunnel data={data} />
     <SurveyResponseEvidence data={data} />
+    <ActivityEvidence data={data} />
     <div className="admin-analytics-filters">
       <label>Cohort<select value={cohortId} onChange={(event) => setCohortId(event.target.value)}><option value="all">All cohorts on this page</option>{data.cohorts.map((cohort) => <option value={cohort.id} key={cohort.id}>{cohort.name}</option>)}</select></label>
       <label>Night<select value={night} onChange={(event) => setNight(event.target.value)}><option value="all">All nights</option>{Array.from({ length: data.devotion?.durationDays ?? 0 }, (_, index) => <option value={index + 1} key={index}>Night {index + 1}</option>)}</select></label>
       <label>Outcome<select value={outcome} onChange={(event) => setOutcome(event.target.value as DevotionReportOutcome | 'all')}><option value="all">All outcomes on this page</option>{Object.entries(OUTCOME_LABELS).map(([value, label]) => <option value={value} key={value}>{label}</option>)}</select></label>
-      <label>Participant<select value={participantId} onChange={(event) => setParticipantId(event.target.value)}><option value="all">All participants on this page</option>{data.participants.map((participant) => <option value={participant.safeId} key={participant.id}>{participant.label}</option>)}</select></label>
+      <label>Participant<select value={participantId} onChange={(event) => setParticipantId(event.target.value)}><option value="all">All participants on this page</option>{data.participants.map((participant) => <option value={participant.safeId} key={participant.id}>{participant.safeId}</option>)}</select></label>
       <button type="button" className="admin-button" onClick={exportRows}>Export current page CSV</button>
     </div>
     <section className="devotion-heatmap" aria-label="Campaign night rollup">
       <h3>Campaign rollup</h3>
       <p>Full bounded campaign population; participant-detail filters do not change these totals.</p>
-      {rollup.map((item) => <article key={item.night}><strong>Night {item.night}</strong><div><span className={item.opened ? 'has-evidence' : ''}>Opened: {item.opened}</span><span className={item.engaged ? 'has-evidence' : ''}>Engaged: {item.engaged}</span><span className={item.reported ? 'has-evidence' : ''}>Reported: {item.reported}</span><span>Measured: {item.measuredMediaMinutes} min</span></div></article>)}
+      {rollup.map((item) => <article key={item.night}><strong>Night {item.night}</strong><div><span className={item.opened ? 'has-evidence' : ''}>Opened: {item.opened}</span><span className={item.engaged ? 'has-evidence' : ''}>Engaged: {item.engaged}</span><span className={item.reported ? 'has-evidence' : ''}>Reported: {item.reported}</span><span>Measured: {durationLabel(item.measuredMediaMinutes, item.measuredMediaStatus, 'min')}</span></div></article>)}
     </section>
-    <div className="devotion-heatmap" aria-label="Participant engagement heatmap">{rows.length === 0 ? <p>Unavailable: no participant-nights on this detail page match these filters.</p> : rows.map((participant) => <article key={participant.id}><strong>{participant.label}</strong><small>{data.cohorts.find((cohort) => cohort.id === participant.cohortId)?.name ?? 'Unknown cohort'}</small><div>{selectedNights(participant).map((item) => <span className={item.opened || item.outcome ? 'has-evidence' : ''} key={item.pilotDay}>N{item.pilotDay}: {item.opened ? 'opened' : '—'}{item.outcome ? ` · ${OUTCOME_LABELS[item.outcome]}` : ''}{item.resources.length ? ` · ${item.resources.map((resource) => `${resource.label} (${resource.count} clicks, ${resource.measuredMinutes} min)`).join(', ')}` : ''}</span>)}</div></article>)}</div>
+    <div className="devotion-heatmap" aria-label="Participant engagement heatmap">{rows.length === 0 ? <p>Unavailable: no participant-nights on this detail page match these filters.</p> : rows.map((participant) => <article key={participant.id}><strong>{participant.safeId}</strong><small>{data.cohorts.find((cohort) => cohort.id === participant.cohortId)?.name ?? 'Unknown cohort'}</small><div>{selectedNights(participant).map((item) => <span className={item.opened || item.outcome ? 'has-evidence' : ''} key={item.pilotDay}>N{item.pilotDay}: {item.opened ? 'opened' : '—'}{item.outcome ? ` · ${OUTCOME_LABELS[item.outcome]}` : ''} · active {durationLabel(item.measuredMediaMinutes, item.measuredMediaStatus, 'min')}{item.resources.length ? ` · ${item.resources.map((resource) => `${resource.label} (${resource.count} clicks, ${durationLabel(resource.measuredMinutes, resource.measuredStatus, 'active min')})`).join(', ')}` : ''}{item.resourceEvidenceStatus === 'sampled' ? ` · resource detail lower bound (${item.resources.length}/${item.observedResourceRows ?? item.resources.length}, cap ${item.resourceRowCap ?? item.resources.length})` : ''}</span>)}</div></article>)}</div>
     <p className="devotion-analytics-boundary">Participant filters and CSV cover only the current 100-record detail page. Measured minutes are player-duration evidence only; external links can record a click but cannot measure time on a third-party page.</p>
   </section>;
+}
+
+function ResearchFunnel({ data }: { data: DevotionAnalyticsData }) {
+  const { funnel, acquisition, acquisitionStatus, surfaces, surfaceStatus, devices, deviceStatus, cohorts, nights } = data.research;
+  return <section className="devotion-research-summary" aria-label="Research evidence and deterministic funnel">
+    <div className="engine-section-heading compact"><div><span>Research workflow</span><h3>Deterministic participant funnel</h3><p>{funnel.unit}. Every stage carries its own exact, lower-bound, or unavailable state.</p></div></div>
+    <div className="devotion-funnel">{funnel.stages.map((stage) => <article key={stage.key}><span>{stage.label}</span><strong>{evidenceCount(stage.status, stage.count)}</strong><small>{stage.evidence} · {stage.status}</small><details><summary>Definition and evidence</summary><p>{stage.rule}</p><p>{stage.status === 'unavailable' ? 'Unavailable until the required evidence source is ready.' : stage.participantSafeIds.length ? stage.participantSafeIds.join(', ') : 'No matching participants.'}</p></details></article>)}</div>
+    <p className="devotion-analytics-boundary">Every stage is a subset of the prior stage. These participant counts are not divided into rates against non-nested event, report, session, or survey units. Reconciliation: {funnel.reconciliation.nested && funnel.reconciliation.countsMatchDrilldown ? 'stage totals match unique drilldown evidence' : 'unavailable'}.</p>
+    <div className="devotion-raw-evidence" aria-label="Raw non-nested evidence totals"><h4>Raw non-nested evidence</h4><p>These totals answer independent evidence questions and are not conversion stages.</p>{funnel.rawEvidence.map((row) => <details key={row.key}><summary>{row.label}: {evidenceCount(row.status, row.count)} · {row.status}</summary><p>{row.status === 'unavailable' ? 'Required evidence source is unavailable.' : row.participantSafeIds.length ? row.participantSafeIds.join(', ') : 'No matching participants.'}</p></details>)}</div>
+    <div className="devotion-research-grids">
+      <ResearchBreakdown title="Canonical acquisition" status={acquisitionStatus} rows={acquisition} empty="No devotion-attributed acquisition evidence is stored." />
+      <ResearchBreakdown title="Web / PWA surface" status={surfaceStatus} rows={surfaces} empty="No devotion-attributed web or PWA surface evidence is stored." />
+      <ResearchBreakdown title="Device" status={deviceStatus} rows={devices} empty="No devotion-attributed device evidence is stored." />
+    </div>
+    <div className="admin-table-wrap"><table className="admin-responsive-table"><thead><tr><th>Cohort</th><th>Enrolled</th><th>Opened</th><th>Engaged</th><th>Returned</th><th>Completed</th><th>Continued</th></tr></thead><tbody>{cohorts.length ? cohorts.map((cohort) => <tr key={cohort.cohortSafeId}><td data-label="Cohort">{cohort.name}</td><td data-label="Enrolled">{cohort.stages.enrolled}</td><td data-label="Opened">{cohort.stages.opened}</td><td data-label="Engaged">{cohort.stages.engaged}</td><td data-label="Returned">{cohort.stages.returned}</td><td data-label="Completed">{cohort.stages.completed}</td><td data-label="Continued">{cohort.stages.continued ?? 'Unavailable'}</td></tr>) : <tr><td colSpan={7}>No cohort evidence is available.</td></tr>}</tbody></table></div>
+    <div className="devotion-night-evidence" aria-label="Nightly evidence details">{nights.map((nightRow) => <details key={nightRow.pilotDay}><summary>Night {nightRow.pilotDay} · {nightRow.openedParticipants} opened · {nightRow.reportOutcomes.prayed} prayed reports · {durationLabel(nightRow.activePlayMinutes, nightRow.activePlayStatus, 'active media min')}</summary><p>Prayer date evidence: {nightRow.prayerDates.join(', ') || 'Unavailable'}.{nightRow.prayerDateStatus === 'sampled' ? ` Showing ${nightRow.prayerDates.length} of ${nightRow.observedPrayerDates} dates (cap ${nightRow.prayerDateCap}).` : ''}</p><p>Stored reports — prayed {nightRow.reportOutcomes.prayed}; started/not finished {nightRow.reportOutcomes.startedNotFinished}; not tonight {nightRow.reportOutcomes.notTonight}. Stored player measures — active {durationLabel(nightRow.activePlayMinutes, nightRow.activePlayStatus, 'min')}; panel open {durationLabel(nightRow.panelOpenMinutes, nightRow.panelOpenStatus, 'min')}.</p>{nightRow.resourceEvidenceStatus === 'sampled' ? <p>Resource detail is a lower bound: showing {nightRow.resources.length} of {nightRow.observedResourceRows} rows (available cap {nightRow.resourceRowCap}).</p> : null}{nightRow.resources.length ? <ul>{nightRow.resources.map((resource) => <li key={`${resource.resourceId}-${resource.provider}-${resource.mediaType}`}>{resource.label} · {resource.provider}/{resource.mediaType} · {resource.clickCount} stored click{resource.clickCount === 1 ? '' : 's'} · {durationLabel(resource.activePlayMinutes, resource.activePlayStatus, 'active min')} · {durationLabel(resource.panelOpenMinutes, resource.panelOpenStatus, 'panel min')}</li>)}</ul> : <p>No resource or player evidence.</p>}</details>)}</div>
+  </section>;
+}
+
+function ResearchBreakdown({ title, status, rows, empty }: { title: string; status: 'exact' | 'sampled' | 'unavailable'; rows: DevotionAnalyticsData['research']['acquisition']; empty: string }) {
+  return <section className="devotion-research-card"><h4>{title}</h4><small>{status}</small>{status === 'unavailable' ? <p>Unavailable until the Sprint B acquisition columns are ready.</p> : rows.length ? <ul>{rows.map((row) => <li key={row.value}><strong>{row.value}</strong><span>{status === 'sampled' ? '≥' : ''}{row.storedEventCount} stored events · {status === 'sampled' ? '≥' : ''}{row.participants} participants</span></li>)}</ul> : <p>{empty}</p>}</section>;
+}
+
+function evidenceCount(status: 'exact' | 'sampled' | 'unavailable', count: number | null) {
+  return status === 'unavailable' || count === null ? 'Unavailable' : `${status === 'sampled' ? '≥' : ''}${count}`;
+}
+
+function ActivityEvidence({ data }: { data: DevotionAnalyticsData }) {
+  const [participant, setParticipant] = useState('all');
+  const [cohort, setCohort] = useState('all');
+  const [pilotDay, setPilotDay] = useState('all');
+  const [prayerDate, setPrayerDate] = useState('all');
+  const [source, setSource] = useState('all');
+  const [surface, setSurface] = useState('all');
+  const [device, setDevice] = useState('all');
+  const sessions = data.activity.sessions;
+
+  useEffect(() => {
+    setParticipant('all'); setCohort('all'); setPilotDay('all'); setPrayerDate('all');
+    setSource('all'); setSurface('all'); setDevice('all');
+  }, [data.devotion?.id]);
+
+  const values = (selector: (session: DevotionActivitySession) => string | number | null) =>
+    [...new Set(sessions.map(selector).filter((value): value is string | number => value !== null && value !== ''))]
+      .sort((left, right) => String(left).localeCompare(String(right), undefined, { numeric: true }));
+  const filtered = sessions.filter((session) =>
+    (participant === 'all' || session.participantSafeId === participant)
+    && (cohort === 'all' || session.cohortSafeId === cohort)
+    && (pilotDay === 'all' || session.pilotDay === Number(pilotDay))
+    && (prayerDate === 'all' || session.prayerDate === prayerDate)
+    && (source === 'all' || session.source === source)
+    && (surface === 'all' || session.surface === surface)
+    && (device === 'all' || session.device === device));
+
+  return <section className="devotion-activity-evidence" aria-label="Campaign activity sessions and event timelines">
+    <div className="engine-section-heading compact"><div><span>Activity to session evidence</span><h3>Chronological sessions and event timelines</h3><p>{data.activity.order}. {data.activity.status === 'sampled' ? `Showing bounded evidence: ${data.activity.shownSessionCount} of at least ${data.activity.observedSessionCount} observed sessions.` : `${data.activity.shownSessionCount} observed sessions; exact within stored evidence.`}</p></div></div>
+    {data.activity.attributionStatus === 'unavailable' ? <div className="admin-analytics-warning">Canonical source and surface are unavailable until the Sprint B acquisition columns are ready. Device and other stored evidence remain available.</div> : null}
+    <div className="admin-analytics-filters" aria-label="Session evidence filters">
+      <label>Cohort<select value={cohort} onChange={(event) => setCohort(event.target.value)}><option value="all">All cohorts</option>{data.research.cohorts.map((item) => <option value={item.cohortSafeId} key={item.cohortSafeId}>{item.name}</option>)}</select></label>
+      <label>Participant<select value={participant} onChange={(event) => setParticipant(event.target.value)}><option value="all">All safe IDs</option>{values((session) => session.participantSafeId).map((value) => <option value={value} key={value}>{value}</option>)}</select></label>
+      <label>Pilot day<select value={pilotDay} onChange={(event) => setPilotDay(event.target.value)}><option value="all">All days</option>{values((session) => session.pilotDay).map((value) => <option value={value} key={value}>Day {value}</option>)}</select></label>
+      <label>Prayer date<select value={prayerDate} onChange={(event) => setPrayerDate(event.target.value)}><option value="all">All dates</option>{values((session) => session.prayerDate).map((value) => <option value={value} key={value}>{value}</option>)}</select></label>
+      <label>Source<select value={source} disabled={data.activity.attributionStatus === 'unavailable'} onChange={(event) => setSource(event.target.value)}><option value="all">{data.activity.attributionStatus === 'unavailable' ? 'Unavailable' : 'All sources'}</option>{data.activity.attributionStatus !== 'unavailable' ? values((session) => session.source).map((value) => <option value={value} key={value}>{value}</option>) : null}</select></label>
+      <label>Surface<select value={surface} disabled={data.activity.attributionStatus === 'unavailable'} onChange={(event) => setSurface(event.target.value)}><option value="all">{data.activity.attributionStatus === 'unavailable' ? 'Unavailable' : 'All surfaces'}</option>{data.activity.attributionStatus !== 'unavailable' ? values((session) => session.surface).map((value) => <option value={value} key={value}>{value}</option>) : null}</select></label>
+      <label>Device<select value={device} onChange={(event) => setDevice(event.target.value)}><option value="all">All devices</option>{values((session) => session.device).map((value) => <option value={value} key={value}>{value}</option>)}</select></label>
+    </div>
+    <p className="devotion-analytics-boundary">Stored measures and deterministic derivations are labeled separately. Active play, panel-open time, elapsed session time, and observed event span are different measures. External clicks never imply completion or third-party time.</p>
+    {filtered.length === 0 ? <div className="engine-empty">No stored session or event-only session evidence matches these filters.</div> : <div className="admin-table-wrap"><table className="admin-responsive-table"><thead><tr><th>Time</th><th>Participant / day</th><th>Source / device</th><th>Resource</th><th>Stored player evidence</th><th>Evidence timeline</th></tr></thead><tbody>{filtered.map((session) => <tr key={session.sessionSafeId}><td data-label="Time">{formatEvidenceTime(session.startedAt)}</td><td data-label="Participant / day"><code>{session.participantSafeId ?? 'Unavailable'}</code>{session.pilotDay ? ` · Day ${session.pilotDay}` : ''}{session.prayerDate ? ` · ${session.prayerDate}` : ''}</td><td data-label="Source / device">{data.activity.attributionStatus === 'unavailable' ? 'Source/surface unavailable' : `${session.source} · ${session.surface}`} · {session.device}</td><td data-label="Resource">{session.resource ? `${session.resource.label} · ${session.resource.provider}/${session.resource.mediaType}` : 'No player resource'}</td><td data-label="Stored player evidence">Active {secondsLabel(session.durationMeasures.activePlaySeconds)} · panel {secondsLabel(session.durationMeasures.panelOpenSeconds)}<br />Prayer completion: {booleanEvidence(session.prayerCompletionStored)} · source opened: {booleanEvidence(session.sourceOpenedStored)} · highest progress: {session.highestProgressStored === null ? 'unavailable' : `${session.highestProgressStored}%`}<br /><small>Stored prayer-player completion is not campaign or survey completion. Derived elapsed {secondsLabel(session.durationMeasures.elapsedSessionSeconds)} · event span {secondsLabel(session.durationMeasures.observedTimelineSpanSeconds)}</small></td><td data-label="Evidence timeline"><details><summary>{session.sessionSafeId} · {session.eventCountDerived} stored event{session.eventCountDerived === 1 ? '' : 's'}{session.storedSession ? ' · stored session row' : ' · event-only derived grouping'}</summary>{session.timelineStatus === 'sampled' ? <p>Timeline is capped at {data.activity.timelineCap}; shown evidence is a lower bound.</p> : null}{session.timeline.length ? <ol>{session.timeline.map((item, index) => <li key={`${item.timestamp}-${item.event}-${index}`}><time>{formatEvidenceTime(item.timestamp)}</time> · {item.event}{item.route ? ` · ${item.route}` : ''}{item.resource ? ` · ${item.resource.label} (${item.resource.provider}/${item.resource.mediaType})` : ''}{item.playbackSecondsStored !== null ? ` · stored playback ${secondsLabel(item.playbackSecondsStored)}` : ''}{item.progressPercentStored !== null ? ` · stored progress ${item.progressPercentStored}%` : ''}</li>)}</ol> : <p>No event rows are stored for this prayer-player session.</p>}</details></td></tr>)}</tbody></table></div>}
+    <p className="devotion-analytics-boundary">Reconciliation: {data.activity.shownEventCount} projected timeline events from {data.activity.observedEventCount} observed event rows; {data.activity.eventOnlySessionCount} event-only session groups; {data.activity.ungroupedEventCount} events lacked a session key. Response caps: {data.activity.sessionCap} sessions and {data.activity.timelineCap} events per timeline.</p>
+  </section>;
+}
+
+function secondsLabel(value: number | null) {
+  return value === null ? 'unavailable' : `${value}s`;
+}
+
+function durationLabel(
+  value: number | null,
+  status: 'exact' | 'partial' | 'unavailable',
+  unit: string,
+) {
+  if (status === 'unavailable' || value === null) return 'Unavailable';
+  return `${status === 'partial' ? '≥' : ''}${value} ${unit}${status === 'partial' ? ' (partial known-only sum)' : ''}`;
+}
+
+function booleanEvidence(value: boolean | null) {
+  return value === null ? 'unavailable' : value ? 'yes' : 'no';
+}
+
+function formatEvidenceTime(value: string | null) {
+  if (!value || !Number.isFinite(Date.parse(value))) return 'Unavailable';
+  return new Date(value).toLocaleString();
 }
 
 function SurveyResponseEvidence({ data }: { data: DevotionAnalyticsData }) {
@@ -315,9 +412,28 @@ function SurveyResponseEvidence({ data }: { data: DevotionAnalyticsData }) {
 
   return <section className="devotion-survey-evidence" aria-label="Survey response evidence">
     <div className="engine-section-heading compact"><div><span>Research linkage</span><h3>Pre/post survey responses</h3><p>Responses are pseudonymously linked, not anonymous. Partial saves are shown separately from completed submissions.</p></div>{rows.length ? <button type="button" className="admin-button" onClick={exportRows}>Export survey CSV</button> : null}</div>
+    {data.research.survey.status === 'unavailable' ? <div className="engine-empty">Survey completion and comparisons are unavailable until survey storage is ready; no zero is inferred.</div> : <div className="devotion-survey-summary" aria-label="Survey completion and paired comparisons"><span>Pre complete: {surveyEvidenceCount(data.research.survey.pre?.submitted, data.research.survey.status)} · partial: {surveyEvidenceCount(data.research.survey.pre?.partial, data.research.survey.status)}</span><span>Post complete: {surveyEvidenceCount(data.research.survey.post?.submitted, data.research.survey.status)} · partial: {surveyEvidenceCount(data.research.survey.post?.partial, data.research.survey.status)}</span><span>Paired complete: {surveyEvidenceCount(data.research.survey.pairedSubmittedParticipants, data.research.survey.status)}</span><span>Confidence: {surveyComparison(data.research.survey.comparisons.hourConfidence)}</span><span>Continue likelihood: {surveyComparison(data.research.survey.comparisons.continueLikelihood)}</span></div>}
+    {data.surveyResponseDetail.status === 'sampled' ? <div className="admin-analytics-warning">Survey response rows are a lower-bound projection: showing {data.surveyResponseDetail.shown} of at least {data.surveyResponseDetail.observed} observed rows (cap {data.surveyResponseDetail.cap}). Completion counts use the full bounded source read and display ≥ when that source is sampled; averages are labeled sampled/partial observation instead of lower-bound.</div> : null}
     {!data.surveySchemaReady ? <div className="engine-empty">Survey storage is unavailable until the campaign survey migration is applied.</div> : rows.length === 0 ? <div className="engine-empty">No survey starts or submissions recorded.</div> : <div className="admin-table-wrap"><table className="admin-responsive-table"><thead><tr><th>Participant</th><th>Phase</th><th>Status</th><th>Started</th><th>Submitted</th><th>Key responses</th></tr></thead><tbody>{rows.map((row) => <tr key={`${row.participantSafeId}-${row.phase}`}><td data-label="Participant"><code>{row.participantSafeId}</code></td><td data-label="Phase">{row.phase}</td><td data-label="Status">{row.status}</td><td data-label="Started">{new Date(row.startedAt).toLocaleString()}</td><td data-label="Submitted">{row.submittedAt ? new Date(row.submittedAt).toLocaleString() : 'Not submitted'}</td><td data-label="Key responses">{surveyAnswerSummary(row.answers)}</td></tr>)}</tbody></table></div>}
-    <p className="devotion-analytics-boundary">The export contains only shortened devotion/participant identifiers and approved response fields. It never includes participant labels, raw link tokens, or token hashes.</p>
+    <p className="devotion-analytics-boundary">The export contains only one-way devotion/participant display identifiers and approved response fields. It never includes participant labels, raw link tokens, or token hashes.</p>
   </section>;
+}
+
+function surveyComparison(comparison: DevotionAnalyticsData['research']['survey']['comparisons']['hourConfidence']) {
+  if (comparison.status === 'unavailable') return 'Unavailable — survey storage is not ready';
+  if (comparison.status === 'sampled') {
+    return comparison.pairedParticipants
+      ? `Sampled/partial observation — ${comparison.preAverage} pre → ${comparison.postAverage} post (${comparison.change && comparison.change > 0 ? '+' : ''}${comparison.change}); observed pairs ≥${comparison.pairedParticipants}`
+      : 'Sampled/partial observation — no paired submitted responses were observed';
+  }
+  return comparison.pairedParticipants
+    ? `${comparison.preAverage} pre → ${comparison.postAverage} post (${comparison.change && comparison.change > 0 ? '+' : ''}${comparison.change}) · n=${comparison.pairedParticipants}`
+    : 'Unavailable — no paired submitted responses';
+}
+
+function surveyEvidenceCount(value: number | null | undefined, status: 'exact' | 'sampled' | 'unavailable') {
+  if (status === 'unavailable' || value === null || value === undefined) return 'Unavailable';
+  return `${status === 'sampled' ? '≥' : ''}${value}`;
 }
 
 function surveyAnswerSummary(answers: DevotionAnalyticsData['surveyResponses'][number]['answers']) {
@@ -332,7 +448,7 @@ function surveyAnswerSummary(answers: DevotionAnalyticsData['surveyResponses'][n
 
 function PortfolioAnalytics({ portfolio }: { portfolio: DevotionAnalyticsData['portfolio'] }) {
   if (!portfolio) return <div className="engine-empty">Portfolio comparison is unavailable.</div>;
-  return <section className="devotion-portfolio"><div className="engine-section-heading compact"><div><span>Portfolio intelligence</span><h3>Campaign comparison</h3><p>{portfolio.status === 'sampled' ? `Lower-bound evidence; configured caps were reached for ${portfolio.truncatedSources.join(', ')}.` : 'Exact within the current stored evidence.'}</p></div></div><div className="admin-table-wrap"><table className="admin-responsive-table"><thead><tr><th>Campaign</th><th>Status</th><th>Participants</th><th>Active</th><th>Completed</th><th>Nights opened</th><th>Reports</th><th>Prayed</th><th>Resource opens</th><th>Measured min</th></tr></thead><tbody>{portfolio.campaigns.map((row) => <tr key={row.devotion.id}><td data-label="Campaign">{row.devotion.name}</td><td data-label="Status">{row.devotion.status}</td><td data-label="Participants">{row.participants}</td><td data-label="Active">{row.activeParticipants}</td><td data-label="Completed">{row.completedParticipants}</td><td data-label="Nights opened">{row.nightsOpened}</td><td data-label="Reports">{row.reports}</td><td data-label="Prayed">{row.prayedReports}</td><td data-label="Resource opens">{row.resourceEngagements}</td><td data-label="Measured min">{row.measuredMediaMinutes}</td></tr>)}</tbody></table></div></section>;
+  return <section className="devotion-portfolio"><div className="engine-section-heading compact"><div><span>Portfolio intelligence</span><h3>Campaign comparison</h3><p>{portfolio.status === 'sampled' ? `Lower-bound evidence; configured caps were reached for ${portfolio.truncatedSources.join(', ')}.` : 'Exact within the current stored evidence.'}</p></div></div><div className="admin-table-wrap"><table className="admin-responsive-table"><thead><tr><th>Campaign</th><th>Status</th><th>Participants</th><th>Active</th><th>Completed</th><th>Nights opened</th><th>Reports</th><th>Prayed</th><th>Resource opens</th><th>Measured min</th></tr></thead><tbody>{portfolio.campaigns.map((row) => <tr key={row.devotion.id}><td data-label="Campaign">{row.devotion.name}</td><td data-label="Status">{row.devotion.status}</td><td data-label="Participants">{row.participants}</td><td data-label="Active">{row.activeParticipants}</td><td data-label="Completed">{row.completedParticipants}</td><td data-label="Nights opened">{row.nightsOpened}</td><td data-label="Reports">{row.reports}</td><td data-label="Prayed">{row.prayedReports}</td><td data-label="Resource opens">{row.resourceEngagements}</td><td data-label="Measured min">{durationLabel(row.measuredMediaMinutes, row.measuredMediaStatus, 'min')}</td></tr>)}</tbody></table></div></section>;
 }
 
 function AuditHistory({ entries }: { entries: DevotionAnalyticsData['auditHistory'] }) {

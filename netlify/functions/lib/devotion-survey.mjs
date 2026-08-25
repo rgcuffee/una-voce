@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto';
+
 export const DEVOTION_SURVEY_PHASES = ['pre', 'post'];
 export const DEVOTION_SURVEY_STATUSES = ['partial', 'submitted'];
 
@@ -109,12 +111,13 @@ export function safeSurveyResponse(response) {
 }
 
 export function safeAdminSurveyResponse(response) {
+  const validated = validateSurveyAnswers(response.phase, response.answers);
   return {
-    devotionSafeId: safeId(response.devotion_id),
-    participantSafeId: safeId(response.participant_id),
+    devotionSafeId: safeId('devotion', response.devotion_id),
+    participantSafeId: safeId('participant', response.participant_id),
     phase: response.phase,
     status: response.status,
-    answers: isPlainObject(response.answers) ? response.answers : {},
+    answers: validated.ok ? validated.answers : {},
     startedAt: response.started_at,
     submittedAt: response.submitted_at ?? null,
     updatedAt: response.updated_at,
@@ -125,8 +128,10 @@ export function isSurveySchemaUnavailable(error) {
   return ['42P01', '42883', 'PGRST202', 'PGRST205'].includes(error?.code);
 }
 
-function safeId(value) {
-  return typeof value === 'string' ? value.slice(0, 8) : '';
+function safeId(kind, value) {
+  return typeof value === 'string'
+    ? `${kind}-${createHash('sha256').update(value).digest('hex').slice(0, 10)}`
+    : '';
 }
 
 function isPlainObject(value) {

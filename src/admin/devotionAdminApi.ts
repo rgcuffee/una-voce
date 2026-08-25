@@ -19,6 +19,7 @@ export type DevotionReportOutcome =
   | 'prayed'
   | 'started_not_finished'
   | 'not_tonight';
+export type DurationEvidenceStatus = 'exact' | 'partial' | 'unavailable';
 
 export type DevotionCampaign = {
   id: string;
@@ -57,15 +58,20 @@ export type DevotionNightResult = {
   openCount: number;
   resourceEngaged: boolean;
   resourceCount: number;
+  resourceEvidenceStatus?: 'sampled';
+  observedResourceRows?: number;
+  resourceRowCap?: number;
   resources: Array<{
     resourceId: string;
     label: string;
     provider: string;
     mediaType: string;
     count: number;
-    measuredMinutes: number;
+    measuredMinutes: number | null;
+    measuredStatus: DurationEvidenceStatus;
   }>;
-  measuredMediaMinutes: number;
+  measuredMediaMinutes: number | null;
+  measuredMediaStatus: DurationEvidenceStatus;
   outcome: DevotionReportOutcome | null;
 };
 
@@ -90,6 +96,153 @@ export type DevotionSurveyResult = {
   startedAt: string;
   submittedAt: string | null;
   updatedAt: string;
+};
+
+export type DevotionActivityEvent = {
+  timestamp: string | null;
+  event: string;
+  participantSafeId: string | null;
+  pilotDay: number | null;
+  prayerDate: string | null;
+  route: string | null;
+  source: string;
+  surface: string;
+  device: string;
+  resource: null | {
+    resourceId: string;
+    label: string;
+    provider: string;
+    mediaType: string;
+  };
+  playbackSecondsStored: number | null;
+  progressPercentStored: number | null;
+  evidenceType: 'stored_event';
+};
+
+export type DevotionActivitySession = {
+  sessionSafeId: string;
+  participantSafeId: string | null;
+  cohortSafeId: string | null;
+  pilotDay: number | null;
+  prayerDate: string | null;
+  startedAt: string | null;
+  endedAt: string | null;
+  source: string;
+  surface: string;
+  device: string;
+  resource: DevotionActivityEvent['resource'];
+  durationMeasures: {
+    activePlaySeconds: number | null;
+    panelOpenSeconds: number | null;
+    elapsedSessionSeconds: number | null;
+    observedTimelineSpanSeconds: number | null;
+  };
+  prayerCompletionStored: boolean | null;
+  sourceOpenedStored: boolean | null;
+  highestProgressStored: number | null;
+  eventCountDerived: number;
+  storedSession: boolean;
+  timelineStatus: 'exact' | 'sampled';
+  timeline: DevotionActivityEvent[];
+  fieldSemantics: { stored: string[]; derived: string[] };
+};
+
+type FunnelStageKey = 'enrolled' | 'opened' | 'engaged' | 'returned' | 'completed' | 'continued';
+type EvidenceStatus = 'exact' | 'sampled' | 'unavailable';
+
+export type DevotionResearchData = {
+  funnel: {
+    status: EvidenceStatus;
+    unit: string;
+    stages: Array<{
+      key: FunnelStageKey;
+      label: string;
+      rule: string;
+      evidence: string;
+      status: EvidenceStatus;
+      count: number | null;
+      participantSafeIds: string[];
+    }>;
+    reconciliation: { countsMatchDrilldown: boolean; nested: boolean };
+    rawEvidence: Array<{
+      key: string;
+      label: string;
+      status: EvidenceStatus;
+      count: number | null;
+      participantSafeIds: string[];
+    }>;
+  };
+  cohorts: Array<{
+    cohortSafeId: string;
+    name: string;
+    participants: number;
+    stages: Record<FunnelStageKey, number | null>;
+  }>;
+  nights: Array<{
+    pilotDay: number;
+    prayerDates: string[];
+    prayerDateStatus: 'exact' | 'sampled';
+    observedPrayerDates: number;
+    prayerDateCap: number;
+    openedParticipants: number;
+    resourceParticipants: number;
+    reportOutcomes: { prayed: number; startedNotFinished: number; notTonight: number };
+    activePlayMinutes: number | null;
+    activePlayStatus: DurationEvidenceStatus;
+    panelOpenMinutes: number | null;
+    panelOpenStatus: DurationEvidenceStatus;
+    resourceEvidenceStatus: 'exact' | 'sampled';
+    observedResourceRows: number;
+    resourceRowCap: number;
+    resources: Array<{
+      resourceId: string;
+      label: string;
+      provider: string;
+      mediaType: string;
+      clickCount: number;
+      activePlayMinutes: number | null;
+      activePlayStatus: DurationEvidenceStatus;
+      panelOpenMinutes: number | null;
+      panelOpenStatus: DurationEvidenceStatus;
+    }>;
+  }>;
+  participantDays: Array<{
+    participantSafeId: string;
+    cohortSafeId: string | null;
+    pilotDay: number;
+    prayerDate: string | null;
+    openedStored: boolean;
+    resourceClickCountStored: number;
+    reportOutcomeStored: DevotionReportOutcome | null;
+    activePlaySecondsStored: number | null;
+    activePlayStatus: DurationEvidenceStatus;
+    panelOpenSecondsStored: number | null;
+    panelOpenStatus: DurationEvidenceStatus;
+    sources: string[];
+    surfaces: string[];
+  }>;
+  survey: {
+    status: EvidenceStatus;
+    completionRule: string;
+    pre: { partial: number; submitted: number } | null;
+    post: { partial: number; submitted: number } | null;
+    pairedSubmittedParticipants: number | null;
+    comparisons: Record<'hourConfidence' | 'continueLikelihood', {
+      status: EvidenceStatus;
+      pairedParticipants: number | null;
+      preAverage: number | null;
+      postAverage: number | null;
+      change: number | null;
+    }>;
+    continuedAfterWindow: Record<'yes' | 'no' | 'notSure' | 'notApplicable' | 'unanswered', number> | null;
+  };
+  acquisitionStatus: EvidenceStatus;
+  acquisition: Array<{ value: string; storedEventCount: number; participants: number }>;
+  surfaceStatus: EvidenceStatus;
+  surfaces: Array<{ value: string; storedEventCount: number; participants: number }>;
+  deviceStatus: EvidenceStatus;
+  devices: Array<{ value: string; storedEventCount: number; participants: number }>;
+  durationSemantics: Record<string, string>;
 };
 
 export type DevotionAnalyticsData = {
@@ -120,7 +273,29 @@ export type DevotionAnalyticsData = {
     hasNext: boolean;
   };
   surveySchemaReady: boolean;
+  surveyResponseDetail: {
+    status: EvidenceStatus;
+    observed: number;
+    shown: number;
+    cap: number | null;
+  };
   surveyResponses: DevotionSurveyResult[];
+  activity: {
+    status: EvidenceStatus;
+    attributionStatus: EvidenceStatus;
+    order: string;
+    sessionCap: number;
+    timelineCap: number;
+    observedSessionCount: number;
+    shownSessionCount: number;
+    observedEventCount: number;
+    shownEventCount: number;
+    eventOnlySessionCount: number;
+    ungroupedEventCount: number;
+    timelineTruncatedSessionCount: number;
+    sessions: DevotionActivitySession[];
+  };
+  research: DevotionResearchData;
   auditHistory: Array<{
     id: string;
     actorEmail: string | null;
@@ -146,7 +321,8 @@ export type DevotionAnalyticsData = {
       reports: number;
       prayedReports: number;
       resourceEngagements: number;
-      measuredMediaMinutes: number;
+      measuredMediaMinutes: number | null;
+      measuredMediaStatus: DurationEvidenceStatus;
     }>;
   } | null;
   devotion: DevotionCampaign | null;
@@ -157,7 +333,8 @@ export type DevotionAnalyticsData = {
     participantsWithdrawn: number;
     nightsOpened: number;
     resourceEngagements: number;
-    measuredMediaMinutes: number;
+    measuredMediaMinutes: number | null;
+    measuredMediaStatus: DurationEvidenceStatus;
     reportedPrayed: number;
     reportedPartial: number;
     reportedNotTonight: number;
@@ -167,8 +344,18 @@ export type DevotionAnalyticsData = {
     opened: number;
     engaged: number;
     reported: number;
-    measuredMediaMinutes: number;
+    measuredMediaMinutes: number | null;
+    measuredMediaStatus: DurationEvidenceStatus;
   }>;
+  resourceProjection: {
+    status: 'exact' | 'sampled';
+    observedRows: number;
+    shownRows: number;
+    globalCap: number;
+    participantNightAllocation: number;
+    nightlyAllocation: number;
+    order: string;
+  };
   participants: DevotionParticipantResult[];
 };
 

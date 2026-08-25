@@ -1,8 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
+  createAdminDevotionRepository,
   createAdminDevotionHandler,
   firstNonEmpty,
+  isAnalyticsContractSchemaUnavailable,
   readBoundedRows,
 } from '../admin-devotion.mjs';
 
@@ -15,6 +17,57 @@ test('blank admin secrets do not block the configured fallback secret', () => {
   assert.equal(firstNonEmpty('', 'ingest-secret'), 'ingest-secret');
   assert.equal(firstNonEmpty('   ', 'ingest-secret'), 'ingest-secret');
   assert.equal(firstNonEmpty(undefined, '  dedicated-secret  '), 'dedicated-secret');
+});
+
+test('analytics evidence compatibility fallback is limited to missing Sprint B columns', () => {
+  assert.equal(isAnalyticsContractSchemaUnavailable({ code: '42703', message: 'column acquisition_source does not exist' }), true);
+  assert.equal(isAnalyticsContractSchemaUnavailable({ code: 'PGRST204', details: 'analytics_sessions.acquisition_surface missing' }), true);
+  assert.equal(isAnalyticsContractSchemaUnavailable({ code: '42703', message: 'column devotion_id does not exist' }), false);
+  assert.equal(isAnalyticsContractSchemaUnavailable({ code: '42P01', message: 'analytics_events missing' }), false);
+});
+
+test('Sprint B acquisition compatibility fallback discloses readiness and preserves real failures', async () => {
+  const selected = [];
+  const client = {
+    from(table) {
+      let fields = '';
+      const query = {
+        select(value) { fields = value; selected.push([table, value]); return query; },
+        eq() { return query; },
+        order() { return query; },
+        async range() {
+          if (fields.includes('acquisition_source')) {
+            return { data: null, error: { code: '42703', message: 'column acquisition_source does not exist' } };
+          }
+          return { data: [], error: null };
+        },
+      };
+      return query;
+    },
+  };
+  const repository = createAdminDevotionRepository(client);
+  const [events, sessions] = await Promise.all([
+    repository.listEvents(DEVOTION_ID), repository.listSessions(DEVOTION_ID),
+  ]);
+
+  assert.equal(events.acquisitionReady, false);
+  assert.equal(sessions.acquisitionReady, false);
+  assert.equal(selected.some(([, fields]) => fields.includes('acquisition_source')), true);
+  assert.equal(selected.some(([, fields]) => !fields.includes('acquisition_source')), true);
+
+  const brokenRepository = createAdminDevotionRepository({
+    from() {
+      const query = {
+        select() { return query; }, eq() { return query; }, order() { return query; },
+        async range() { return { data: null, error: { code: '42P01', message: 'analytics_events missing' } }; },
+      };
+      return query;
+    },
+  });
+  await assert.rejects(
+    () => brokenRepository.listEvents(DEVOTION_ID),
+    (error) => error?.code === '42P01' && error?.message === 'analytics_events missing',
+  );
 });
 
 test('admin participant creation returns a campaign-scoped stable link and allows duplicate labels', async () => {
@@ -142,6 +195,35 @@ test('portfolio mode compares campaigns without treating evidence units as conve
   assert.equal(body.portfolio.campaigns.length, 2);
   assert.equal(body.portfolio.campaigns.find((row) => row.devotion.id === DEVOTION_ID).participants, 1);
   assert.equal('conversionRate' in body.portfolio.campaigns[0], false);
+  assert.equal(body.portfolio.campaigns[0].measuredMediaMinutes, null);
+  assert.equal(body.portfolio.campaigns[0].measuredMediaStatus, 'unavailable');
+});
+
+test('portfolio duration totals distinguish mixed known-only evidence from explicit zero', async () => {
+  const repository = memoryRepository({ includeSecondCampaign: true });
+  repository.portfolioData = async () => ({
+    participants: [], reports: [], events: [],
+    sessions: {
+      rows: [
+        { devotion_id: DEVOTION_ID, active_play_seconds: null },
+        { devotion_id: DEVOTION_ID, active_play_seconds: 60 },
+        { devotion_id: OTHER_DEVOTION_ID, active_play_seconds: 0 },
+      ],
+      truncated: false,
+      cap: 10_000,
+    },
+  });
+  const response = await adminHandler(repository)({
+    httpMethod: 'GET', headers: {}, queryStringParameters: { portfolio: 'true' },
+  });
+  const body = JSON.parse(response.body);
+  const mixed = body.portfolio.campaigns.find((row) => row.devotion.id === DEVOTION_ID);
+  const zero = body.portfolio.campaigns.find((row) => row.devotion.id === OTHER_DEVOTION_ID);
+
+  assert.equal(mixed.measuredMediaMinutes, 1);
+  assert.equal(mixed.measuredMediaStatus, 'partial');
+  assert.equal(zero.measuredMediaMinutes, 0);
+  assert.equal(zero.measuredMediaStatus, 'exact');
 });
 
 test('authenticated dashboard projects survey evidence with safe linkage and completion status', async () => {
@@ -158,14 +240,16 @@ test('authenticated dashboard projects survey evidence with safe linkage and com
     updated_at: '2026-08-25T00:02:00Z',
     token_hash: 'must-not-project',
   });
-  const result = await adminHandler(repository)({ httpMethod: 'GET', headers: {} });
+  const result = await adminHandler(repository)({
+    httpMethod: 'GET', headers: {}, queryStringParameters: { portfolio: 'true' },
+  });
   const body = JSON.parse(result.body);
 
   assert.equal(result.statusCode, 200);
   assert.equal(body.surveySchemaReady, true);
   assert.deepEqual(body.surveyResponses[0], {
-    devotionSafeId: 'aaaaaaaa',
-    participantSafeId: '11111111',
+    devotionSafeId: 'devotion-303617b973',
+    participantSafeId: 'participant-bd7662a5ee',
     phase: 'pre',
     status: 'partial',
     answers: { hourConfidence: 2 },
@@ -174,6 +258,121 @@ test('authenticated dashboard projects survey evidence with safe linkage and com
     updatedAt: '2026-08-25T00:02:00Z',
   });
   assert.equal(JSON.stringify(body.surveyResponses).includes('token'), false);
+});
+
+test('research readiness and survey response caps remain explicit at the authenticated API boundary', async () => {
+  const repository = memoryRepository();
+  const participantId = '11111111-1111-4111-8111-111111111111';
+  repository.participants.push({
+    id: participantId, devotion_id: DEVOTION_ID, cohort_id: COHORT_ID,
+    label: 'Participant', status: 'completed', completed_at: '2026-08-25T00:00:00Z',
+    revoked_at: null, created_at: '2026-08-19T00:00:00Z',
+  });
+  repository.listEvents = async () => ({
+    rows: [{
+      id: 'event-1', session_id: 'session-1', devotion_participant_id: participantId,
+      pilot_day: 1, prayer_date: '2026-08-24', event_name: 'devotion_page_opened',
+      occurred_at: '2026-08-24T01:00:00Z', device_class: 'mobile',
+    }],
+    truncated: false, cap: 10_000, acquisitionReady: false,
+  });
+  repository.listSessions = async () => ({ rows: [], truncated: false, cap: 10_000, acquisitionReady: false });
+  repository.listSurveyResponses = async () => ({
+    rows: Array.from({ length: 300 }, (_, index) => ({
+      id: `survey-${index}`, devotion_id: DEVOTION_ID, participant_id: participantId,
+      phase: 'post', status: 'submitted', answers: { continuedAfterWindow: 'yes' },
+      started_at: '2026-08-25T02:00:00Z', submitted_at: '2026-08-25T02:01:00Z',
+      updated_at: '2026-08-25T02:01:00Z',
+    })),
+    truncated: false, cap: 10_000, schemaReady: false,
+  });
+  const result = await adminHandler(repository)({
+    httpMethod: 'GET', headers: {}, queryStringParameters: { portfolio: 'true' },
+  });
+  const body = JSON.parse(result.body);
+  const continued = body.research.funnel.stages.find((stage) => stage.key === 'continued');
+
+  assert.equal(result.statusCode, 200);
+  assert.equal(body.surveySchemaReady, false);
+  assert.equal(body.research.survey.status, 'unavailable');
+  assert.equal(continued.status, 'unavailable');
+  assert.equal(continued.count, null);
+  assert.equal(body.research.acquisitionStatus, 'unavailable');
+  assert.equal(body.research.surfaceStatus, 'unavailable');
+  assert.equal(body.activity.attributionStatus, 'unavailable');
+  assert.deepEqual(body.research.devices, [
+    { value: 'mobile', storedEventCount: 1, participants: 1 },
+  ]);
+  assert.deepEqual(body.surveyResponseDetail, {
+    status: 'unavailable', observed: 0, shown: 0, cap: 250,
+  });
+  assert.deepEqual(body.surveyResponses, []);
+  assert.ok(Buffer.byteLength(result.body, 'utf8') <= 1_500_000);
+
+  repository.listSurveyResponses = async () => ({
+    rows: Array.from({ length: 300 }, (_, index) => ({
+      id: `ready-survey-${index}`, devotion_id: DEVOTION_ID, participant_id: participantId,
+      phase: 'post', status: 'submitted', answers: { continuedAfterWindow: 'yes' },
+      started_at: '2026-08-25T02:00:00Z', submitted_at: '2026-08-25T02:01:00Z',
+      updated_at: '2026-08-25T02:01:00Z',
+    })),
+    truncated: false, cap: 10_000, schemaReady: true,
+  });
+  const readyResult = await adminHandler(repository)({
+    httpMethod: 'GET', headers: {}, queryStringParameters: { portfolio: 'true' },
+  });
+  const readyBody = JSON.parse(readyResult.body);
+  assert.deepEqual(readyBody.surveyResponseDetail, {
+    status: 'sampled', observed: 300, shown: 250, cap: 250,
+  });
+  assert.equal(readyBody.surveyResponses.length, 250);
+});
+
+test('authenticated research dashboard projects bounded privacy-safe evidence and exact drilldowns', async () => {
+  const repository = memoryRepository();
+  const participantId = '11111111-1111-4111-8111-111111111111';
+  const rawSessionId = '22222222-2222-4222-8222-222222222222';
+  repository.participants.push({
+    id: participantId, devotion_id: DEVOTION_ID, cohort_id: COHORT_ID,
+    label: 'private@example.test', status: 'completed', completed_at: '2026-08-25T00:00:00Z',
+    revoked_at: null, created_at: '2026-08-19T00:00:00Z',
+  });
+  repository.listReports = async () => [{
+    participant_id: participantId, pilot_day: 1, prayer_date: '2026-08-24', outcome: 'prayed',
+  }];
+  repository.listEvents = async () => [
+    { id: 'event-1', session_id: rawSessionId, devotion_participant_id: participantId, pilot_day: 1, prayer_date: '2026-08-24', event_name: 'devotion_page_opened', occurred_at: '2026-08-24T01:00:00Z', page_path: '/devotions/test/night-prayer?p=secret', device_class: 'mobile', acquisition_source: 'qr', acquisition_surface: 'web', metadata: { token: 'never-project' } },
+    { id: 'event-2', session_id: rawSessionId, devotion_participant_id: participantId, pilot_day: 1, prayer_date: '2026-08-24', event_name: 'devotion_resource_opened', occurred_at: '2026-08-24T01:01:00Z', resource_id: 'audio', provider: 'spotify', media_type: 'audio', acquisition_source: 'qr', acquisition_surface: 'web' },
+    { id: 'event-3', session_id: rawSessionId, devotion_participant_id: participantId, pilot_day: 2, prayer_date: '2026-08-25', event_name: 'devotion_page_opened', occurred_at: '2026-08-25T01:00:00Z', acquisition_source: 'sms', acquisition_surface: 'pwa' },
+  ];
+  repository.listSessions = async () => [{
+    session_id: rawSessionId, devotion_participant_id: participantId, pilot_day: 2, prayer_date: '2026-08-25',
+    started_at: '2026-08-25T01:00:00Z', ended_at: '2026-08-25T01:02:00Z',
+    active_play_seconds: 30, panel_open_seconds: 90,
+  }];
+  repository.surveyResponses.push({
+    id: 'survey-1', devotion_id: DEVOTION_ID, participant_id: participantId,
+    phase: 'post', status: 'submitted', answers: { continuedAfterWindow: 'yes' },
+    started_at: '2026-08-25T02:00:00Z', submitted_at: '2026-08-25T02:01:00Z', updated_at: '2026-08-25T02:01:00Z',
+  });
+
+  const result = await adminHandler(repository)({
+    httpMethod: 'GET', headers: {}, queryStringParameters: { portfolio: 'true' },
+  });
+  const body = JSON.parse(result.body);
+  const projected = JSON.stringify({ activity: body.activity, research: body.research });
+  assert.equal(result.statusCode, 200);
+  assert.equal(body.activity.status, 'exact');
+  assert.deepEqual(body.research.funnel.stages.map((stage) => stage.count), [1, 1, 1, 1, 1, 1]);
+  assert.equal(body.research.funnel.reconciliation.nested, true);
+  assert.equal(body.participants[0].id, body.participants[0].safeId);
+  assert.equal(body.participants[0].label, body.participants[0].safeId);
+  assert.equal(body.access.email, null);
+  assert.deepEqual(body.auditHistory, []);
+  assert.equal(projected.includes(rawSessionId), false);
+  assert.equal(projected.includes('private@example.test'), false);
+  assert.equal(projected.includes('never-project'), false);
+  assert.equal(projected.includes('?p=secret'), false);
 });
 
 test('cohort schedules, participant statuses, and bounded bulk revocation validate at the API edge', async () => {
@@ -286,6 +485,128 @@ test('participant detail is paged while campaign metrics retain the bounded popu
   });
 });
 
+test('analytics-mode empty dashboard retains the complete unavailable evidence contract', async () => {
+  const repository = memoryRepository();
+  repository.listDevotions = async () => [];
+  const response = await createAdminDevotionHandler({
+    repository,
+    authorize: async () => ({ actorId: 'owner-1', email: 'owner@example.test', role: 'owner' }),
+    linkSecret: LINK_SECRET,
+  })({
+    httpMethod: 'GET', headers: {}, queryStringParameters: { portfolio: 'true' },
+  });
+  const body = JSON.parse(response.body);
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(body.access.email, null);
+  assert.equal(body.devotion, null);
+  assert.equal(body.activity.status, 'unavailable');
+  assert.deepEqual(body.activity.sessions, []);
+  assert.equal(body.research.funnel.status, 'unavailable');
+  assert.equal(body.research.survey.status, 'unavailable');
+  assert.equal(body.research.deviceStatus, 'unavailable');
+  assert.deepEqual(body.surveyResponseDetail, {
+    status: 'unavailable', observed: 0, shown: 0, cap: 250,
+  });
+  assert.equal(body.surveySchemaReady, false);
+  assert.deepEqual(body.resourceProjection, {
+    status: 'exact', observedRows: 0, shownRows: 0, globalCap: 1_000,
+    participantNightAllocation: 600, nightlyAllocation: 400,
+    order: 'participant detail order, then pilot day and resource key; nightly pilot day, then resource key',
+  });
+});
+
+test('authenticated max-cap analytics response stays below four MiB with a global resource budget', async () => {
+  const repository = memoryRepository({ devotionOverrides: { duration_days: 40 } });
+  const participants = Array.from({ length: 2_000 }, (_, index) => ({
+    id: uuidFor(index + 1),
+    devotion_id: DEVOTION_ID,
+    cohort_id: COHORT_ID,
+    label: `Participant ${index + 1}`,
+    status: 'enrolled',
+    completed_at: null,
+    revoked_at: null,
+    created_at: '2026-08-19T00:00:00Z',
+  }));
+  repository.participants.push(...participants);
+  const events = Array.from({ length: 10_000 }, (_, index) => {
+    const participant = participants[index % 100];
+    const pilotDay = Math.floor(index / 100) % 40 + 1;
+    return {
+      id: uuidFor(index + 20_001),
+      session_id: uuidFor(index + 40_001),
+      devotion_participant_id: participant.id,
+      pilot_day: pilotDay,
+      prayer_date: `2026-09-${String(pilotDay).padStart(2, '0')}`,
+      event_name: 'devotion_resource_opened',
+      occurred_at: '2026-09-01T01:00:00Z',
+      resource_id: `event-resource-${String(index).padStart(5, '0')}`,
+      provider: 'vimeo',
+      media_type: 'video',
+      device_class: 'mobile',
+      acquisition_source: 'qr',
+      acquisition_surface: 'web',
+    };
+  });
+  const sessions = Array.from({ length: 10_000 }, (_, index) => {
+    const participant = participants[index % 100];
+    const pilotDay = Math.floor(index / 100) % 40 + 1;
+    return {
+      session_id: uuidFor(index + 40_001),
+      devotion_participant_id: participant.id,
+      pilot_day: pilotDay,
+      prayer_date: `2026-09-${String(pilotDay).padStart(2, '0')}`,
+      resource_id: `session-resource-${String(index).padStart(5, '0')}`,
+      provider: 'vimeo',
+      media_type: 'video',
+      active_play_seconds: 60,
+      panel_open_seconds: 120,
+      started_at: '2026-09-01T01:00:00Z',
+      ended_at: '2026-09-01T01:02:00Z',
+      acquisition_source: 'qr',
+      acquisition_surface: 'web',
+    };
+  });
+  const surveys = Array.from({ length: 250 }, (_, index) => ({
+    id: uuidFor(index + 60_001), devotion_id: DEVOTION_ID,
+    participant_id: participants[index % participants.length].id,
+    phase: index % 2 ? 'pre' : 'post', status: 'submitted',
+    answers: index % 2
+      ? { hourConfidence: 3, continueLikelihood: 4 }
+      : { hourConfidence: 4, continueLikelihood: 5, continuedAfterWindow: 'yes' },
+    started_at: '2026-09-01T01:00:00Z', submitted_at: '2026-09-01T01:01:00Z',
+    updated_at: '2026-09-01T01:01:00Z',
+  }));
+  repository.listEvents = async () => ({ rows: events, truncated: false, cap: 10_000, acquisitionReady: true });
+  repository.listSessions = async () => ({ rows: sessions, truncated: false, cap: 10_000, acquisitionReady: true });
+  repository.listSurveyResponses = async () => ({ rows: surveys, truncated: false, cap: 10_000, schemaReady: true });
+
+  const response = await adminHandler(repository)({
+    httpMethod: 'GET', headers: {}, queryStringParameters: { portfolio: 'true' },
+  });
+  const body = JSON.parse(response.body);
+  const bytes = Buffer.byteLength(response.body, 'utf8');
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(body.activity.sessions.length, 40);
+  assert.equal(body.activity.sessions.every((session) => session.timeline.length <= 20), true);
+  assert.equal(body.participants.length, 100);
+  assert.equal(body.participants.every((participant) => participant.nights.length === 40), true);
+  assert.equal(body.research.participantDays.length, 4_000);
+  assert.equal(body.research.nights.every((night) => night.prayerDates.length <= 10), true);
+  assert.equal(body.research.funnel.stages.every((stage) => stage.participantSafeIds.length <= 2_000), true);
+  assert.equal(body.research.funnel.rawEvidence.every((row) => row.participantSafeIds.length <= 2_000), true);
+  assert.deepEqual(body.resourceProjection, {
+    status: 'sampled', observedRows: 40_000, shownRows: 1_000, globalCap: 1_000,
+    participantNightAllocation: 600, nightlyAllocation: 400,
+    order: 'participant detail order, then pilot day and resource key; nightly pilot day, then resource key',
+  });
+  assert.equal(body.participants.flatMap((participant) => participant.nights).flatMap((night) => night.resources).length, 600);
+  assert.equal(body.research.nights.flatMap((night) => night.resources).length, 400);
+  assert.equal(body.surveyResponses.length, 250);
+  assert.ok(bytes <= 4 * 1024 * 1024, `authenticated response was ${bytes} bytes`);
+});
+
 test('sampled evidence suppresses absence-based follow-up claims', async () => {
   const repository = memoryRepository();
   repository.listEvents = async () => ({ rows: [], truncated: true, cap: 10_000 });
@@ -338,8 +659,8 @@ test('admin endpoint enforces authorization and active configuration requirement
   assert.equal(oversized.statusCode, 413);
 });
 
-function memoryRepository({ includeSecondCampaign = false } = {}) {
-  const devotions = [devotionFixture()];
+function memoryRepository({ includeSecondCampaign = false, devotionOverrides = {} } = {}) {
+  const devotions = [devotionFixture(devotionOverrides)];
   const cohorts = [cohortFixture()];
   if (includeSecondCampaign) {
     devotions.push(devotionFixture({
@@ -508,4 +829,9 @@ function request(body) {
     headers: { origin: 'http://127.0.0.1:8888' },
     body: JSON.stringify(body),
   };
+}
+
+function uuidFor(value) {
+  const hex = value.toString(16).padStart(12, '0');
+  return `${hex.slice(-8)}-1111-4111-8111-${hex}`;
 }

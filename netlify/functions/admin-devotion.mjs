@@ -1,7 +1,12 @@
 import { createClient } from '@supabase/supabase-js';
 import { randomUUID } from 'node:crypto';
 import { createAdminAuthenticator } from './lib/admin-auth.mjs';
-import { aggregateDevotionAnalytics } from './lib/devotion-analytics.mjs';
+import {
+  aggregateDevotionAnalytics,
+  aggregateDurationEvidence,
+  DEVOTION_ANALYTICS_PROJECTION_CAPS,
+  DEVOTION_FUNNEL_DEFINITIONS,
+} from './lib/devotion-analytics.mjs';
 import {
   DEVOTION_SLUG,
   deriveParticipantToken,
@@ -41,6 +46,7 @@ const DEVOTION_READ_CAP = 10_000;
 const DEVOTION_PARTICIPANT_CAP = 2_000;
 const DEVOTION_PARTICIPANT_DETAIL_PAGE_SIZE = 100;
 const DEVOTION_PAGE_SIZE = 1_000;
+const DEVOTION_SURVEY_RESPONSE_PROJECTION_CAP = 250;
 const ADMIN_BODY_BYTE_LIMIT = 64 * 1024;
 
 const supabaseUrl = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
@@ -111,23 +117,35 @@ export function createAdminDevotionRepository(client) {
     },
 
     async listEvents(devotionId) {
-      return readBoundedRows((from, to) => client
+      const read = (fields) => readBoundedRows((from, to) => client
         .from('analytics_events')
-        .select('id,event_name,devotion_participant_id,pilot_day,prayer_date,resource_id,provider,media_type,content_id,content_type,metadata,occurred_at')
+        .select(fields)
         .eq('devotion_id', devotionId)
         .order('occurred_at', { ascending: false })
         .order('id', { ascending: false })
         .range(from, to));
+      try {
+        return { ...(await read('id,session_id,event_name,devotion_participant_id,pilot_day,prayer_date,resource_id,provider,media_type,content_id,content_type,metadata,occurred_at,page_path,device_class,playback_seconds,progress_percent,acquisition_source,acquisition_surface')), acquisitionReady: true };
+      } catch (error) {
+        if (!isAnalyticsContractSchemaUnavailable(error)) throw error;
+        return { ...(await read('id,session_id,event_name,devotion_participant_id,pilot_day,prayer_date,resource_id,provider,media_type,content_id,content_type,metadata,occurred_at,page_path,device_class,playback_seconds,progress_percent')), acquisitionReady: false };
+      }
     },
 
     async listSessions(devotionId) {
-      return readBoundedRows((from, to) => client
+      const read = (fields) => readBoundedRows((from, to) => client
         .from('analytics_sessions')
-        .select('session_id,devotion_participant_id,pilot_day,prayer_date,resource_id,provider,media_type,source_name,active_play_seconds,panel_open_seconds,started_at,ended_at')
+        .select(fields)
         .eq('devotion_id', devotionId)
         .order('started_at', { ascending: false })
         .order('session_id', { ascending: false })
         .range(from, to));
+      try {
+        return { ...(await read('session_id,devotion_participant_id,pilot_day,prayer_date,resource_id,provider,media_type,source_name,source_type,active_play_seconds,panel_open_seconds,highest_progress,completed,opened_source,started_at,ended_at,acquisition_source,acquisition_surface')), acquisitionReady: true };
+      } catch (error) {
+        if (!isAnalyticsContractSchemaUnavailable(error)) throw error;
+        return { ...(await read('session_id,devotion_participant_id,pilot_day,prayer_date,resource_id,provider,media_type,source_name,source_type,active_play_seconds,panel_open_seconds,highest_progress,completed,opened_source,started_at,ended_at')), acquisitionReady: false };
+      }
     },
 
     async listSurveyResponses(devotionId) {
@@ -320,17 +338,18 @@ export function createAdminDevotionHandler({
       const devotions = devotionRead.rows;
 
       if (event.httpMethod === 'GET') {
+        const includePortfolio = event.queryStringParameters?.portfolio === 'true';
         const devotion = selectedDevotion(
           devotions,
           event.queryStringParameters?.devotionId,
         );
         if (!devotion) {
-          return response(200, emptyDashboard(devotions, access, devotionRead));
+          return response(200, emptyDashboard(devotions, access, devotionRead, includePortfolio));
         }
         return response(200, await dashboard(repository, devotion, devotions, {
           access,
           devotionRead,
-          includePortfolio: event.queryStringParameters?.portfolio === 'true',
+          includePortfolio,
           participantPage: boundedPositiveInteger(
             event.queryStringParameters?.participantPage,
             1,
@@ -413,17 +432,44 @@ async function dashboard(repository, devotion, devotions, {
     devotion,
     participants: participants.rows,
     detailParticipants,
+    cohorts: cohorts.rows,
     reports: reports.rows,
     events: events.rows,
     sessions: sessions.rows,
+    surveyResponses: surveys.rows,
+    sourceSampling: {
+      participants: participants.truncated,
+      reports: reports.truncated,
+      events: events.truncated,
+      sessions: sessions.truncated,
+      surveys: surveys.truncated,
+    },
+    sourceReadiness: {
+      survey: surveyRead?.schemaReady !== false,
+      acquisition: eventRead?.acquisitionReady !== false && sessionRead?.acquisitionReady !== false,
+    },
   });
+  const surveySchemaReady = surveyRead?.schemaReady !== false;
+  const projectedSurveyResponses = surveySchemaReady
+    ? surveys.rows.slice(0, DEVOTION_SURVEY_RESPONSE_PROJECTION_CAP)
+    : [];
+  const projectedAnalytics = includePortfolio
+    ? {
+        ...analytics,
+        participants: analytics.participants.map((participant) => ({
+          ...participant,
+          id: participant.safeId,
+          label: participant.safeId,
+        })),
+      }
+    : analytics;
   return {
     ok: true,
     generatedAt: new Date().toISOString(),
-    access: safeAccess(access),
+    access: includePortfolio ? { ...safeAccess(access), email: null } : safeAccess(access),
     campaigns: devotions.map(safeDevotion),
     cohorts: cohorts.rows.map(safeCohort),
-    operationalAlerts: devotionAlerts({
+    operationalAlerts: includePortfolio ? [] : devotionAlerts({
       devotion,
       cohorts: cohorts.rows,
       participants: participants.rows,
@@ -432,8 +478,16 @@ async function dashboard(repository, devotion, devotions, {
       evidenceSampled: reports.truncated || events.truncated || sessions.truncated,
     }),
     sourceStatus: sourceStatus({ campaigns: devotionRead, cohorts, participants, reports, events, sessions, surveys }),
-    surveySchemaReady: surveyRead?.schemaReady !== false,
-    surveyResponses: surveys.rows.map(safeAdminSurveyResponse),
+    surveySchemaReady,
+    surveyResponseDetail: {
+      status: !surveySchemaReady
+        ? 'unavailable'
+        : surveys.truncated || projectedSurveyResponses.length < surveys.rows.length ? 'sampled' : 'exact',
+      observed: surveySchemaReady ? surveys.rows.length : 0,
+      shown: projectedSurveyResponses.length,
+      cap: DEVOTION_SURVEY_RESPONSE_PROJECTION_CAP,
+    },
+    surveyResponses: projectedSurveyResponses.map(safeAdminSurveyResponse),
     participantDetail: {
       page: currentParticipantPage,
       pageSize: DEVOTION_PARTICIPANT_DETAIL_PAGE_SIZE,
@@ -443,20 +497,28 @@ async function dashboard(repository, devotion, devotions, {
       hasPrevious: currentParticipantPage > 1,
       hasNext: detailStart + detailParticipants.length < participants.rows.length,
     },
-    auditHistory: auditHistory.map(safeAudit),
+    auditHistory: includePortfolio ? [] : auditHistory.map(safeAudit),
     portfolio: portfolioSource ? portfolioAnalytics(devotions, portfolioSource, devotionRead) : null,
-    ...analytics,
+    ...projectedAnalytics,
   };
 }
 
-function emptyDashboard(devotions, access, devotionRead) {
+function emptyDashboard(devotions, access, devotionRead, includePortfolio) {
+  const unavailableStages = DEVOTION_FUNNEL_DEFINITIONS.map((definition) => ({
+    ...definition,
+    status: 'unavailable',
+    count: null,
+    participantSafeIds: [],
+  }));
   return {
     ok: true,
     generatedAt: new Date().toISOString(),
-    access: safeAccess(access),
+    access: includePortfolio ? { ...safeAccess(access), email: null } : safeAccess(access),
     campaigns: devotions.map(safeDevotion),
     cohorts: [],
-    operationalAlerts: [{ severity: 'info', code: 'no_campaigns', message: 'Create a devotion campaign to begin.' }],
+    operationalAlerts: includePortfolio
+      ? []
+      : [{ severity: 'info', code: 'no_campaigns', message: 'Create a devotion campaign to begin.' }],
     sourceStatus: sourceStatus({ campaigns: devotionRead }),
     participantDetail: {
       page: 1,
@@ -470,7 +532,75 @@ function emptyDashboard(devotions, access, devotionRead) {
     auditHistory: [],
     portfolio: null,
     surveySchemaReady: false,
+    surveyResponseDetail: {
+      status: 'unavailable',
+      observed: 0,
+      shown: 0,
+      cap: DEVOTION_SURVEY_RESPONSE_PROJECTION_CAP,
+    },
     surveyResponses: [],
+    activity: {
+      status: 'unavailable',
+      attributionStatus: 'unavailable',
+      order: 'sessions newest first; each event timeline oldest first',
+      sessionCap: DEVOTION_ANALYTICS_PROJECTION_CAPS.activitySessions,
+      timelineCap: DEVOTION_ANALYTICS_PROJECTION_CAPS.sessionTimeline,
+      observedSessionCount: 0,
+      shownSessionCount: 0,
+      observedEventCount: 0,
+      shownEventCount: 0,
+      eventOnlySessionCount: 0,
+      ungroupedEventCount: 0,
+      timelineTruncatedSessionCount: 0,
+      sessions: [],
+    },
+    research: {
+      funnel: {
+        status: 'unavailable',
+        unit: 'unavailable until a campaign is selected',
+        stages: unavailableStages,
+        reconciliation: { countsMatchDrilldown: true, nested: true },
+        rawEvidence: [],
+      },
+      cohorts: [],
+      nights: [],
+      participantDays: [],
+      survey: {
+        status: 'unavailable',
+        completionRule: 'Survey storage and campaign selection are unavailable.',
+        pre: null,
+        post: null,
+        pairedSubmittedParticipants: null,
+        comparisons: {
+          hourConfidence: { status: 'unavailable', pairedParticipants: null, preAverage: null, postAverage: null, change: null },
+          continueLikelihood: { status: 'unavailable', pairedParticipants: null, preAverage: null, postAverage: null, change: null },
+        },
+        continuedAfterWindow: null,
+      },
+      acquisitionStatus: 'unavailable',
+      acquisition: [],
+      surfaceStatus: 'unavailable',
+      surfaces: [],
+      deviceStatus: 'unavailable',
+      devices: [],
+      durationSemantics: {
+        activePlaySeconds: 'unavailable until stored player evidence exists',
+        panelOpenSeconds: 'unavailable until stored player evidence exists',
+        aggregateStatus: 'unavailable because no campaign or stored duration evidence is selected',
+        elapsedSessionSeconds: 'unavailable until stored session timestamps exist',
+        observedTimelineSpanSeconds: 'unavailable until stored event timestamps exist',
+        externalTime: 'unavailable; outbound clicks never imply third-party completion or duration',
+      },
+    },
+    resourceProjection: {
+      status: 'exact',
+      observedRows: 0,
+      shownRows: 0,
+      globalCap: DEVOTION_ANALYTICS_PROJECTION_CAPS.globalResources,
+      participantNightAllocation: DEVOTION_ANALYTICS_PROJECTION_CAPS.participantResourceAllocation,
+      nightlyAllocation: DEVOTION_ANALYTICS_PROJECTION_CAPS.nightlyResourceAllocation,
+      order: 'participant detail order, then pilot day and resource key; nightly pilot day, then resource key',
+    },
     devotion: null,
     metrics: null,
     nightRollup: [],
@@ -1023,6 +1153,11 @@ function boundedRead(value) {
     : { rows: [], truncated: false, cap: null };
 }
 
+export function isAnalyticsContractSchemaUnavailable(error) {
+  return ['42703', 'PGRST204'].includes(error?.code)
+    && /acquisition_(?:source|surface)/i.test(String(error?.message ?? error?.details ?? ''));
+}
+
 export async function readBoundedRows(queryPage, cap = DEVOTION_READ_CAP) {
   const rows = [];
   let offset = 0;
@@ -1069,6 +1204,10 @@ function portfolioAnalytics(devotions, rawSource, devotionRead) {
       const campaignReports = reports.rows.filter((row) => row.devotion_id === devotion.id);
       const campaignEvents = events.rows.filter((row) => row.devotion_id === devotion.id);
       const campaignSessions = sessions.rows.filter((row) => row.devotion_id === devotion.id);
+      const measuredDuration = aggregateDurationEvidence(
+        campaignSessions.map((session) => session.active_play_seconds),
+        { sampled: sessions.truncated },
+      );
       const openedNights = new Set(campaignEvents
         .filter((event) => event.event_name === 'devotion_page_opened')
         .map((event) => `${event.devotion_participant_id ?? ''}:${event.pilot_day ?? ''}`));
@@ -1082,8 +1221,10 @@ function portfolioAnalytics(devotions, rawSource, devotionRead) {
         reports: campaignReports.length,
         prayedReports: campaignReports.filter((report) => report.outcome === 'prayed').length,
         resourceEngagements: campaignEvents.filter((event) => event.event_name === 'devotion_resource_opened').length,
-        measuredMediaMinutes: Math.round(campaignSessions.reduce((sum, session) =>
-          sum + Math.max(Number(session.active_play_seconds ?? 0), Number(session.panel_open_seconds ?? 0), 0), 0) / 6) / 10,
+        measuredMediaMinutes: measuredDuration.seconds === null
+          ? null
+          : Math.round(measuredDuration.seconds / 6) / 10,
+        measuredMediaStatus: measuredDuration.status,
       };
     }),
   };
