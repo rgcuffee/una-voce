@@ -114,6 +114,8 @@ export type DevotionReportOutcome =
     | 'prayed'
     | 'started_not_finished'
     | 'not_tonight';
+export type DevotionSurveyPhase = 'pre' | 'post';
+export type DevotionSurveyStatus = 'partial' | 'submitted';
 export type PartnerOnboardingStatus = 'pending' | 'active' | 'archived';
 export type PartnerRelationshipStatus = 'curated' | 'verified' | 'partner';
 export type PartnerYoutubeFeedType = 'channel' | 'playlist';
@@ -398,6 +400,60 @@ export type Database = {
                         isOneToOne: false;
                         referencedRelation: 'devotion_participants';
                         referencedColumns: ['id'];
+                    },
+                ];
+            };
+            devotion_survey_responses: {
+                Row: {
+                    id: string;
+                    devotion_id: string;
+                    participant_id: string;
+                    phase: DevotionSurveyPhase;
+                    status: DevotionSurveyStatus;
+                    answers: Json;
+                    created_at: string;
+                    started_at: string;
+                    submitted_at: string | null;
+                    updated_at: string;
+                };
+                Insert: {
+                    id?: string;
+                    devotion_id: string;
+                    participant_id: string;
+                    phase: DevotionSurveyPhase;
+                    status?: DevotionSurveyStatus;
+                    answers?: Json;
+                    created_at?: string;
+                    started_at?: string;
+                    submitted_at?: string | null;
+                    updated_at?: string;
+                };
+                Update: {
+                    id?: string;
+                    devotion_id?: string;
+                    participant_id?: string;
+                    phase?: DevotionSurveyPhase;
+                    status?: DevotionSurveyStatus;
+                    answers?: Json;
+                    created_at?: string;
+                    started_at?: string;
+                    submitted_at?: string | null;
+                    updated_at?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: 'devotion_survey_responses_devotion_id_fkey';
+                        columns: ['devotion_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'devotions';
+                        referencedColumns: ['id'];
+                    },
+                    {
+                        foreignKeyName: 'devotion_survey_participant_membership';
+                        columns: ['devotion_id', 'participant_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'devotion_participants';
+                        referencedColumns: ['devotion_id', 'id'];
                     },
                 ];
             };
@@ -1888,6 +1944,16 @@ export type Database = {
                 };
                 Returns: Json;
             };
+            upsert_devotion_survey_response: {
+                Args: {
+                    p_answers: Json;
+                    p_devotion_id: string;
+                    p_participant_id: string;
+                    p_phase: DevotionSurveyPhase;
+                    p_status: DevotionSurveyStatus;
+                };
+                Returns: Database['public']['Tables']['devotion_survey_responses']['Row'][];
+            };
         };
         Enums: {
             calendar_source_type: CalendarSourceType;
@@ -1902,6 +1968,8 @@ export type Database = {
             devotion_status: DevotionStatus;
             devotion_participant_status: DevotionParticipantStatus;
             devotion_report_outcome: DevotionReportOutcome;
+            devotion_survey_phase: DevotionSurveyPhase;
+            devotion_survey_status: DevotionSurveyStatus;
             partner_onboarding_status: PartnerOnboardingStatus;
             partner_relationship_status: PartnerRelationshipStatus;
             partner_youtube_feed_type: PartnerYoutubeFeedType;

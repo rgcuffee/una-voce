@@ -6604,6 +6604,8 @@ body {
 .devotion-heatmap article span { padding: 7px 9px; border-radius: 6px; background: #eee4d7; color: #725b4d; font-size: 12px; }
 .devotion-heatmap article span.has-evidence { background: #d78a69; color: #fffaf0; }
 .devotion-analytics-boundary { padding: 0 16px 16px; color: #725b4d; font-size: 13px; line-height: 1.45; }
+.devotion-survey-evidence { margin: 20px 0; padding: 18px; border: 1px solid #e4ded3; border-radius: 14px; background: #fffdf9; }
+.devotion-survey-evidence .engine-section-heading { align-items: flex-start; }
 
 .admin-dashboard .devotion-admin-card,
 .admin-dashboard .devotion-cohort-operations,
@@ -7612,7 +7614,8 @@ body {
 .devotion-hero,
 .devotion-state-card,
 .devotion-prayer-resources,
-.devotion-report {
+.devotion-report,
+.devotion-survey {
     border: 1px solid rgba(68, 82, 60, 0.16);
     border-radius: 18px;
     background: rgba(255, 255, 255, 0.9);
@@ -7696,7 +7699,8 @@ body {
 }
 
 .devotion-prayer-resources,
-.devotion-report {
+.devotion-report,
+.devotion-survey {
     margin-top: 20px;
     padding: 28px 20px;
 }
@@ -7745,6 +7749,138 @@ body {
     max-width: 780px;
     margin-right: auto;
     margin-left: auto;
+}
+
+.devotion-survey {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    max-width: 780px;
+    margin-right: auto;
+    margin-left: auto;
+    padding: 22px 20px;
+}
+
+.devotion-survey.open {
+    display: block;
+}
+
+.devotion-survey > div:first-child > span {
+    color: #5f6f53;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.devotion-survey > div:first-child h2 {
+    margin: 4px 0;
+    color: #263024;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 30px;
+}
+
+.devotion-survey > div:first-child p,
+.devotion-survey-consent p {
+    margin: 0;
+    color: #687164;
+    font-size: 14px;
+    line-height: 1.55;
+}
+
+.devotion-survey .devotion-section-heading {
+    margin-bottom: 20px;
+}
+
+.devotion-survey-consent {
+    padding: 16px;
+    border-radius: 10px;
+    background: #f3f5f0;
+}
+
+.devotion-survey-form {
+    display: grid;
+    gap: 18px;
+}
+
+.devotion-survey-question {
+    display: grid;
+    gap: 7px;
+    color: #364032;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.devotion-survey-question select {
+    min-height: 46px;
+    padding: 0 12px;
+    border: 1px solid #cbd2c6;
+    border-radius: 8px;
+    background: #fff;
+    color: #263024;
+    font: inherit;
+}
+
+.devotion-survey-checkboxes {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.devotion-survey-checkboxes legend {
+    grid-column: 1 / -1;
+    margin-bottom: 3px;
+    color: #364032;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.devotion-survey-checkboxes label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 10px;
+    border: 1px solid #d8ddd4;
+    border-radius: 8px;
+    background: #fbfcfa;
+    color: #4d5848;
+    font-size: 13px;
+}
+
+.devotion-survey-checkboxes input {
+    width: 18px;
+    height: 18px;
+    accent-color: #607653;
+}
+
+.devotion-survey-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+.devotion-survey-actions .devotion-save,
+.devotion-survey .devotion-survey-link {
+    margin-top: 0;
+}
+
+.devotion-survey-secondary {
+    min-height: 44px;
+    padding: 0 15px;
+    border: 1px solid #bdc7b7;
+    border-radius: 8px;
+    background: #fff;
+    color: #465440;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 750;
+    cursor: pointer;
 }
 
 .devotion-report fieldset {
@@ -7855,9 +7991,20 @@ body {
     line-height: 1.6;
 }
 
-.devotion-page :is(a, button, input):focus-visible {
+.devotion-page :is(a, button, input, select, textarea):focus-visible {
     outline: 3px solid #4f6745;
     outline-offset: 3px;
+}
+
+@media (max-width: 560px) {
+    .devotion-survey:not(.open) {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .devotion-survey-checkboxes {
+        grid-template-columns: 1fr;
+    }
 }
 
 .sr-only {

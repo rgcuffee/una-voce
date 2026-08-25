@@ -144,6 +144,38 @@ test('portfolio mode compares campaigns without treating evidence units as conve
   assert.equal('conversionRate' in body.portfolio.campaigns[0], false);
 });
 
+test('authenticated dashboard projects survey evidence with safe linkage and completion status', async () => {
+  const repository = memoryRepository();
+  repository.surveyResponses.push({
+    id: 'survey-1',
+    devotion_id: DEVOTION_ID,
+    participant_id: '11111111-1111-4111-8111-111111111111',
+    phase: 'pre',
+    status: 'partial',
+    answers: { hourConfidence: 2 },
+    started_at: '2026-08-25T00:00:00Z',
+    submitted_at: null,
+    updated_at: '2026-08-25T00:02:00Z',
+    token_hash: 'must-not-project',
+  });
+  const result = await adminHandler(repository)({ httpMethod: 'GET', headers: {} });
+  const body = JSON.parse(result.body);
+
+  assert.equal(result.statusCode, 200);
+  assert.equal(body.surveySchemaReady, true);
+  assert.deepEqual(body.surveyResponses[0], {
+    devotionSafeId: 'aaaaaaaa',
+    participantSafeId: '11111111',
+    phase: 'pre',
+    status: 'partial',
+    answers: { hourConfidence: 2 },
+    startedAt: '2026-08-25T00:00:00Z',
+    submittedAt: null,
+    updatedAt: '2026-08-25T00:02:00Z',
+  });
+  assert.equal(JSON.stringify(body.surveyResponses).includes('token'), false);
+});
+
 test('cohort schedules, participant statuses, and bounded bulk revocation validate at the API edge', async () => {
   const repository = memoryRepository();
   const handler = adminHandler(repository);
@@ -322,15 +354,25 @@ function memoryRepository({ includeSecondCampaign = false } = {}) {
   }
   const participants = [];
   const audits = [];
+  const surveyResponses = [];
   return {
     participants,
     audits,
+    surveyResponses,
     async listDevotions() { return devotions; },
     async listCohorts(devotionId) { return cohorts.filter((cohort) => cohort.devotion_id === devotionId); },
     async listParticipants(devotionId) { return participants.filter((participant) => participant.devotion_id === devotionId); },
     async listReports() { return []; },
     async listEvents() { return []; },
     async listSessions() { return []; },
+    async listSurveyResponses(devotionId) {
+      return {
+        rows: surveyResponses.filter((response) => response.devotion_id === devotionId),
+        truncated: false,
+        cap: 10_000,
+        schemaReady: true,
+      };
+    },
     async portfolioData(devotionIds) {
       return {
         participants: participants.filter((participant) => devotionIds.includes(participant.devotion_id)),

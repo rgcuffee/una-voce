@@ -5,11 +5,26 @@
 - Recovery baseline: `841b2507cc4f568fa66d76fd9d9d2818860e0ed6`
 - Sprint mode: `LONG-SPRINT`
 - 5225 version: `1.8`
-- Last completed sprint: `Pre-Alpha Campaign Sprint B — Links, Attribution + Telemetry Contract`
+- Last completed sprint: `Pre-Alpha Campaign Sprint C — Pre/Post Surveys + Research Linkage`
 - Current Approved Checkpoint: `SELF (commit containing this state update)`
-- Previous approved checkpoint: `dbfb47f1c1c232d8a59e8a89bacc905235175e78`
-- Verified: `2026-08-24`
-- QA: `PASS — independent contract and cross-repository GPT-5.6 Sol xhigh reviews; zero remaining P0–P3 defects`
+- Previous approved checkpoint: `4ee8486cfb3bad6a49ea5b60ec94141095d6a297`
+- Verified: `2026-08-25`
+- QA: `PASS — independent GPT-5.6 Sol read-only review; zero remaining P0–P3 defects after one bounded remediation round`
+
+## Sprint C result
+
+- A bounded first-party pre/post survey now lives inside the participant devotion flow; it is explicitly campaign-specific and does not create a generalized survey platform.
+- Server-side participant-token resolution links each response pseudonymously to its devotion and participant without storing the raw token or token hash. One row per phase records partial versus submitted state plus stable first-start/first-submit and update timestamps.
+- The participant UI distinguishes view, start, partial save, and successful submission. Consent/privacy copy states that responses are pseudonymously linked to participation and activity and are not anonymous.
+- Authenticated operators can inspect and export bounded response evidence using shortened behavioral identifiers. CSV values are spreadsheet-safe, partial responses remain distinct from completed submissions, and missing-schema rollout state is disclosed.
+- The checked-in migration was exercised locally with PGlite but was not applied to Supabase. No deployment, Git push, participant-link disclosure, or production mutation was performed.
+
+## Sprint C validation and QA
+
+- `npm test` — `138/138 PASS`; `npx tsc -b` — `PASS`; `npm run build:verify` — `PASS`.
+- Isolated PGlite smoke passed for RLS, service-only RPC privileges, composite participant membership, one-row phase identity, answer constraints, exact retries, changed completed-response updates, and partial-regression prevention.
+- Independent review found and verified one scoped remediation: survey-schema fallback is limited to survey reads/writes and no longer masks equivalent participant/report storage failures.
+- Final focused adversarial review: `44/44 PASS`; zero remaining P0–P3 findings; `git diff --check` and repository hygiene passed.
 
 ## Sprint B result
 

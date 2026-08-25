@@ -216,8 +216,8 @@ function CohortCard({ campaignId, cohort, canArchive, onMutate }: { campaignId: 
 
 function DevotionConfiguration({ campaign, canArchive, onSave }: { campaign: DevotionCampaign; canArchive: boolean; onSave: (draft: Partial<DevotionCampaignDraft>) => Promise<unknown> }) {
   const [saving, setSaving] = useState(false);
-  async function save(event: FormEvent<HTMLFormElement>) { event.preventDefault(); const fields = new FormData(event.currentTarget); setSaving(true); try { await onSave({ name: fields.get('campaign-name')?.toString() ?? campaign.name, organizationLabel: fields.get('campaign-organization')?.toString() ?? campaign.organizationLabel, description: fields.get('campaign-description')?.toString() || null, startDate: fields.get('start-date')?.toString() || null, durationDays: Number(fields.get('duration-days')), timezone: fields.get('timezone')?.toString() || null, status: fields.get('status')?.toString() as DevotionStatus, preSurveyUrl: fields.get('pre-survey-url')?.toString() || null, postSurveyUrl: fields.get('post-survey-url')?.toString() || null }); } finally { setSaving(false); } }
-  return <section className="devotion-admin-card"><div className="engine-section-heading compact"><div><span>Campaign settings</span><h3>Configuration and publishing</h3><p>Scheduled publishes on its civil start date; Active is available immediately. Draft, inactive, and paused do not accept reports.</p></div></div><form className="devotion-config-form" onSubmit={save}><label>Name<input name="campaign-name" defaultValue={campaign.name} maxLength={160} required /></label><label>Organization<input name="campaign-organization" defaultValue={campaign.organizationLabel} maxLength={160} required /></label><label>Description<textarea name="campaign-description" defaultValue={campaign.description ?? ''} maxLength={2000} /></label><label>Default start<input type="date" name="start-date" defaultValue={campaign.startDate ?? ''} /></label><label>Duration<input type="number" name="duration-days" min="1" max="40" defaultValue={campaign.durationDays} required /></label><TimezoneField name="timezone" defaultValue={campaign.timezone ?? ''} /><label>Status<StatusSelect name="status" defaultValue={campaign.status} canArchive={canArchive} /></label><label>Pre-survey URL<input type="url" name="pre-survey-url" defaultValue={campaign.preSurveyUrl ?? ''} /></label><label>Post-survey URL<input type="url" name="post-survey-url" defaultValue={campaign.postSurveyUrl ?? ''} /></label><button type="submit" className="admin-button primary" disabled={saving}>{saving ? 'Saving…' : 'Save and apply lifecycle'}</button></form></section>;
+  async function save(event: FormEvent<HTMLFormElement>) { event.preventDefault(); const fields = new FormData(event.currentTarget); setSaving(true); try { await onSave({ name: fields.get('campaign-name')?.toString() ?? campaign.name, organizationLabel: fields.get('campaign-organization')?.toString() ?? campaign.organizationLabel, description: fields.get('campaign-description')?.toString() || null, startDate: fields.get('start-date')?.toString() || null, durationDays: Number(fields.get('duration-days')), timezone: fields.get('timezone')?.toString() || null, status: fields.get('status')?.toString() as DevotionStatus }); } finally { setSaving(false); } }
+  return <section className="devotion-admin-card"><div className="engine-section-heading compact"><div><span>Campaign settings</span><h3>Configuration and publishing</h3><p>Scheduled publishes on its civil start date; Active is available immediately. Draft, inactive, and paused do not accept reports. Pre/post research uses the built-in campaign survey.</p></div></div><form className="devotion-config-form" onSubmit={save}><label>Name<input name="campaign-name" defaultValue={campaign.name} maxLength={160} required /></label><label>Organization<input name="campaign-organization" defaultValue={campaign.organizationLabel} maxLength={160} required /></label><label>Description<textarea name="campaign-description" defaultValue={campaign.description ?? ''} maxLength={2000} /></label><label>Default start<input type="date" name="start-date" defaultValue={campaign.startDate ?? ''} /></label><label>Duration<input type="number" name="duration-days" min="1" max="40" defaultValue={campaign.durationDays} required /></label><TimezoneField name="timezone" defaultValue={campaign.timezone ?? ''} /><label>Status<StatusSelect name="status" defaultValue={campaign.status} canArchive={canArchive} /></label><button type="submit" className="admin-button primary" disabled={saving}>{saving ? 'Saving…' : 'Save and apply lifecycle'}</button></form></section>;
 }
 
 function DevotionAnalyticsView({ data, metrics, campaignControls, onRefresh, state, error }: { data: DevotionAnalyticsData; metrics: ReadonlyArray<readonly [string, number, string]>; campaignControls: ReactNode; onRefresh: () => Promise<void>; state: 'loading' | 'ready' | 'error'; error: string | null }) {
@@ -264,6 +264,7 @@ function DevotionAnalyticsView({ data, metrics, campaignControls, onRefresh, sta
     {data.sourceStatus?.status === 'sampled' ? <div className="admin-analytics-warning">Selected-campaign evidence is capped and shown as a lower bound.</div> : null}
     <PortfolioAnalytics portfolio={data.portfolio} />
     <section className="engine-metrics devotion-admin-metrics" aria-label="Devotion analytics summary">{metrics.map(([label, value, detail]) => <div className="engine-metric" key={label}><span>{label}</span><strong>{value}</strong><p>{detail}</p></div>)}</section>
+    <SurveyResponseEvidence data={data} />
     <div className="admin-analytics-filters">
       <label>Cohort<select value={cohortId} onChange={(event) => setCohortId(event.target.value)}><option value="all">All cohorts on this page</option>{data.cohorts.map((cohort) => <option value={cohort.id} key={cohort.id}>{cohort.name}</option>)}</select></label>
       <label>Night<select value={night} onChange={(event) => setNight(event.target.value)}><option value="all">All nights</option>{Array.from({ length: data.devotion?.durationDays ?? 0 }, (_, index) => <option value={index + 1} key={index}>Night {index + 1}</option>)}</select></label>
@@ -279,6 +280,54 @@ function DevotionAnalyticsView({ data, metrics, campaignControls, onRefresh, sta
     <div className="devotion-heatmap" aria-label="Participant engagement heatmap">{rows.length === 0 ? <p>Unavailable: no participant-nights on this detail page match these filters.</p> : rows.map((participant) => <article key={participant.id}><strong>{participant.label}</strong><small>{data.cohorts.find((cohort) => cohort.id === participant.cohortId)?.name ?? 'Unknown cohort'}</small><div>{selectedNights(participant).map((item) => <span className={item.opened || item.outcome ? 'has-evidence' : ''} key={item.pilotDay}>N{item.pilotDay}: {item.opened ? 'opened' : '—'}{item.outcome ? ` · ${OUTCOME_LABELS[item.outcome]}` : ''}{item.resources.length ? ` · ${item.resources.map((resource) => `${resource.label} (${resource.count} clicks, ${resource.measuredMinutes} min)`).join(', ')}` : ''}</span>)}</div></article>)}</div>
     <p className="devotion-analytics-boundary">Participant filters and CSV cover only the current 100-record detail page. Measured minutes are player-duration evidence only; external links can record a click but cannot measure time on a third-party page.</p>
   </section>;
+}
+
+function SurveyResponseEvidence({ data }: { data: DevotionAnalyticsData }) {
+  const rows = data.surveyResponses;
+  const exportRows = () => {
+    const headers = ['devotion_safe_id', 'participant_safe_id', 'phase', 'status', 'started_at', 'submitted_at', 'updated_at', 'liturgy_familiarity', 'mass_frequency', 'prayer_frequency', 'hour_confidence', 'friction', 'continue_likelihood', 'experience_rating', 'continued_after_window'];
+    const values = rows.map((row) => [
+      row.devotionSafeId,
+      row.participantSafeId,
+      row.phase,
+      row.status,
+      row.startedAt,
+      row.submittedAt ?? '',
+      row.updatedAt,
+      row.answers.liturgyFamiliarity ?? '',
+      row.answers.massFrequency ?? '',
+      row.answers.prayerFrequency ?? '',
+      row.answers.hourConfidence ?? '',
+      row.answers.friction?.join('|') ?? '',
+      row.answers.continueLikelihood ?? '',
+      row.answers.experienceRating ?? '',
+      row.answers.continuedAfterWindow ?? '',
+    ]);
+    const content = [headers, ...values]
+      .map((record) => record.map((value) => `"${spreadsheetSafe(value).replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+    const anchor = document.createElement('a');
+    anchor.href = URL.createObjectURL(new Blob([content], { type: 'text/csv;charset=utf-8' }));
+    anchor.download = `devotion-survey-responses-${data.devotion?.slug ?? 'campaign'}.csv`;
+    anchor.click();
+    URL.revokeObjectURL(anchor.href);
+  };
+
+  return <section className="devotion-survey-evidence" aria-label="Survey response evidence">
+    <div className="engine-section-heading compact"><div><span>Research linkage</span><h3>Pre/post survey responses</h3><p>Responses are pseudonymously linked, not anonymous. Partial saves are shown separately from completed submissions.</p></div>{rows.length ? <button type="button" className="admin-button" onClick={exportRows}>Export survey CSV</button> : null}</div>
+    {!data.surveySchemaReady ? <div className="engine-empty">Survey storage is unavailable until the campaign survey migration is applied.</div> : rows.length === 0 ? <div className="engine-empty">No survey starts or submissions recorded.</div> : <div className="admin-table-wrap"><table className="admin-responsive-table"><thead><tr><th>Participant</th><th>Phase</th><th>Status</th><th>Started</th><th>Submitted</th><th>Key responses</th></tr></thead><tbody>{rows.map((row) => <tr key={`${row.participantSafeId}-${row.phase}`}><td data-label="Participant"><code>{row.participantSafeId}</code></td><td data-label="Phase">{row.phase}</td><td data-label="Status">{row.status}</td><td data-label="Started">{new Date(row.startedAt).toLocaleString()}</td><td data-label="Submitted">{row.submittedAt ? new Date(row.submittedAt).toLocaleString() : 'Not submitted'}</td><td data-label="Key responses">{surveyAnswerSummary(row.answers)}</td></tr>)}</tbody></table></div>}
+    <p className="devotion-analytics-boundary">The export contains only shortened devotion/participant identifiers and approved response fields. It never includes participant labels, raw link tokens, or token hashes.</p>
+  </section>;
+}
+
+function surveyAnswerSummary(answers: DevotionAnalyticsData['surveyResponses'][number]['answers']) {
+  const summary = [
+    answers.hourConfidence ? `Confidence ${answers.hourConfidence}/5` : null,
+    answers.continueLikelihood ? `Continue ${answers.continueLikelihood}/5` : null,
+    answers.experienceRating ? `Experience ${answers.experienceRating}/5` : null,
+    answers.friction?.length ? `Friction: ${answers.friction.join(', ')}` : null,
+  ].filter(Boolean);
+  return summary.join(' · ') || 'No answers saved yet';
 }
 
 function PortfolioAnalytics({ portfolio }: { portfolio: DevotionAnalyticsData['portfolio'] }) {

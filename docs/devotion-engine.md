@@ -35,6 +35,14 @@ These units are not presented as a conversion funnel. Portfolio intelligence com
 
 Public resource attribution is projected before it reaches the admin response. Dangerous URLs, token-shaped identifiers, unsupported providers/media types, and obvious PII-shaped labels are replaced with bounded generic labels.
 
+## Campaign surveys
+
+Campaign research uses a bounded first-party pre/post survey rather than an external form platform. The public Function resolves the participant link server-side and stores one response per devotion, participant, and phase. Survey rows contain the participant UUID membership key and approved structured answers only; raw participant tokens and token hashes are never copied into survey storage.
+
+Opening the survey, beginning it, and completing it are distinct states. Opening emits the existing survey-click event, choosing Begin creates a `partial` response and emits the survey-start event, and only a successful complete server submission emits the survey-submit event. Partial saves never count as completion. An identical completed retry returns the existing row without changing its timestamps; a later changed completion is allowed only through another complete submission and updates `updated_at` while preserving the original `started_at` and `submitted_at`.
+
+Pre surveys are available before and during an active devotion; post surveys become available after completion. The concise participant notice states that responses are pseudonymously linked to participation and activity and are not anonymous. Authenticated devotion analytics exposes partial and submitted rows separately, joined only to shortened devotion/participant identifiers for display and CSV. Legacy `pre_survey_url` and `post_survey_url` columns remain for schema compatibility but are not rendered as completion-capable campaign surveys.
+
 ## Database migrations
 
 The operations schema is introduced in committed order because PostgreSQL enum additions must be committed before later migrations use them:
@@ -42,6 +50,8 @@ The operations schema is introduced in committed order because PostgreSQL enum a
 1. `20260822000000_devotion_operations_statuses.sql`
 2. `20260822010000_devotion_operations_engine.sql`
 3. `20260822020000_devotion_operations_audit.sql`
+4. `20260824000000_campaign_analytics_contract.sql`
+5. `20260825000000_devotion_campaign_surveys.sql`
 
 The engine migration creates and backfills a `General` cohort for every existing campaign before making participant cohort membership required. New campaign plus `General` cohort creation uses the service-role-only `create_devotion_campaign` database function so both records commit or roll back together. All devotion and audit tables have RLS enabled with no browser policies; public participant/report traffic goes through Netlify Functions.
 

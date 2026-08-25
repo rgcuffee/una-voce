@@ -16,6 +16,28 @@ export type DevotionAttribution = {
   prayerDate: string | null;
 };
 
+export type DevotionSurveyPhase = 'pre' | 'post';
+export type DevotionSurveyStatus = 'partial' | 'submitted';
+export type DevotionSurveyAnswers = {
+  liturgyFamiliarity?: 'not_familiar' | 'a_little' | 'somewhat' | 'very';
+  massFrequency?: 'rarely' | 'few_times_year' | 'monthly' | 'weekly_or_more';
+  prayerFrequency?: 'rarely' | 'few_times_month' | 'few_times_week' | 'daily';
+  hourConfidence?: number;
+  friction?: Array<'none' | 'finding_time' | 'knowing_how' | 'technology' | 'content_length' | 'other'>;
+  continueLikelihood?: number;
+  experienceRating?: number;
+  continuedAfterWindow?: 'yes' | 'no' | 'not_sure' | 'not_applicable';
+};
+
+export type DevotionSurveyResponse = {
+  phase: DevotionSurveyPhase;
+  status: DevotionSurveyStatus;
+  answers: DevotionSurveyAnswers;
+  startedAt: string;
+  submittedAt: string | null;
+  updatedAt: string;
+};
+
 export type DevotionParticipantState = {
   ok: true;
   participant: {
@@ -57,6 +79,11 @@ export type DevotionParticipantState = {
     firstReportedAt: string;
     updatedAt: string;
   } | null;
+  survey: {
+    schemaReady: boolean;
+    availablePhase: DevotionSurveyPhase | null;
+    responses: Record<DevotionSurveyPhase, DevotionSurveyResponse | null>;
+  };
   attribution: DevotionAttribution;
 };
 
@@ -82,6 +109,44 @@ export async function submitDevotionReport(
     attribution: DevotionAttribution;
   }>({ action: 'report', token, devotionSlug, outcome });
 }
+
+export function startDevotionSurvey(
+  token: string,
+  devotionSlug: string,
+  phase: DevotionSurveyPhase,
+) {
+  return devotionRequest<DevotionSurveyMutation>({
+    action: 'surveyStart', token, devotionSlug, phase,
+  });
+}
+
+export function saveDevotionSurvey(
+  token: string,
+  devotionSlug: string,
+  phase: DevotionSurveyPhase,
+  answers: DevotionSurveyAnswers,
+) {
+  return devotionRequest<DevotionSurveyMutation>({
+    action: 'surveySave', token, devotionSlug, phase, answers,
+  });
+}
+
+export function submitDevotionSurvey(
+  token: string,
+  devotionSlug: string,
+  phase: DevotionSurveyPhase,
+  answers: DevotionSurveyAnswers,
+) {
+  return devotionRequest<DevotionSurveyMutation>({
+    action: 'surveySubmit', token, devotionSlug, phase, answers,
+  });
+}
+
+type DevotionSurveyMutation = {
+  ok: true;
+  survey: DevotionSurveyResponse;
+  attribution: DevotionAttribution;
+};
 
 async function devotionRequest<T>(body: Record<string, unknown>, signal?: AbortSignal) {
   const response = await fetch('/api/devotion', {

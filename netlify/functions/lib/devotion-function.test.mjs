@@ -104,6 +104,142 @@ test('public devotion endpoint rejects oversized bodies before repository access
   assert.equal(queried, false);
 });
 
+test('survey schema error codes outside survey storage remain generic server failures', async () => {
+  const token = generateParticipantToken();
+  const participant = fixtureParticipant(hashParticipantToken(token));
+
+  const participantRepository = memoryRepository([participant]);
+  participantRepository.findParticipant = async () => {
+    throw codedError('PGRST205', 'participant table unavailable');
+  };
+  const participantFailure = await createDevotionHandler({
+    repository: participantRepository,
+  })(request(devotionAction('resolve', token)));
+  assert.equal(participantFailure.statusCode, 500);
+  assert.deepEqual(JSON.parse(participantFailure.body), {
+    error: 'Unable to load the devotion right now.',
+  });
+
+  const reportRepository = memoryRepository([participant]);
+  reportRepository.findReport = async () => {
+    throw codedError('42P01', 'report table unavailable');
+  };
+  const reportFailure = await createDevotionHandler({
+    repository: reportRepository,
+    now: () => new Date('2026-08-11T06:30:00.000Z'),
+  })(request(devotionAction('resolve', token)));
+  assert.equal(reportFailure.statusCode, 500);
+  assert.deepEqual(JSON.parse(reportFailure.body), {
+    error: 'Unable to load the devotion right now.',
+  });
+});
+
+test('survey start, partial save, completion, identical retry, and complete update share one linked row', async () => {
+  const token = generateParticipantToken();
+  const repository = memoryRepository([fixtureParticipant(hashParticipantToken(token))]);
+  const handler = createDevotionHandler({
+    repository,
+    now: () => new Date('2026-08-11T06:30:00.000Z'),
+  });
+
+  const started = JSON.parse((await handler(request(devotionAction('surveyStart', token, { phase: 'pre' })))).body);
+  assert.equal(started.survey.status, 'partial');
+  assert.deepEqual(started.survey.answers, {});
+
+  const partial = await handler(request(devotionAction('surveySave', token, {
+    phase: 'pre', answers: { hourConfidence: 2 },
+  })));
+  assert.equal(JSON.parse(partial.body).survey.status, 'partial');
+  assert.equal(repository.surveys.size, 1);
+
+  const incomplete = await handler(request(devotionAction('surveySubmit', token, {
+    phase: 'pre', answers: { hourConfidence: 2 },
+  })));
+  assert.equal(incomplete.statusCode, 400);
+
+  const answers = completePreSurvey();
+  const submitted = JSON.parse((await handler(request(devotionAction('surveySubmit', token, {
+    phase: 'pre', answers,
+  })))).body);
+  const duplicate = JSON.parse((await handler(request(devotionAction('surveySubmit', token, {
+    phase: 'pre', answers,
+  })))).body);
+  assert.equal(submitted.survey.status, 'submitted');
+  assert.equal(duplicate.survey.updatedAt, submitted.survey.updatedAt);
+  assert.equal(repository.surveys.size, 1);
+
+  const blockedPartial = await handler(request(devotionAction('surveySave', token, {
+    phase: 'pre', answers: { hourConfidence: 5 },
+  })));
+  assert.equal(blockedPartial.statusCode, 409);
+
+  const updated = JSON.parse((await handler(request(devotionAction('surveySubmit', token, {
+    phase: 'pre', answers: { ...answers, hourConfidence: 5 },
+  })))).body);
+  assert.equal(updated.survey.answers.hourConfidence, 5);
+  assert.equal(updated.survey.submittedAt, submitted.survey.submittedAt);
+  assert.notEqual(updated.survey.updatedAt, submitted.survey.updatedAt);
+  assert.equal(repository.surveys.size, 1);
+});
+
+test('survey availability follows campaign timing and revoked links fail before survey reads', async () => {
+  const activeToken = generateParticipantToken();
+  const revokedToken = generateParticipantToken();
+  const revoked = fixtureParticipant(hashParticipantToken(revokedToken));
+  revoked.id = '22222222-2222-4222-8222-222222222222';
+  revoked.revoked_at = '2026-08-10T00:00:00Z';
+  const repository = memoryRepository([
+    fixtureParticipant(hashParticipantToken(activeToken)),
+    revoked,
+  ]);
+  const handler = createDevotionHandler({
+    repository,
+    now: () => new Date('2026-08-11T06:30:00.000Z'),
+  });
+
+  const active = JSON.parse((await handler(request(devotionAction('resolve', activeToken)))).body);
+  assert.equal(active.survey.availablePhase, 'pre');
+  assert.equal(active.survey.responses.pre, null);
+  assert.equal(JSON.stringify(active.survey).includes(activeToken), false);
+
+  const earlyPost = await handler(request(devotionAction('surveyStart', activeToken, { phase: 'post' })));
+  assert.equal(earlyPost.statusCode, 409);
+  const revokedResult = await handler(request(devotionAction('surveyStart', revokedToken, { phase: 'pre' })));
+  assert.equal(revokedResult.statusCode, 404);
+  assert.equal(repository.surveyReads, 1);
+});
+
+test('missing survey read and upsert schema return the bounded survey-unavailable response', async () => {
+  const token = generateParticipantToken();
+  const participant = fixtureParticipant(hashParticipantToken(token));
+
+  const readRepository = memoryRepository([participant]);
+  readRepository.findSurveyResponses = async () => {
+    throw codedError('PGRST205', 'survey table unavailable');
+  };
+  const readFailure = await createDevotionHandler({
+    repository: readRepository,
+    now: () => new Date('2026-08-11T06:30:00.000Z'),
+  })(request(devotionAction('resolve', token)));
+  assert.equal(readFailure.statusCode, 503);
+  assert.deepEqual(JSON.parse(readFailure.body), {
+    error: 'Survey responses are not available yet.',
+  });
+
+  const writeRepository = memoryRepository([participant]);
+  writeRepository.upsertSurveyResponse = async () => {
+    throw codedError('42883', 'survey RPC unavailable');
+  };
+  const writeFailure = await createDevotionHandler({
+    repository: writeRepository,
+    now: () => new Date('2026-08-11T06:30:00.000Z'),
+  })(request(devotionAction('surveyStart', token, { phase: 'pre' })));
+  assert.equal(writeFailure.statusCode, 503);
+  assert.deepEqual(JSON.parse(writeFailure.body), {
+    error: 'Survey responses are not available yet.',
+  });
+});
+
 function fixtureParticipant(tokenHash) {
   return {
     id: '11111111-1111-4111-8111-111111111111',
@@ -143,8 +279,12 @@ function fixtureParticipant(tokenHash) {
 
 function memoryRepository(participants) {
   const reports = new Map();
+  const surveys = new Map();
+  let surveyRevision = 0;
   return {
     reports,
+    surveys,
+    surveyReads: 0,
     async findParticipant(tokenHash) {
       return participants.find((participant) => participant.token_hash === tokenHash) ?? null;
     },
@@ -163,7 +303,55 @@ function memoryRepository(participants) {
       reports.set(key, saved);
       return saved;
     },
+    async findSurveyResponses({ devotionId, participantId }) {
+      this.surveyReads += 1;
+      return {
+        rows: [...surveys.values()].filter((row) =>
+          row.devotion_id === devotionId && row.participant_id === participantId),
+        schemaReady: true,
+      };
+    },
+    async upsertSurveyResponse(input) {
+      const key = `${input.devotionId}:${input.participantId}:${input.phase}`;
+      const previous = surveys.get(key);
+      if (
+        previous?.status === input.status &&
+        JSON.stringify(previous.answers) === JSON.stringify(input.answers)
+      ) return previous;
+      surveyRevision += 1;
+      const saved = {
+        id: previous?.id ?? `survey-${surveys.size + 1}`,
+        devotion_id: input.devotionId,
+        participant_id: input.participantId,
+        phase: input.phase,
+        status: input.status,
+        answers: input.answers,
+        created_at: previous?.created_at ?? '2026-08-11T06:30:00.000Z',
+        started_at: previous?.started_at ?? '2026-08-11T06:30:00.000Z',
+        submitted_at: input.status === 'submitted'
+          ? previous?.submitted_at ?? '2026-08-11T06:35:00.000Z'
+          : null,
+        updated_at: `2026-08-11T06:${String(30 + surveyRevision).padStart(2, '0')}:00.000Z`,
+      };
+      surveys.set(key, saved);
+      return saved;
+    },
   };
+}
+
+function completePreSurvey() {
+  return {
+    liturgyFamiliarity: 'somewhat',
+    massFrequency: 'weekly_or_more',
+    prayerFrequency: 'daily',
+    hourConfidence: 3,
+    friction: ['finding_time'],
+    continueLikelihood: 4,
+  };
+}
+
+function codedError(code, message) {
+  return Object.assign(new Error(message), { code });
 }
 
 function request(body) {

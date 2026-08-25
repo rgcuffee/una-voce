@@ -1,4 +1,5 @@
 import { adminFetch } from './adminApi';
+import type { DevotionSurveyAnswers, DevotionSurveyPhase, DevotionSurveyStatus } from '../lib/devotionClient';
 
 export type DevotionStatus =
   | 'inactive'
@@ -80,6 +81,17 @@ export type DevotionParticipantResult = {
   nights: DevotionNightResult[];
 };
 
+export type DevotionSurveyResult = {
+  devotionSafeId: string;
+  participantSafeId: string;
+  phase: DevotionSurveyPhase;
+  status: DevotionSurveyStatus;
+  answers: DevotionSurveyAnswers;
+  startedAt: string;
+  submittedAt: string | null;
+  updatedAt: string;
+};
+
 export type DevotionAnalyticsData = {
   ok: true;
   generatedAt: string;
@@ -107,6 +119,8 @@ export type DevotionAnalyticsData = {
     hasPrevious: boolean;
     hasNext: boolean;
   };
+  surveySchemaReady: boolean;
+  surveyResponses: DevotionSurveyResult[];
   auditHistory: Array<{
     id: string;
     actorEmail: string | null;

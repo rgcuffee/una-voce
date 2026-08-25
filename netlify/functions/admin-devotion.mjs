@@ -9,6 +9,10 @@ import {
   participantLink,
   resolvePilotDay,
 } from './lib/devotion-pilot.mjs';
+import {
+  isSurveySchemaUnavailable,
+  safeAdminSurveyResponse,
+} from './lib/devotion-survey.mjs';
 
 const JSON_HEADERS = {
   'access-control-allow-headers': 'content-type, authorization, x-admin-secret',
@@ -124,6 +128,24 @@ export function createAdminDevotionRepository(client) {
         .order('started_at', { ascending: false })
         .order('session_id', { ascending: false })
         .range(from, to));
+    },
+
+    async listSurveyResponses(devotionId) {
+      try {
+        const result = await readBoundedRows((from, to) => client
+          .from('devotion_survey_responses')
+          .select('id,devotion_id,participant_id,phase,status,answers,created_at,started_at,submitted_at,updated_at')
+          .eq('devotion_id', devotionId)
+          .order('updated_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(from, to));
+        return { ...result, schemaReady: true };
+      } catch (error) {
+        if (isSurveySchemaUnavailable(error)) {
+          return { rows: [], truncated: false, cap: DEVOTION_READ_CAP, schemaReady: false };
+        }
+        throw error;
+      }
     },
 
     async portfolioData(devotionIds) {
@@ -358,12 +380,15 @@ async function dashboard(repository, devotion, devotions, {
   includePortfolio,
   participantPage,
 }) {
-  const [cohortRead, participantRead, reportRead, eventRead, sessionRead, auditHistory, portfolioSource] = await Promise.all([
+  const [cohortRead, participantRead, reportRead, eventRead, sessionRead, surveyRead, auditHistory, portfolioSource] = await Promise.all([
     repository.listCohorts(devotion.id),
     repository.listParticipants(devotion.id),
     repository.listReports(devotion.id),
     repository.listEvents(devotion.id),
     repository.listSessions(devotion.id),
+    repository.listSurveyResponses
+      ? repository.listSurveyResponses(devotion.id)
+      : { rows: [], truncated: false, cap: DEVOTION_READ_CAP, schemaReady: false },
     repository.listAudits ? repository.listAudits(devotion.id) : [],
     includePortfolio && repository.portfolioData
       ? repository.portfolioData(devotions.map((item) => item.id))
@@ -374,6 +399,7 @@ async function dashboard(repository, devotion, devotions, {
   const reports = boundedRead(reportRead);
   const events = boundedRead(eventRead);
   const sessions = boundedRead(sessionRead);
+  const surveys = boundedRead(surveyRead);
   const currentParticipantPage = Math.min(
     participantPage,
     Math.max(1, Math.ceil(participants.rows.length / DEVOTION_PARTICIPANT_DETAIL_PAGE_SIZE)),
@@ -405,7 +431,9 @@ async function dashboard(repository, devotion, devotions, {
       events: events.rows,
       evidenceSampled: reports.truncated || events.truncated || sessions.truncated,
     }),
-    sourceStatus: sourceStatus({ campaigns: devotionRead, cohorts, participants, reports, events, sessions }),
+    sourceStatus: sourceStatus({ campaigns: devotionRead, cohorts, participants, reports, events, sessions, surveys }),
+    surveySchemaReady: surveyRead?.schemaReady !== false,
+    surveyResponses: surveys.rows.map(safeAdminSurveyResponse),
     participantDetail: {
       page: currentParticipantPage,
       pageSize: DEVOTION_PARTICIPANT_DETAIL_PAGE_SIZE,
@@ -441,6 +469,8 @@ function emptyDashboard(devotions, access, devotionRead) {
     },
     auditHistory: [],
     portfolio: null,
+    surveySchemaReady: false,
+    surveyResponses: [],
     devotion: null,
     metrics: null,
     nightRollup: [],

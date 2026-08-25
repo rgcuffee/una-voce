@@ -6,6 +6,13 @@ import {
   resolvePilotDay,
   safeParticipantId,
 } from './lib/devotion-pilot.mjs';
+import {
+  isSurveySchemaUnavailable,
+  safeSurveyResponse,
+  sameSurveyAnswers,
+  surveyPhaseForTiming,
+  validateSurveyAnswers,
+} from './lib/devotion-survey.mjs';
 
 const JSON_HEADERS = {
   'access-control-allow-headers': 'content-type',
@@ -68,6 +75,32 @@ export function createDevotionRepository(client) {
       if (error) throw error;
       return data;
     },
+
+    async findSurveyResponses({ devotionId, participantId }) {
+      const { data, error } = await client
+        .from('devotion_survey_responses')
+        .select('id,devotion_id,participant_id,phase,status,answers,created_at,started_at,submitted_at,updated_at')
+        .eq('devotion_id', devotionId)
+        .eq('participant_id', participantId)
+        .order('phase');
+      if (error && isSurveySchemaUnavailable(error)) {
+        return { rows: [], schemaReady: false };
+      }
+      if (error) throw error;
+      return { rows: data ?? [], schemaReady: true };
+    },
+
+    async upsertSurveyResponse({ devotionId, participantId, phase, status, answers }) {
+      const { data, error } = await client.rpc('upsert_devotion_survey_response', {
+        p_answers: answers,
+        p_devotion_id: devotionId,
+        p_participant_id: participantId,
+        p_phase: phase,
+        p_status: status,
+      }).single();
+      if (error) throw error;
+      return data;
+    },
   };
 }
 
@@ -114,6 +147,7 @@ export function createDevotionHandler({ repository, now = () => new Date() }) {
         return response(404, { error: 'This devotion is unavailable.' });
       }
       const timing = resolvePilotDay(effectiveSchedule(devotion, cohort, participant), now());
+      const availableSurveyPhase = surveyPhaseForTiming(timing);
 
       if (action === 'resolve') {
         const report =
@@ -124,7 +158,28 @@ export function createDevotionHandler({ repository, now = () => new Date() }) {
                 pilotDay: timing.pilotDay,
               })
             : null;
-        return response(200, participantState(participant, devotion, cohort, timing, report));
+        let surveyRead = { rows: [], schemaReady: false };
+        if (repository.findSurveyResponses) {
+          try {
+            surveyRead = await repository.findSurveyResponses({
+              devotionId: devotion.id,
+              participantId: participant.id,
+            });
+          } catch (error) {
+            if (isSurveySchemaUnavailable(error)) {
+              return response(503, { error: 'Survey responses are not available yet.' });
+            }
+            throw error;
+          }
+        }
+        return response(200, participantState(
+          participant,
+          devotion,
+          cohort,
+          timing,
+          report,
+          surveyRead,
+        ));
       }
 
       if (action === 'report') {
@@ -149,6 +204,73 @@ export function createDevotionHandler({ repository, now = () => new Date() }) {
         });
       }
 
+      if (['surveyStart', 'surveySave', 'surveySubmit'].includes(action)) {
+        const phase = parsed.value.phase;
+        if (phase !== availableSurveyPhase) {
+          return response(409, { error: 'This survey phase is not available right now.' });
+        }
+        if (!repository.findSurveyResponses || !repository.upsertSurveyResponse) {
+          return response(503, { error: 'Survey responses are not available yet.' });
+        }
+        let surveyRead;
+        try {
+          surveyRead = await repository.findSurveyResponses({
+            devotionId: devotion.id,
+            participantId: participant.id,
+          });
+        } catch (error) {
+          if (isSurveySchemaUnavailable(error)) {
+            return response(503, { error: 'Survey responses are not available yet.' });
+          }
+          throw error;
+        }
+        if (surveyRead.schemaReady === false) {
+          return response(503, { error: 'Survey responses are not available yet.' });
+        }
+        const existing = surveyRead.rows.find((item) => item.phase === phase) ?? null;
+
+        if (action === 'surveyStart' && existing) {
+          return response(200, surveyResult(existing, participant, devotion, timing));
+        }
+        if (action === 'surveySave' && existing?.status === 'submitted') {
+          return response(409, {
+            error: 'This survey is complete. Submit all required answers to update it.',
+          });
+        }
+
+        const validation = action === 'surveyStart'
+          ? { ok: true, answers: existing?.answers ?? {} }
+          : validateSurveyAnswers(phase, parsed.value.answers, {
+              complete: action === 'surveySubmit',
+            });
+        if (!validation.ok) return response(400, { error: validation.error });
+
+        if (
+          action === 'surveySubmit' &&
+          existing?.status === 'submitted' &&
+          sameSurveyAnswers(existing.answers, validation.answers)
+        ) {
+          return response(200, surveyResult(existing, participant, devotion, timing));
+        }
+
+        let saved;
+        try {
+          saved = await repository.upsertSurveyResponse({
+            devotionId: devotion.id,
+            participantId: participant.id,
+            phase,
+            status: action === 'surveySubmit' ? 'submitted' : 'partial',
+            answers: validation.answers,
+          });
+        } catch (error) {
+          if (isSurveySchemaUnavailable(error)) {
+            return response(503, { error: 'Survey responses are not available yet.' });
+          }
+          throw error;
+        }
+        return response(200, surveyResult(saved, participant, devotion, timing));
+      }
+
       return response(400, { error: 'Unsupported action' });
     } catch (error) {
       console.error('[devotion] request failed', safeError(error));
@@ -157,7 +279,8 @@ export function createDevotionHandler({ repository, now = () => new Date() }) {
   };
 }
 
-function participantState(participant, devotion, cohort, timing, report) {
+function participantState(participant, devotion, cohort, timing, report, surveyRead) {
+  const surveyRows = Array.isArray(surveyRead) ? surveyRead : surveyRead?.rows ?? [];
   return {
     ok: true,
     participant: {
@@ -193,6 +316,22 @@ function participantState(participant, devotion, cohort, timing, report) {
     },
     timing,
     report: safeReport(report),
+    survey: {
+      schemaReady: Array.isArray(surveyRead) ? true : surveyRead?.schemaReady !== false,
+      availablePhase: surveyPhaseForTiming(timing),
+      responses: {
+        pre: safeSurveyResponse(surveyRows.find((item) => item.phase === 'pre')),
+        post: safeSurveyResponse(surveyRows.find((item) => item.phase === 'post')),
+      },
+    },
+    attribution: attribution(participant, devotion, timing),
+  };
+}
+
+function surveyResult(survey, participant, devotion, timing) {
+  return {
+    ok: true,
+    survey: safeSurveyResponse(survey),
     attribution: attribution(participant, devotion, timing),
   };
 }

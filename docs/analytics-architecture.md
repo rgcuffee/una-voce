@@ -23,9 +23,13 @@ Before that migration exists, the Function uses a bounded legacy fallback:
 event IDs/fingerprints are kept in safe legacy metadata, existing records are
 looked up before retry insertion, and session upserts omit acquisition fields.
 
-`devotion_survey_submitted` and `pwa_install_prompted` are public reserved
-events for later sprints. They are validated and visible to admin, but have no
-Sprint B emitter. Emitted Sprint B events include session/landing, links and
+`pwa_install_prompted` remains a public reserved event for later work.
+`devotion_survey_submitted` is emitted only after the first-party survey API
+confirms a complete response. Survey clicked, started, and submitted map to
+three different transitions: revealing the survey, explicitly beginning it,
+and completing every required answer. A partial save emits no submission
+event and remains distinguishable in `devotion_survey_responses`. Emitted
+Sprint B events include session/landing, links and
 current-hour CTA, devotion/resource/report/survey start, PWA eligibility and
 install, and continuation. Devotion reports require night context; survey
 events require a pre/post kind and survey resource but may occur outside an

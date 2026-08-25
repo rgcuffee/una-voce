@@ -7,9 +7,15 @@ import {
 import {
   DevotionApiError,
   resolveDevotionParticipant,
+  saveDevotionSurvey,
+  startDevotionSurvey,
   submitDevotionReport,
+  submitDevotionSurvey,
   type DevotionParticipantState,
   type DevotionReportOutcome,
+  type DevotionSurveyAnswers,
+  type DevotionSurveyPhase,
+  type DevotionSurveyResponse,
 } from '../lib/devotionClient';
 import { trackAnalyticsEvent } from '../lib/prayerAnalytics';
 
@@ -138,6 +144,25 @@ export function DevotionPage() {
     }
   }
 
+  function updateSurvey(response: DevotionSurveyResponse) {
+    setPageState((current) => {
+      if (current.status !== 'ready') return current;
+      return {
+        status: 'ready',
+        data: {
+          ...current.data,
+          survey: {
+            ...current.data.survey,
+            responses: {
+              ...current.data.survey.responses,
+              [response.phase]: response,
+            },
+          },
+        },
+      };
+    });
+  }
+
   return (
     <div className="devotion-page">
       <header className="devotion-header">
@@ -170,6 +195,9 @@ export function DevotionPage() {
             onSave={saveReport}
             saveState={saveState}
             saveError={saveError}
+            token={token}
+            devotionSlug={devotionSlug}
+            onSurveyUpdate={updateSurvey}
           />
         ) : null}
       </main>
@@ -184,6 +212,9 @@ function DevotionContent({
   onSave,
   saveState,
   saveError,
+  token,
+  devotionSlug,
+  onSurveyUpdate,
 }: {
   data: DevotionParticipantState;
   selectedOutcome: DevotionReportOutcome | null;
@@ -191,6 +222,9 @@ function DevotionContent({
   onSave: (event: FormEvent<HTMLFormElement>) => void;
   saveState: 'idle' | 'saving' | 'saved' | 'error';
   saveError: string | null;
+  token: string;
+  devotionSlug: string;
+  onSurveyUpdate: (response: DevotionSurveyResponse) => void;
 }) {
   const { devotion, timing } = data;
 
@@ -208,10 +242,11 @@ function DevotionContent({
               ? `Night 1 begins ${formatPrayerDate(devotion.startDate)}.`
               : 'The ministry organizer is still preparing the start date.'}
         </p>
-        <SurveyLink
+        <SurveyPanel
           data={data}
-          url={completed ? devotion.postSurveyUrl : devotion.preSurveyUrl}
-          kind={completed ? 'post' : 'pre'}
+          token={token}
+          devotionSlug={devotionSlug}
+          onUpdate={onSurveyUpdate}
         />
       </StateCard>
     );
@@ -234,6 +269,13 @@ function DevotionContent({
         </div>
         <p>{devotion.description ?? 'Settle in, let the day grow quiet, and choose the Night Prayer resource that will help you pray tonight.'}</p>
       </section>
+
+      <SurveyPanel
+        data={data}
+        token={token}
+        devotionSlug={devotionSlug}
+        onUpdate={onSurveyUpdate}
+      />
 
       <DevotionNightPrayerResources
         selectedDate={timing.prayerDate}
@@ -271,44 +313,189 @@ function DevotionContent({
   );
 }
 
-function SurveyLink({
+function SurveyPanel({
   data,
-  url,
-  kind,
+  token,
+  devotionSlug,
+  onUpdate,
 }: {
   data: DevotionParticipantState;
-  url: string | null;
-  kind: 'pre' | 'post';
+  token: string;
+  devotionSlug: string;
+  onUpdate: (response: DevotionSurveyResponse) => void;
 }) {
-  if (!url) return null;
+  const phase = data.survey.availablePhase;
+  const response = phase ? data.survey.responses[phase] : null;
+  const [open, setOpen] = useState(false);
+  const [begun, setBegun] = useState(Boolean(response));
+  const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'submitted' | 'error'>('idle');
+  const [message, setMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    setOpen(false);
+    setBegun(Boolean(response));
+    setStatus('idle');
+    setMessage(null);
+  }, [phase]);
+
+  if (!phase || !data.survey.schemaReady) return null;
+  const activePhase: DevotionSurveyPhase = phase;
+
+  const eventDetail = {
+    ...data.attribution,
+    resourceId: `${activePhase}-survey`,
+    mediaType: 'survey_link' as const,
+    pageContext: `devotion_${activePhase}_survey`,
+    metadata: { surveyKind: activePhase },
+  };
+
+  function viewSurvey() {
+    setOpen(true);
+    setBegun(Boolean(response));
+    setStatus('idle');
+    setMessage(null);
+    trackAnalyticsEvent('devotion_survey_clicked', eventDetail);
+  }
+
+  async function beginSurvey() {
+    setStatus('saving');
+    setMessage(null);
+    try {
+      const saved = await startDevotionSurvey(token, devotionSlug, activePhase);
+      onUpdate(saved.survey);
+      setBegun(true);
+      setStatus('idle');
+      trackAnalyticsEvent('devotion_survey_started', eventDetail);
+    } catch (error) {
+      setStatus('error');
+      setMessage(surveyError(error));
+    }
+  }
+
+  async function saveSurvey(form: HTMLFormElement, complete: boolean) {
+    setStatus('saving');
+    setMessage(null);
+    try {
+      const answers = surveyAnswersFromForm(form, activePhase);
+      const saved = complete
+        ? await submitDevotionSurvey(token, devotionSlug, activePhase, answers)
+        : await saveDevotionSurvey(token, devotionSlug, activePhase, answers);
+      onUpdate(saved.survey);
+      setStatus(complete ? 'submitted' : 'saved');
+      setMessage(complete ? 'Your completed survey is saved.' : 'Your progress is saved. It is not counted as complete yet.');
+      if (complete) trackAnalyticsEvent('devotion_survey_submitted', eventDetail);
+    } catch (error) {
+      setStatus('error');
+      setMessage(surveyError(error));
+    }
+  }
+
+  if (!open) {
+    return (
+      <section className="devotion-survey" aria-label={`${phase === 'pre' ? 'Pre-devotion' : 'Post-devotion'} survey`}>
+        <div>
+          <span>{phase === 'pre' ? 'Before the devotion' : 'After the devotion'}</span>
+          <h2>{response?.status === 'submitted' ? 'Survey complete' : 'A short reflection'}</h2>
+          <p>{response?.status === 'partial' ? 'Your saved progress is waiting.' : response?.status === 'submitted' ? 'You may review and update your completed answers.' : 'This takes about two minutes.'}</p>
+        </div>
+        <button type="button" className="devotion-survey-link" onClick={viewSurvey}>
+          {response?.status === 'submitted' ? 'Review survey' : response ? 'Continue survey' : 'View survey'}
+        </button>
+      </section>
+    );
+  }
+
   return (
-    <a
-      className="devotion-survey-link"
-      href={url}
-      target="_blank"
-      rel="noreferrer"
-      onClick={() => {
-        trackAnalyticsEvent('devotion_survey_clicked', {
-          ...data.attribution,
-          resourceId: `${kind}-survey`,
-          mediaType: 'survey_link',
-          sourceUrl: url,
-          pageContext: `devotion_${kind}_survey`,
-          metadata: { surveyKind: kind },
-        });
-        trackAnalyticsEvent('devotion_survey_started', {
-          ...data.attribution,
-          resourceId: `${kind}-survey`,
-          mediaType: 'survey_link',
-          pageContext: `devotion_${kind}_survey`,
-          metadata: { surveyKind: kind },
-        });
-      }}
-    >
-      Open the {kind === 'pre' ? 'pre-devotion' : 'post-devotion'} survey
-    </a>
+    <section className="devotion-survey open" aria-label={`${phase === 'pre' ? 'Pre-devotion' : 'Post-devotion'} survey`}>
+      <div className="devotion-section-heading">
+        <span>{phase === 'pre' ? 'Pre-devotion survey' : 'Post-devotion survey'}</span>
+        <h2>{phase === 'pre' ? 'Before you begin' : 'Looking back'}</h2>
+        <p>Participation is optional. Your responses are pseudonymously linked to your devotion participation and activity; they are not anonymous. Campaign operators may review and export them for pilot research.</p>
+      </div>
+      {!begun ? (
+        <div className="devotion-survey-consent">
+          <p>Choosing Begin records that you started the survey. You can save an incomplete response and return later.</p>
+          <button type="button" className="devotion-save" disabled={status === 'saving'} onClick={() => void beginSurvey()}>{status === 'saving' ? 'Starting…' : 'Begin survey'}</button>
+          <button type="button" className="devotion-survey-secondary" onClick={() => setOpen(false)}>Not now</button>
+        </div>
+      ) : (
+        <form
+          className="devotion-survey-form"
+          key={`${phase}:${response?.updatedAt ?? 'new'}`}
+          onSubmit={(event) => {
+            event.preventDefault();
+            void saveSurvey(event.currentTarget, true);
+          }}
+        >
+          <SurveyQuestions phase={phase} answers={response?.answers ?? {}} />
+          <div className="devotion-survey-actions">
+            {response?.status !== 'submitted' ? <button type="button" className="devotion-survey-secondary" disabled={status === 'saving'} onClick={(event) => event.currentTarget.form && void saveSurvey(event.currentTarget.form, false)}>Save progress</button> : null}
+            <button type="submit" className="devotion-save" disabled={status === 'saving'}>{status === 'saving' ? 'Saving…' : response?.status === 'submitted' ? 'Update completed survey' : 'Complete survey'}</button>
+            <button type="button" className="devotion-survey-secondary" onClick={() => setOpen(false)}>Close</button>
+          </div>
+          {message ? <p className={status === 'error' ? 'devotion-save-error' : 'devotion-save-success'} role={status === 'error' ? 'alert' : 'status'}>{message}</p> : null}
+        </form>
+      )}
+      {!begun && message ? <p className="devotion-save-error" role="alert">{message}</p> : null}
+    </section>
   );
 }
+
+function SurveyQuestions({ phase, answers }: { phase: DevotionSurveyPhase; answers: DevotionSurveyAnswers }) {
+  return <>
+    {phase === 'pre' ? <>
+      <SurveySelect name="liturgyFamiliarity" label="How familiar are you with the Liturgy of the Hours?" value={answers.liturgyFamiliarity} options={[['not_familiar', 'Not familiar'], ['a_little', 'A little familiar'], ['somewhat', 'Somewhat familiar'], ['very', 'Very familiar']]} />
+      <SurveySelect name="massFrequency" label="How often do you attend Mass?" value={answers.massFrequency} options={[['rarely', 'Rarely'], ['few_times_year', 'A few times a year'], ['monthly', 'About monthly'], ['weekly_or_more', 'Weekly or more']]} />
+      <SurveySelect name="prayerFrequency" label="How often do you pray outside Mass?" value={answers.prayerFrequency} options={[['rarely', 'Rarely'], ['few_times_month', 'A few times a month'], ['few_times_week', 'A few times a week'], ['daily', 'Daily']]} />
+    </> : <SurveySelect name="experienceRating" label="How would you rate your overall devotion experience?" value={answers.experienceRating} options={RATING_OPTIONS} />}
+    <SurveySelect name="hourConfidence" label="How confident are you that you know how and when to pray this Hour?" value={answers.hourConfidence} options={CONFIDENCE_OPTIONS} />
+    <fieldset className="devotion-survey-checkboxes">
+      <legend>What made praying difficult? Select all that apply.</legend>
+      {FRICTION_OPTIONS.map(([value, label]) => <label key={value}><input type="checkbox" name="friction" value={value} defaultChecked={answers.friction?.includes(value as NonNullable<DevotionSurveyAnswers['friction']>[number])} /><span>{label}</span></label>)}
+    </fieldset>
+    <SurveySelect name="continueLikelihood" label={phase === 'pre' ? 'How likely are you to continue praying this Hour?' : 'How likely are you to continue after this devotion?'} value={answers.continueLikelihood} options={LIKELIHOOD_OPTIONS} />
+    {phase === 'post' ? <SurveySelect name="continuedAfterWindow" label="If the devotion window has passed, have you continued on your own? (Optional)" value={answers.continuedAfterWindow} required={false} options={[['yes', 'Yes'], ['no', 'No'], ['not_sure', 'Not sure'], ['not_applicable', 'Not applicable yet']]} /> : null}
+  </>;
+}
+
+function SurveySelect({ name, label, value, options, required = true }: { name: string; label: string; value: string | number | undefined; options: ReadonlyArray<readonly [string, string]>; required?: boolean }) {
+  return <label className="devotion-survey-question"><span>{label}</span><select name={name} defaultValue={value === undefined ? '' : String(value)} required={required}><option value="">Select an answer</option>{options.map(([optionValue, optionLabel]) => <option value={optionValue} key={optionValue}>{optionLabel}</option>)}</select></label>;
+}
+
+function surveyAnswersFromForm(form: HTMLFormElement, phase: DevotionSurveyPhase): DevotionSurveyAnswers {
+  const fields = new FormData(form);
+  const answers: DevotionSurveyAnswers = {};
+  const setChoice = (name: keyof DevotionSurveyAnswers) => {
+    const value = fields.get(name)?.toString();
+    if (value) Object.assign(answers, { [name]: value });
+  };
+  const setRating = (name: 'hourConfidence' | 'continueLikelihood' | 'experienceRating') => {
+    const value = fields.get(name)?.toString();
+    if (value) answers[name] = Number(value);
+  };
+  if (phase === 'pre') {
+    setChoice('liturgyFamiliarity');
+    setChoice('massFrequency');
+    setChoice('prayerFrequency');
+  } else {
+    setRating('experienceRating');
+    setChoice('continuedAfterWindow');
+  }
+  setRating('hourConfidence');
+  setRating('continueLikelihood');
+  const friction = fields.getAll('friction').map(String) as NonNullable<DevotionSurveyAnswers['friction']>;
+  if (friction.length) answers.friction = friction;
+  return answers;
+}
+
+function surveyError(error: unknown) {
+  return error instanceof DevotionApiError ? error.message : 'Your survey response was not saved. Please try again.';
+}
+
+const RATING_OPTIONS = [['1', '1 — Very poor'], ['2', '2'], ['3', '3'], ['4', '4'], ['5', '5 — Excellent']] as const;
+const CONFIDENCE_OPTIONS = [['1', '1 — Not confident'], ['2', '2'], ['3', '3'], ['4', '4'], ['5', '5 — Very confident']] as const;
+const LIKELIHOOD_OPTIONS = [['1', '1 — Very unlikely'], ['2', '2'], ['3', '3'], ['4', '4'], ['5', '5 — Very likely']] as const;
+const FRICTION_OPTIONS = [['none', 'No difficulty'], ['finding_time', 'Finding time'], ['knowing_how', 'Knowing what to do'], ['technology', 'Technology'], ['content_length', 'Length of the prayer'], ['other', 'Something else']] as const;
 
 function StateCard({
   eyebrow,
