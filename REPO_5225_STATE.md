@@ -4,10 +4,10 @@
 - Branch: `main`
 - Upstream: `origin/main` (local checkpoint only; not pushed or deployed)
 - Recovery baseline: `841b2507cc4f568fa66d76fd9d9d2818860e0ed6`
-- Last verified commit: `9c4ac9992f0e3e9280a97b156d3dc5523de5ec90`
-- Last verified: `2026-08-24`
-- Last completed sprint: Pre-Alpha Campaign Sprint B — Links, Attribution + Telemetry Contract
-- QA: PASS — independent contract and cross-repository GPT-5.6-Sol xhigh read-only reviews found zero remaining P0–P3 defects.
+- Last verified commit: `20d47c42d5a4d88926e0657e9f0134170496d31d`
+- Last verified: `2026-08-25`
+- Last completed sprint: Pre-Alpha Campaign Sprint C — Pre/Post Surveys + Research Linkage
+- QA: PASS — independent GPT-5.6-Sol read-only review found zero remaining P0–P3 defects after one bounded remediation round.
 
 ## Runtime
 
@@ -33,6 +33,16 @@
 - Smart Prayer Links deterministic direct-Hour hash navigation, including StrictMode safety: `b3dd6f741de5d8db97201d294a012d3465919893`.
 - Pre-Alpha Campaign Sprint A pilot-operability reconciliation: `4282d3d8eec4c4edd6025a89813da61672d2b592`.
 - Pre-Alpha Campaign Sprint B links, attribution, and telemetry contract: `9c4ac9992f0e3e9280a97b156d3dc5523de5ec90`.
+- Pre-Alpha Campaign Sprint C pre/post surveys and research linkage: `20d47c42d5a4d88926e0657e9f0134170496d31d`.
+
+## Pre-Alpha Campaign Sprint C verification
+
+- The participant devotion flow now contains a bounded first-party pre/post research instrument with truthful pseudonymous-linkage language. Survey view, start, partial save, and submitted completion remain separate states and telemetry evidence.
+- Survey responses are stored once per devotion, participant, and phase behind RLS and a service-role-only RPC. Raw participant tokens and token hashes are never stored with or projected from responses; exact retries preserve first-start/first-submit timestamps, while explicit completed-response updates retain the original submission time.
+- The authenticated devotion admin exposes bounded partial/submitted response evidence and a spreadsheet-safe CSV joined through shortened devotion and participant identifiers. Missing survey schema is disclosed without masking unrelated repository failures.
+- Full verification: `npm test` — 138/138 PASS; `npx tsc -b` — PASS; `npm run build:verify` — PASS; isolated PGlite migration/RPC privilege, linkage, validation, retry, and update smoke — PASS.
+- Independent read-only QA: 44/44 focused adversarial checks PASS after one remediation round; zero remaining P0–P3 findings. `git diff --check` and the 5225 checkpoint gate passed.
+- The survey migration is checked in but was not applied remotely. No production data, deployment, Git push, or participant-link disclosure was performed.
 
 ## Pre-Alpha Campaign Sprint B verification
 
