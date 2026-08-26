@@ -5,7 +5,9 @@ export type AdminRouteSection =
   | 'sources'
   | 'rules'
   | 'devotions'
+  | 'devotion-sessions'
   | 'activity'
+  | 'sessions'
   | 'communities'
   | 'devotion-analytics';
 
@@ -16,7 +18,9 @@ export const ADMIN_ROUTES: Record<AdminRouteSection, string> = {
   sources: '/admin/partners/sources',
   rules: '/admin/partners/rules',
   devotions: '/admin/devotions',
+  'devotion-sessions': '/admin/devotions/sessions',
   activity: '/admin/analytics/activity',
+  sessions: '/admin/analytics/sessions',
   communities: '/admin/analytics/communities',
   'devotion-analytics': '/admin/analytics/devotions',
 };
@@ -58,6 +62,8 @@ export function adminSectionForPath(pathname: string): AdminRouteSection {
   if (normalizedPath === '/admin/partners/sources') return 'sources';
   if (normalizedPath === '/admin/partners/rules') return 'rules';
   if (normalizedPath === '/admin/devotions') return 'devotions';
+  if (normalizedPath === '/admin/devotions/sessions') return 'devotion-sessions';
+  if (normalizedPath === '/admin/analytics/sessions') return 'sessions';
   if (normalizedPath === '/admin/analytics/communities') return 'communities';
   if (normalizedPath === '/admin/analytics/devotions') return 'devotion-analytics';
   if (normalizedPath === '/admin/analytics/activity') return 'activity';

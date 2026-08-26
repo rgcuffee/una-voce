@@ -48,6 +48,8 @@ const DEVOTION_PARTICIPANT_DETAIL_PAGE_SIZE = 100;
 const DEVOTION_PAGE_SIZE = 1_000;
 const DEVOTION_SURVEY_RESPONSE_PROJECTION_CAP = 250;
 const ADMIN_BODY_BYTE_LIMIT = 64 * 1024;
+const PARTICIPANT_LINK_CONFIGURATION_ERROR =
+  'Participant link generation is not configured. Set DEVOTION_LINK_SECRET to at least 32 characters and restart the server.';
 
 const supabaseUrl = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -74,6 +76,10 @@ const supabase =
 
 export function firstNonEmpty(...values) {
   return values.find((value) => typeof value === 'string' && value.trim())?.trim();
+}
+
+export function participantLinkGenerationReady(secret) {
+  return typeof secret === 'string' && secret.length >= 32;
 }
 
 export function createAdminDevotionRepository(client) {
@@ -320,6 +326,7 @@ export function createAdminDevotionHandler({
   authorize,
   linkSecret = participantTokenSecret,
 }) {
+  const participantLinksReady = participantLinkGenerationReady(linkSecret);
   return async function adminDevotionHandler(event) {
     if (event.httpMethod === 'OPTIONS') return response(204);
     if (!['GET', 'POST'].includes(event.httpMethod)) {
@@ -344,12 +351,19 @@ export function createAdminDevotionHandler({
           event.queryStringParameters?.devotionId,
         );
         if (!devotion) {
-          return response(200, emptyDashboard(devotions, access, devotionRead, includePortfolio));
+          return response(200, emptyDashboard(
+            devotions,
+            access,
+            devotionRead,
+            includePortfolio,
+            participantLinksReady,
+          ));
         }
         return response(200, await dashboard(repository, devotion, devotions, {
           access,
           devotionRead,
           includePortfolio,
+          participantLinksReady,
           participantPage: boundedPositiveInteger(
             event.queryStringParameters?.participantPage,
             1,
@@ -371,6 +385,12 @@ export function createAdminDevotionHandler({
       }
       const devotion = selectedDevotion(devotions, parsed.value.devotionId);
       if (!devotion) return response(404, { error: 'Devotion not found' });
+      if (
+        ['createParticipant', 'showParticipantLink'].includes(parsed.value.action) &&
+        !participantLinksReady
+      ) {
+        throw new RequestError(503, PARTICIPANT_LINK_CONFIGURATION_ERROR);
+      }
       await requireExistingArchiveAccess(access, parsed.value, devotion, repository);
       const result = await handleAction({
         repository,
@@ -397,6 +417,7 @@ async function dashboard(repository, devotion, devotions, {
   access,
   devotionRead,
   includePortfolio,
+  participantLinksReady,
   participantPage,
 }) {
   const [cohortRead, participantRead, reportRead, eventRead, sessionRead, surveyRead, auditHistory, portfolioSource] = await Promise.all([
@@ -467,6 +488,10 @@ async function dashboard(repository, devotion, devotions, {
     ok: true,
     generatedAt: new Date().toISOString(),
     access: includePortfolio ? { ...safeAccess(access), email: null } : safeAccess(access),
+    participantLinkGeneration: {
+      ready: participantLinksReady,
+      message: participantLinksReady ? null : PARTICIPANT_LINK_CONFIGURATION_ERROR,
+    },
     campaigns: devotions.map(safeDevotion),
     cohorts: cohorts.rows.map(safeCohort),
     operationalAlerts: includePortfolio ? [] : devotionAlerts({
@@ -503,7 +528,7 @@ async function dashboard(repository, devotion, devotions, {
   };
 }
 
-function emptyDashboard(devotions, access, devotionRead, includePortfolio) {
+function emptyDashboard(devotions, access, devotionRead, includePortfolio, participantLinksReady) {
   const unavailableStages = DEVOTION_FUNNEL_DEFINITIONS.map((definition) => ({
     ...definition,
     status: 'unavailable',
@@ -514,6 +539,10 @@ function emptyDashboard(devotions, access, devotionRead, includePortfolio) {
     ok: true,
     generatedAt: new Date().toISOString(),
     access: includePortfolio ? { ...safeAccess(access), email: null } : safeAccess(access),
+    participantLinkGeneration: {
+      ready: participantLinksReady,
+      message: participantLinksReady ? null : PARTICIPANT_LINK_CONFIGURATION_ERROR,
+    },
     campaigns: devotions.map(safeDevotion),
     cohorts: [],
     operationalAlerts: includePortfolio

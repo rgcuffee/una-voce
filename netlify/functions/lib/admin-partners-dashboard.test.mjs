@@ -34,6 +34,8 @@ test('admin analytics identifiers and URLs are safe projections', () => {
   assert.equal(safeAnalyticsUrl('/community/jane-doe'), null);
   assert.equal(safeAnalyticsUrl('/community/known', new Map([['known', {}]])), '/community/known');
   assert.equal(safeAnalyticsUrl('/admin/analytics/activity'), '/admin/analytics/activity');
+  assert.equal(safeAnalyticsUrl('/admin/analytics/sessions'), '/admin/analytics/sessions');
+  assert.equal(safeAnalyticsUrl('/admin/devotions/sessions'), '/admin/devotions/sessions');
   assert.equal(safeAnalyticsUrl('/devotions/holy-spirit-mens-ministry/night-prayer'), '/devotions/holy-spirit-mens-ministry/night-prayer');
   assert.equal(safeAnalyticsScalar('email@example.test'), null);
   assert.equal(safeAnalyticsScalar('\n=HYPERLINK("bad")'), null);

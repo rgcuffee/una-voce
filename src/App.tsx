@@ -24,7 +24,9 @@ export default function App() {
         <Route path='/admin/partners/sources' element={<AdminPage />} />
         <Route path='/admin/partners/rules' element={<AdminPage />} />
         <Route path='/admin/devotions' element={<AdminPage />} />
+        <Route path='/admin/devotions/sessions' element={<AdminPage />} />
         <Route path='/admin/analytics/activity' element={<AdminPage />} />
+        <Route path='/admin/analytics/sessions' element={<AdminPage />} />
         <Route path='/admin/analytics/communities' element={<AdminPage />} />
         <Route path='/admin/analytics/devotions' element={<AdminPage />} />
         <Route path='/admin/analytics' element={<Navigate to='/admin/analytics/activity' replace />} />

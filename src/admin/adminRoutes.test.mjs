@@ -20,7 +20,9 @@ test('admin routes resolve every Sprint 1 destination, including trailing slashe
     sources: '/admin/partners/sources',
     rules: '/admin/partners/rules',
     devotions: '/admin/devotions',
+    'devotion-sessions': '/admin/devotions/sessions',
     activity: '/admin/analytics/activity',
+    sessions: '/admin/analytics/sessions',
     communities: '/admin/analytics/communities',
     'devotion-analytics': '/admin/analytics/devotions',
   };

@@ -120,7 +120,7 @@ test('devotion research UI exposes bounded filters, reconciled evidence, and res
   assert.match(server, /PARTICIPANT_RESOURCE_GLOBAL_CAP = 600/);
   assert.match(server, /NIGHT_RESOURCE_GLOBAL_CAP = 400/);
   assert.match(server, /NIGHT_PRAYER_DATE_CAP = 10/);
-  assert.match(dashboard, /<DevotionAnalyticsSection key=\{section\} mode=\{section === 'devotions' \? 'operations' : 'analytics'\} \/>/);
+  assert.match(dashboard, /<DevotionAnalyticsSection key=\{section\} mode=\{section === 'devotions' \? 'operations' : section === 'devotion-sessions' \? 'sessions' : 'analytics'\} \/>/);
   assert.doesNotMatch(server, /source_url/);
   assert.doesNotMatch(server, /anonymous_id/);
   assert.match(styles, /\.devotion-activity-evidence \.admin-table-wrap \{ max-height: 720px; overflow: auto; \}/);

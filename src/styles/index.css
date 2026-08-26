@@ -6629,6 +6629,170 @@ body {
 .devotion-activity-evidence td { vertical-align: top; }
 .devotion-activity-evidence ol { min-width: 280px; max-width: 720px; padding-left: 22px; overflow-wrap: anywhere; }
 
+.admin-session-explorer { background: #fffdf9; }
+.admin-session-metrics { margin: 0; padding: 16px; border-bottom: 1px solid #e8ded1; }
+.admin-session-filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: 10px;
+    padding: 12px 16px;
+    border-bottom: 1px solid #e8ded1;
+    background: #fffaf0;
+}
+.admin-session-filters label {
+    display: grid;
+    gap: 4px;
+    color: #725b4d;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+.admin-session-filters input,
+.admin-session-filters select {
+    min-width: 132px;
+    min-height: 38px;
+    padding: 0 10px;
+    border: 1px solid #cba58e;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #302a26;
+    font: inherit;
+    font-size: 13px;
+    letter-spacing: 0;
+    text-transform: none;
+}
+.admin-session-filters .admin-session-search { flex: 1 1 240px; }
+.admin-session-filters .admin-session-search input { width: 100%; }
+.admin-session-filter-note { margin-left: auto; padding-bottom: 9px; color: #725b4d; font-size: 12px; font-weight: 700; }
+.admin-session-workspace {
+    display: grid;
+    grid-template-columns: minmax(320px, .72fr) minmax(440px, 1.28fr);
+    min-height: 560px;
+    border-bottom: 1px solid #e8ded1;
+}
+.admin-session-people {
+    min-width: 0;
+    max-height: 760px;
+    overflow: auto;
+    border-right: 1px solid #e8ded1;
+    background: #fffaf3;
+}
+.admin-session-pane-heading {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 12px 14px;
+    border-bottom: 1px solid #e8ded1;
+    background: #f8ede1;
+}
+.admin-session-pane-heading strong { color: #5c4034; font-size: 13px; }
+.admin-session-pane-heading span { color: #725b4d; font-size: 11px; }
+.admin-session-person {
+    display: grid;
+    grid-template-columns: minmax(142px, 1fr) 70px 70px;
+    gap: 10px;
+    align-items: center;
+    width: 100%;
+    padding: 13px 14px;
+    border: 0;
+    border-bottom: 1px solid #eee4d7;
+    background: #fffaf3;
+    color: #302a26;
+    cursor: pointer;
+    text-align: left;
+}
+.admin-session-person:hover { background: #f8ede1; }
+.admin-session-person[aria-pressed="true"] { padding-left: 10px; border-left: 4px solid #bd654d; background: #fff3e7; }
+.admin-session-person > span { min-width: 0; }
+.admin-session-person strong { display: block; overflow: hidden; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+.admin-session-person small { display: block; margin-top: 4px; overflow: hidden; color: #725b4d; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.admin-session-story { min-width: 0; max-height: 760px; overflow: auto; background: #ffffff; }
+.admin-session-story-heading {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 16px 18px;
+    border-bottom: 1px solid #e8ded1;
+    background: #ffffff;
+}
+.admin-session-story-heading > div > span { color: #bd654d; font-size: 10px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
+.admin-session-story-heading h3 { margin-top: 3px; color: #302a26; font-size: 18px; overflow-wrap: anywhere; }
+.admin-session-story-heading p { margin-top: 3px; color: #697064; font-size: 12px; }
+.admin-session-story-heading dl { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.admin-session-story-heading dl > div { min-width: 82px; padding: 8px 10px; border: 1px solid #e4d6c6; border-radius: 6px; background: #fffaf3; }
+.admin-session-story-heading dt { color: #725b4d; font-size: 9px; font-weight: 900; letter-spacing: .07em; text-transform: uppercase; }
+.admin-session-story-heading dd { margin-top: 3px; color: #302a26; font-size: 12px; font-weight: 800; overflow-wrap: anywhere; }
+.admin-session-timeline { display: grid; gap: 12px; padding: 16px 18px 22px; }
+.admin-session-group { min-width: 0; border: 1px solid #e4d6c6; border-radius: 8px; background: #fffdf9; overflow: hidden; }
+.admin-session-group-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 11px 13px;
+    border-bottom: 1px solid #e8ded1;
+    background: #f8ede1;
+}
+.admin-session-group-heading > div { min-width: 0; }
+.admin-session-group-heading strong { display: block; overflow-wrap: anywhere; color: #5c4034; font-size: 12px; }
+.admin-session-group-heading span { color: #725b4d; font-size: 10px; line-height: 1.4; }
+.admin-session-group > ol,
+.devotion-session-block > ol { margin: 0; padding: 4px 13px 8px; list-style: none; }
+.admin-session-group li,
+.devotion-session-block li {
+    position: relative;
+    display: grid;
+    grid-template-columns: 66px 10px minmax(0, 1fr);
+    gap: 8px;
+    padding: 9px 0;
+}
+.admin-session-group li:not(:last-child)::after,
+.devotion-session-block li:not(:last-child)::after {
+    position: absolute;
+    top: 21px;
+    bottom: -5px;
+    left: 78px;
+    width: 1px;
+    background: #ded3c2;
+    content: '';
+}
+.admin-session-group li time,
+.devotion-session-block li time { color: #725b4d; font-size: 10px; padding-top: 2px; }
+.admin-session-event-dot { position: relative; z-index: 1; width: 7px; height: 7px; margin-top: 4px; border-radius: 999px; background: #9d8c7b; }
+.admin-session-group li.emphasis .admin-session-event-dot,
+.devotion-session-block li.emphasis .admin-session-event-dot { background: #bd654d; box-shadow: 0 0 0 3px #f1e2d0; }
+.admin-session-group li strong,
+.devotion-session-block li strong { color: #302a26; font-size: 12px; }
+.admin-session-group li p,
+.devotion-session-block li p { margin-top: 2px; color: #697064; font-size: 11px; line-height: 1.4; overflow-wrap: anywhere; }
+.admin-session-group li small,
+.devotion-session-block li small { display: block; margin-top: 3px; color: #725b4d; font-size: 9px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; }
+.admin-session-boundary { padding: 13px 16px; background: #fffaf0; color: #725b4d; font-size: 12px; line-height: 1.45; }
+.devotion-session-research { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 18px; border-bottom: 1px solid #e8ded1; background: #fffaf0; }
+.devotion-session-research span { padding: 8px 10px; border: 1px solid #e4d6c6; border-radius: 6px; background: #fffdf9; color: #725b4d; font-size: 11px; }
+.devotion-session-research strong { display: block; color: #5c4034; font-size: 10px; text-transform: uppercase; }
+.devotion-night-evidence-line { display: flex; flex-wrap: wrap; gap: 7px; padding: 10px 13px; border-bottom: 1px solid #eee4d7; }
+.devotion-night-evidence-line span { padding: 6px 8px; border-radius: 6px; background: #fff3e7; color: #725b4d; font-size: 10px; font-weight: 700; }
+.devotion-session-block { margin: 10px 12px; border: 1px solid #eee4d7; border-radius: 7px; background: #ffffff; overflow: hidden; }
+.devotion-session-block > div:first-child { display: grid; gap: 3px; padding: 10px 12px; border-bottom: 1px solid #eee4d7; }
+.devotion-session-block > div:first-child strong { color: #5c4034; font-size: 11px; overflow-wrap: anywhere; }
+.devotion-session-block > div:first-child span,
+.devotion-session-block > div:first-child small { color: #725b4d; font-size: 10px; }
+.devotion-session-measures { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 12px; border-bottom: 1px solid #eee4d7; background: #fffaf3; }
+.devotion-session-measures span { color: #5c4034; font-size: 10px; font-weight: 700; }
+.devotion-session-no-row,
+.admin-session-sampled { padding: 10px 12px; color: #725b4d; font-size: 11px; line-height: 1.4; }
+
 .admin-dashboard .devotion-admin-card,
 .admin-dashboard .devotion-cohort-operations,
 .admin-dashboard .devotion-campaign-controls {
@@ -8064,4 +8228,35 @@ body {
     .devotion-prayer-resources .format-options {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
+}
+
+@media (max-width: 1100px) {
+    .admin-session-workspace { grid-template-columns: minmax(280px, .8fr) minmax(380px, 1.2fr); }
+    .admin-session-story-heading { flex-direction: column; }
+    .admin-session-story-heading dl { justify-content: flex-start; }
+}
+
+@media (max-width: 900px) {
+    .admin-session-filters label,
+    .admin-session-filters .admin-session-search { width: 100%; flex-basis: 100%; }
+    .admin-session-filters input,
+    .admin-session-filters select { width: 100%; min-height: 44px; }
+    .admin-session-filter-note { width: 100%; margin-left: 0; padding-bottom: 0; }
+    .admin-session-workspace { grid-template-columns: 1fr; }
+    .admin-session-people { max-height: 310px; border-right: 0; border-bottom: 1px solid #e8ded1; }
+    .admin-session-story { max-height: none; }
+    .admin-session-story-heading { position: static; }
+}
+
+@media (max-width: 560px) {
+    .admin-session-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .admin-session-person { grid-template-columns: minmax(120px, 1fr) 60px 60px; padding: 12px; }
+    .admin-session-story-heading dl { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%; }
+    .admin-session-story-heading dl > div { min-width: 0; }
+    .admin-session-group-heading { flex-direction: column; }
+    .admin-session-group li,
+    .devotion-session-block li { grid-template-columns: 54px 10px minmax(0, 1fr); }
+    .admin-session-group li:not(:last-child)::after,
+    .devotion-session-block li:not(:last-child)::after { left: 66px; }
+    .devotion-session-research { flex-direction: column; }
 }

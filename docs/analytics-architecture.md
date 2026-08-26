@@ -131,3 +131,23 @@ When the survey source is sampled, completion and paired-participant counts are
 lower-bound counts and render with `≥`. Survey averages and changes are instead
 labeled sampled/partial observations; an average is never described as a lower
 bound.
+
+## People-first session views
+
+The existing aggregate dashboards remain available. Two additive authenticated
+views expose the same bounded, privacy-safe evidence as chronological stories:
+
+- `/admin/analytics/sessions` groups projected events first by one-way visitor
+  identity and then by one-way session identity. The newest 1,000 matching
+  event projection is the detail ceiling; when either the source or projection
+  cap is reached, people, sessions, and actions are labeled as lower bounds.
+- `/admin/devotions/sessions` groups the existing campaign participant, night,
+  report, survey, prayer-player session, and event projections by one-way
+  participant identity. Campaign and survey completion remain separate from
+  prayer-player completion, and explicit night reports remain visible even
+  when no player-session row is projected.
+
+Both views label stored evidence separately from timestamp-derived observed
+spans. They do not infer identity across missing anonymous IDs, time on an
+external destination, or completion from a click. Existing Activity,
+Communities, Devotion Analytics, and Devotion Operations routes are unchanged.

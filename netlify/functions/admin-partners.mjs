@@ -626,7 +626,7 @@ export function safeAnalyticsUrl(value, knownCommunities = new Map()) {
 }
 
 function safeLocalAnalyticsPath(path, knownCommunities) {
-  const routes = new Set(['/','/about','/contact','/discover','/parishes','/pray','/review','/start','/admin','/admin/partners','/admin/partners/review','/admin/partners/sources','/admin/partners/rules','/admin/analytics/activity','/admin/analytics/communities','/admin/devotions','/admin/analytics/devotions','/admin/calendar-engine','/devotions/holy-spirit-mens-ministry/night-prayer']);
+  const routes = new Set(['/','/about','/contact','/discover','/parishes','/pray','/review','/start','/admin','/admin/partners','/admin/partners/review','/admin/partners/sources','/admin/partners/rules','/admin/analytics/activity','/admin/analytics/sessions','/admin/analytics/communities','/admin/devotions','/admin/devotions/sessions','/admin/analytics/devotions','/admin/calendar-engine','/devotions/holy-spirit-mens-ministry/night-prayer']);
   if (routes.has(path)) return path;
   const community = path.match(/^\/community\/([a-z0-9]+(?:-[a-z0-9]+)*)$/);
   if (community && knownCommunities?.has(community[1])) return path;

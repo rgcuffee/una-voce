@@ -90,6 +90,13 @@ mount separate dashboard instances so Operations keeps mutation UUIDs while
 Analytics receives only one-way portfolio identifiers and other privacy-safe
 projections.
 
+The additive `/admin/devotions/sessions` workflow presents those projections
+participant-first: select a one-way participant ID, then inspect campaign
+nights, explicit reports, survey state, player measures, and chronological
+stored events. It shares the existing campaign selector and bounded response;
+it does not expose participant labels or link material and does not replace the
+aggregate `/admin/analytics/devotions` research dashboard.
+
 Analytics-mode responses retain this full evidence shape even before the first
 campaign exists. Activity, funnel, survey, source/surface/device, and comparison
 sections are explicitly unavailable; arrays are empty, survey detail is

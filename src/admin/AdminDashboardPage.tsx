@@ -28,6 +28,7 @@ import {
 } from './adminApi';
 import { supabase } from '../lib/supabase';
 import { AdminSidebar } from './AdminSidebar';
+import { AnalyticsSessionsSection } from './AnalyticsSessionsSection';
 import { DevotionAnalyticsSection } from './DevotionAnalyticsSection';
 import { analyticsDataSearch, analyticsFiltersFromSearch, metricPresentation, analyticsSearch, comparison, csv, type AnalyticsFilters } from './analyticsWorkflow';
 import { ADMIN_ROUTES, adminLocation, adminSectionForPath, homeSignalsOrUnavailable, reviewSearchParams, type AdminRouteSection } from './adminRoutes';
@@ -66,7 +67,9 @@ const ADMIN_SECTION_TITLES: Record<AdminSection, string> = {
   sources: 'Source Health',
   rules: 'Partner Rules',
   devotions: 'Devotion Operations',
+  'devotion-sessions': 'Devotion Sessions',
   activity: 'Activity Analytics',
+  sessions: 'Analytics Sessions',
   communities: 'Community Performance',
   'devotion-analytics': 'Devotion Analytics',
 };
@@ -564,6 +567,8 @@ export function AdminDashboardPage() {
   const [data, setData] = useState<AdminDashboardData | null>(null);
   const requestVersion = useRef(0);
   const section = adminSectionForPath(location.pathname);
+  const productAnalyticsSection = section === 'activity' || section === 'communities' || section === 'sessions';
+  const devotionSection = section === 'devotions' || section === 'devotion-analytics' || section === 'devotion-sessions';
   const query = useMemo(() => new URLSearchParams(location.search), [location.search]);
   const reviewParams = reviewSearchParams(location.search);
   const selectedPartnerId = query.get('partner') || '';
@@ -611,13 +616,13 @@ export function AdminDashboardPage() {
   useEffect(() => {
     if (localPasswordModeEnabled(import.meta.env.DEV)) {
       setAuthEmail('Local development');
-      if (section !== 'activity' && section !== 'communities') void refresh();
+      if (!productAnalyticsSection) void refresh();
       return;
     }
 
     supabase?.auth.getSession().then(({ data: sessionData }) => {
       setAuthEmail(sessionData.session?.user.email ?? '');
-      if (section !== 'activity' && section !== 'communities') void refresh();
+      if (!productAnalyticsSection) void refresh();
     });
 
     const {
@@ -630,7 +635,7 @@ export function AdminDashboardPage() {
   }, [section]);
 
   useEffect(() => {
-    if (section === 'activity' || section === 'communities') void refresh(analyticsQuery);
+    if (productAnalyticsSection) void refresh(analyticsQuery);
   }, [section, analyticsQuery]);
 
   async function signOut() {
@@ -691,13 +696,15 @@ export function AdminDashboardPage() {
             <Link className={section === 'sources' ? 'active' : ''} to={ADMIN_ROUTES.sources}>Sources</Link>
             <Link className={section === 'rules' ? 'active' : ''} to={ADMIN_ROUTES.rules}>Rules</Link>
           </AdminNavGroup>
-          <AdminNavGroup id="admin-analytics-links" label="Analytics" active={['activity', 'communities'].includes(section)}>
+          <AdminNavGroup id="admin-analytics-links" label="Analytics" active={['activity', 'sessions', 'communities'].includes(section)}>
             <Link className={section === 'activity' ? 'active' : ''} to={ADMIN_ROUTES.activity}>Activity</Link>
+            <Link className={section === 'sessions' ? 'active' : ''} to={ADMIN_ROUTES.sessions}>Sessions</Link>
             <Link className={section === 'communities' ? 'active' : ''} to={ADMIN_ROUTES.communities}>Communities</Link>
           </AdminNavGroup>
-          <AdminNavGroup id="admin-devotion-links" label="Devotions" active={['devotions', 'devotion-analytics'].includes(section)}>
+          <AdminNavGroup id="admin-devotion-links" label="Devotions" active={['devotions', 'devotion-analytics', 'devotion-sessions'].includes(section)}>
             <Link className={section === 'devotions' ? 'active' : ''} to={ADMIN_ROUTES.devotions}>Operations</Link>
             <Link className={section === 'devotion-analytics' ? 'active' : ''} to={ADMIN_ROUTES['devotion-analytics']}>Analytics</Link>
+            <Link className={section === 'devotion-sessions' ? 'active' : ''} to={ADMIN_ROUTES['devotion-sessions']}>Sessions</Link>
           </AdminNavGroup>
           <Link className="admin-nav-primary-link" to="/admin/calendar-engine">Liturgical Engine</Link>
         </nav>
@@ -711,8 +718,8 @@ export function AdminDashboardPage() {
           </div>
           <div className="engine-controls admin-secret-controls">
             <span className="admin-user-email">{authEmail}</span>
-            {section !== 'devotion-analytics' && section !== 'devotions' ? (
-              <button type="button" className="admin-button primary" onClick={() => void refresh(section === 'activity' || section === 'communities' ? analyticsQuery : '')}>
+            {!devotionSection ? (
+              <button type="button" className="admin-button primary" onClick={() => void refresh(productAnalyticsSection ? analyticsQuery : '')}>
                 Refresh
               </button>
             ) : null}
@@ -722,26 +729,27 @@ export function AdminDashboardPage() {
           </div>
         </header>
 
-        {section !== 'devotion-analytics' && section !== 'devotions' && state === 'loading' && !data ? <div className="engine-empty">Loading partner operations...</div> : null}
-        {section !== 'devotion-analytics' && section !== 'devotions' && state === 'loading' && data ? <div className="admin-analytics-comparison" role="status" aria-live="polite">Updating analytics…</div> : null}
-        {section !== 'devotion-analytics' && section !== 'devotions' && state === 'error' ? <div className="engine-empty engine-error" role="alert">{error}</div> : null}
+        {!devotionSection && state === 'loading' && !data ? <div className="engine-empty">Loading partner operations...</div> : null}
+        {!devotionSection && state === 'loading' && data ? <div className="admin-analytics-comparison" role="status" aria-live="polite">Updating analytics…</div> : null}
+        {!devotionSection && state === 'error' ? <div className="engine-empty engine-error" role="alert">{error}</div> : null}
         {notice ? <div className={`admin-mutation-notice ${notice.tone}`} role={notice.tone === 'error' ? 'alert' : 'status'}>{notice.message}</div> : null}
 
-        {section === 'devotion-analytics' || section === 'devotions' ? <DevotionAnalyticsSection key={section} mode={section === 'devotions' ? 'operations' : 'analytics'} /> : null}
+        {devotionSection ? <DevotionAnalyticsSection key={section} mode={section === 'devotions' ? 'operations' : section === 'devotion-sessions' ? 'sessions' : 'analytics'} /> : null}
 
-        {section !== 'devotion-analytics' && section !== 'devotions' && data ? (
+        {!devotionSection && data ? (
           <>
-            <section className="engine-metrics" aria-label="Partner operations summary">
+            {section !== 'sessions' ? <section className="engine-metrics" aria-label="Partner operations summary">
               <Metric label="Partners" value={data.totals.partners} detail={`${data.totals.activePartners} active`} />
               <Metric label="Pending Videos" value={data.totals.pendingVideos} detail="Awaiting review" />
               <Metric label="Pending Audio" value={data.totals.pendingEpisodes} detail="Awaiting review" />
               <Metric label="Approved Today" value={data.totals.approvedToday} detail={data.today} />
               <Metric label="Stale Feeds" value={data.totals.staleFeeds} detail="Past polling interval" />
-            </section>
+            </section> : null}
 
             {section === 'home' && <HomeSection data={data} onOpen={(destination, params) => goTo(destination, params)} />}
             {section === 'inventory' && <Overview data={data} onSelectPartner={(id) => goTo('inventory', { partner: id })} />}
             {(section === 'activity' || section === 'communities') && <AnalyticsSection analytics={data.analytics} communityOnly={section === 'communities'} search={location.search} onSearch={(next) => navigate({ pathname: location.pathname, search: next ? `?${next}` : '' })} />}
+            {section === 'sessions' && <AnalyticsSessionsSection analytics={data.analytics} search={location.search} onSearch={(next) => navigate({ pathname: location.pathname, search: next ? `?${next}` : '' })} />}
             {section === 'inventory' && (
               <PartnersSection
                 data={data}

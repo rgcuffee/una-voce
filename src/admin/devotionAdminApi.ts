@@ -249,6 +249,10 @@ export type DevotionAnalyticsData = {
   ok: true;
   generatedAt: string;
   access: { role: 'owner' | 'editor' | 'viewer'; email: string | null };
+  participantLinkGeneration: {
+    ready: boolean;
+    message: string | null;
+  };
   campaigns: DevotionCampaign[];
   cohorts: DevotionCohort[];
   operationalAlerts: Array<{

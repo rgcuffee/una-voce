@@ -5,6 +5,7 @@ import {
   createAdminDevotionHandler,
   firstNonEmpty,
   isAnalyticsContractSchemaUnavailable,
+  participantLinkGenerationReady,
   readBoundedRows,
 } from '../admin-devotion.mjs';
 
@@ -17,6 +18,28 @@ test('blank admin secrets do not block the configured fallback secret', () => {
   assert.equal(firstNonEmpty('', 'ingest-secret'), 'ingest-secret');
   assert.equal(firstNonEmpty('   ', 'ingest-secret'), 'ingest-secret');
   assert.equal(firstNonEmpty(undefined, '  dedicated-secret  '), 'dedicated-secret');
+});
+
+test('participant link operations disclose short or missing server configuration', async () => {
+  assert.equal(participantLinkGenerationReady('short'), false);
+  assert.equal(participantLinkGenerationReady('x'.repeat(32)), true);
+
+  const repository = memoryRepository();
+  const handler = createAdminDevotionHandler({
+    repository,
+    authorize: async () => true,
+    linkSecret: 'too-short',
+  });
+  const dashboard = JSON.parse((await handler({ httpMethod: 'GET', headers: {} })).body);
+  assert.deepEqual(dashboard.participantLinkGeneration, {
+    ready: false,
+    message: 'Participant link generation is not configured. Set DEVOTION_LINK_SECRET to at least 32 characters and restart the server.',
+  });
+
+  const create = await handler(request(participantAction('createParticipant', { label: 'Blocked' })));
+  assert.equal(create.statusCode, 503);
+  assert.match(JSON.parse(create.body).error, /DEVOTION_LINK_SECRET/);
+  assert.equal(repository.participants.length, 0);
 });
 
 test('analytics evidence compatibility fallback is limited to missing Sprint B columns', () => {
