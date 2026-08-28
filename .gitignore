@@ -58,3 +58,7 @@ temp/
 !/docs/brand/
 !/docs/brand/**
 /exports
+
+
+agents.md
+repo_context.md

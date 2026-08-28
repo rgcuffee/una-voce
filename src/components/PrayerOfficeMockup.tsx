@@ -21,6 +21,7 @@ import {
 } from '../lib/liturgicalCalendar';
 import { trackAnalyticsEvent } from '../lib/prayerAnalytics';
 import { schedulePrayerHashScroll } from '../lib/prayerHashNavigation.mjs';
+import { suggestedPrayerSegment } from '../lib/prayerHourSuggestion.mjs';
 import {
   getTextPrayerProviders,
   shiftCivilDate,
@@ -72,8 +73,6 @@ const PARTNER_PRAYER_TYPE_LABELS: Record<LiturgicalHour, string> = {
   vespers: 'Vespers',
   compline: 'Compline',
 };
-
-type FormatKey = 'text' | 'media';
 
 type LiturgyBlock = {
   variant: 'rubric' | 'speaker' | 'verse' | 'prayer' | 'reading';
@@ -1277,7 +1276,6 @@ const SEGMENT_SUBTITLES: Record<string, string> = {
   'segment-night': 'Compline',
 };
 
-const DEFAULT_TODAY_SEGMENT_ID = 'segment-morning';
 const SEGMENT_IDS = SEGMENTS.map((segment) => segment.id);
 
 function segmentIdFromHash(hash: string) {
@@ -1285,6 +1283,10 @@ function segmentIdFromHash(hash: string) {
   return SEGMENTS.some((segment) => segment.id === segmentId)
     ? segmentId
     : null;
+}
+
+function preferredTodaySegmentId(hash: string) {
+  return segmentIdFromHash(hash) ?? suggestedPrayerSegment();
 }
 
 const SIDEBAR_ITEMS: SidebarEntry[] = [
@@ -1340,29 +1342,6 @@ function sidebarSegmentOrder(items: SidebarEntry[]) {
 
 const MOBILE_SEGMENT_ORDER = sidebarSegmentOrder(SIDEBAR_ITEMS);
 
-const FORMATS: {
-  key: FormatKey;
-  label: string;
-  description: string;
-  icon: string;
-  className: string;
-}[] = [
-  {
-    key: 'text',
-    label: 'Text',
-    description: 'Read the appointed psalms, readings, and prayers.',
-    icon: 'Aa',
-    className: 'text',
-  },
-  {
-    key: 'media',
-    label: 'Pray Along',
-    description: 'Follow sung and spoken offices from partner communities.',
-    icon: '▶',
-    className: 'pray-along',
-  },
-];
-
 const OPTION_IMAGES: Record<'audio' | 'video' | 'live', string[]> = {
   audio: [
     'https://images.unsplash.com/photo-1524678714210-9917a6c619c2?auto=format&fit=crop&w=1400&q=80',
@@ -1389,15 +1368,6 @@ const NAV_ITEMS = PRIMARY_NAV;
 const MOCK_YOUTUBE_VIDEO_ID = 'M7lc1UVf-VE';
 const DEFAULT_CALENDAR_ID = 'us';
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
-
-function titleCase(format: FormatKey) {
-  const labels: Record<FormatKey, string> = {
-    text: 'Text',
-    media: 'Pray Along',
-  };
-
-  return labels[format];
-}
 
 function optionImageFor(format: 'audio' | 'video' | 'live', index: number) {
   const images = OPTION_IMAGES[format];
@@ -2878,14 +2848,6 @@ export function PrayerOfficeMockup() {
 
     return window.innerWidth >= 900;
   });
-  const [selectedFormats, setSelectedFormats] = useState<
-    Record<string, FormatKey>
-  >(
-    () =>
-      Object.fromEntries(
-        SEGMENTS.map((segment) => [segment.id, 'media']),
-      ) as Record<string, FormatKey>,
-  );
   const [collapsedSegments, setCollapsedSegments] = useState<
     Record<string, boolean>
   >(
@@ -2894,12 +2856,12 @@ export function PrayerOfficeMockup() {
         SEGMENTS.map((segment) => [
           segment.id,
           segment.id !==
-            (segmentIdFromHash(location.hash) ?? DEFAULT_TODAY_SEGMENT_ID),
+            preferredTodaySegmentId(location.hash),
         ]),
       ) as Record<string, boolean>,
   );
   const [activeDesktopSegment, setActiveDesktopSegment] = useState(
-    () => segmentIdFromHash(location.hash) ?? DEFAULT_TODAY_SEGMENT_ID,
+    () => preferredTodaySegmentId(location.hash),
   );
   const activeView = viewForPath(location.pathname);
   const normalizedPath = location.pathname.toLowerCase().replace(/\/+$/, '');
@@ -3077,7 +3039,7 @@ export function PrayerOfficeMockup() {
           SEGMENTS.map((segment) => [
             segment.id,
             segment.id !==
-              (segmentIdFromHash(location.hash) ?? DEFAULT_TODAY_SEGMENT_ID),
+              preferredTodaySegmentId(location.hash),
           ]),
         ) as Record<string, boolean>,
       );
@@ -3120,7 +3082,7 @@ export function PrayerOfficeMockup() {
     }
 
     selectTodaySegment(
-      segmentIdFromHash(location.hash) ?? DEFAULT_TODAY_SEGMENT_ID,
+      preferredTodaySegmentId(location.hash),
     );
   }, [activeView, location.hash]);
 
@@ -3254,10 +3216,6 @@ export function PrayerOfficeMockup() {
       isActive = false;
     };
   }, []);
-
-  const setFormat = (segmentId: string, format: FormatKey) => {
-    setSelectedFormats((current) => ({ ...current, [segmentId]: format }));
-  };
 
   const toggleSegment = (segmentId: string) => {
     if (typeof window !== 'undefined' && window.innerWidth >= 900) {
@@ -3547,7 +3505,6 @@ export function PrayerOfficeMockup() {
               </section>
             ) : null}
             {segmentsToRender.map((segment) => {
-              const selectedFormat = selectedFormats[segment.id] ?? 'media';
               const isCollapsed = collapsedSegments[segment.id];
               const isActiveDesktop = activeDesktopSegment === segment.id;
               const segmentSubtitle = SEGMENT_SUBTITLES[segment.id];
@@ -3603,39 +3560,28 @@ export function PrayerOfficeMockup() {
                   </button>
 
                   <div className="segment-body" id={`${segment.id}-body`}>
-                    <div className="active-format-pill">
-                      <span className="active-format-dot" />
-                      Viewing: {titleCase(selectedFormat)}
+                    <div className="prayer-resource-intro">
+                      <div className="prayer-resource-eyebrow">Ways to pray</div>
+                      <h3>Everything for this Hour, in one place</h3>
+                      <p>
+                        Read the appointed text, listen, or pray along with a
+                        trusted community.
+                      </p>
                     </div>
 
-                    <div className="format-rail">
-                      {FORMATS.map((format) => (
-                        <button
-                          key={format.key}
-                          type="button"
-                          className={`format-card ${format.className}${selectedFormat === format.key ? ' selected' : ''}`}
-                          aria-pressed={selectedFormat === format.key}
-                          onClick={() => setFormat(segment.id, format.key)}
+                    <div className="format-output prayer-resource-group">
+                      <div className="prayer-resource-group-heading">
+                        <span
+                          className="prayer-resource-group-icon"
+                          aria-hidden="true"
                         >
-                          <span className="format-card-icon" aria-hidden="true">
-                            {format.icon}
-                          </span>
-                          <span className="format-card-copy">
-                            <span className="format-card-title">
-                              {format.label}
-                            </span>
-                            <span className="format-card-description">
-                              {format.description}
-                            </span>
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-
-                    <div
-                      className={`format-output${selectedFormat === 'text' ? '' : ' hidden'}`}
-                    >
-                      <h4>Read</h4>
+                          Aa
+                        </span>
+                        <div>
+                          <h4>Read</h4>
+                          <p>Open the appointed psalms, readings, and prayers.</p>
+                        </div>
+                      </div>
                       <div className="format-options text-provider-options">
                         {textProviders.map((provider) => (
                           <TextPrayerProviderCard
@@ -3652,168 +3598,226 @@ export function PrayerOfficeMockup() {
                       </div>
                     </div>
 
-                    {videoOptions.length > 0 ? (
-                      <div
-                        className={`format-output${selectedFormat === 'media' ? '' : ' hidden'}`}
-                      >
-                        <h4>Watch</h4>
-                        <div className="format-options">
-                          {videoOptions.map((item, index) => (
-                            <button
-                              key={
-                                item.videoId ??
-                                item.sourceUrl ??
-                                item.title
-                              }
-                              type="button"
-                              className="format-option format-option-media"
-                              style={{
-                                backgroundImage: `linear-gradient(165deg, rgba(14, 12, 9, 0.18), rgba(14, 12, 9, 0.8)), url(${item.imageUrl ?? optionImageFor('video', index)})`,
-                              }}
-                              onClick={() =>
-                                openPrayerPlayer(
-                                  createPrayerPlayerSession({
-                                    item,
-                                    segment,
-                                    sourceType: 'recorded',
-                                    pageContext: 'today_watch_card',
-                                    partnerStatusOverrides,
-                                  }),
-                                )
-                              }
-                            >
-                              <div className="option-meta">{item.meta}</div>
-                              <OptionPartnerBadge
-                                item={item}
-                                partnerStatusOverrides={partnerStatusOverrides}
-                              />
-                              <div className="option-title">{item.title}</div>
-                              <p className="option-desc">{item.description}</p>
-                              <div className="option-card-footer">
-                                <span className="option-prayer-action">
-                                  Begin Prayer
+                    <div className="format-output prayer-resource-group prayer-resource-group-media">
+                      {hasMediaOptions ? (
+                        <div className="prayer-media-lanes">
+                          {videoOptions.length > 0 ? (
+                            <div className="prayer-media-lane prayer-media-lane-video">
+                              <div className="prayer-media-lane-heading">
+                                <span
+                                  className="prayer-media-lane-icon prayer-media-lane-icon-video"
+                                  aria-hidden="true"
+                                >
+                                  ▶
+                                </span>
+                                <div className="prayer-media-lane-copy">
+                                  <h5>Watch</h5>
+                                  <p>Follow the full Office on screen.</p>
+                                </div>
+                                <span className="prayer-media-lane-kind">
+                                  Video
                                 </span>
                               </div>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    ) : null}
-
-                    {audioOptions.length > 0 ? (
-                      <div
-                        className={`format-output${selectedFormat === 'media' ? '' : ' hidden'}`}
-                      >
-                        <h4>Listen</h4>
-                        <div className="format-options">
-                          {audioOptions.map((item, index) => (
-                            <button
-                              key={
-                                item.videoId ??
-                                item.sourceUrl ??
-                                item.title
-                              }
-                              type="button"
-                              className="format-option format-option-media"
-                              style={{
-                                backgroundImage: `linear-gradient(165deg, rgba(12, 11, 9, 0.2), rgba(12, 11, 9, 0.78)), url(${item.imageUrl ?? optionImageFor('audio', index)})`,
-                              }}
-                              onClick={() =>
-                                openPrayerPlayer(
-                                  createPrayerPlayerSession({
-                                    item,
-                                    segment,
-                                    sourceType: 'recorded',
-                                    pageContext: 'today_listen_card',
-                                    partnerStatusOverrides,
-                                  }),
-                                )
-                              }
-                            >
-                              <div className="option-meta">{item.meta}</div>
-                              <OptionPartnerBadge
-                                item={item}
-                                partnerStatusOverrides={partnerStatusOverrides}
-                              />
-                              <div className="option-title">{item.title}</div>
-                              <p className="option-desc">{item.description}</p>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    ) : null}
-
-                    {liveGroups.length > 0 ? (
-                      <div
-                        className={`format-output${selectedFormat === 'media' ? '' : ' hidden'}`}
-                      >
-                        <h4>Live</h4>
-                        {liveGroups.map((group, groupIndex) => (
-                          <div key={group.title} className="stream-group">
-                            <div className="stream-group-title">
-                              {group.title}
-                            </div>
-                            <div className="format-options">
-                              {group.items.map((item, itemIndex) => (
-                                <button
-                                  key={item.title}
-                                  type="button"
-                                  className="format-option format-option-media"
-                                  style={{
-                                    backgroundImage: `linear-gradient(165deg, rgba(16, 13, 12, 0.26), rgba(16, 13, 12, 0.82)), url(${item.imageUrl ?? optionImageFor('live', groupIndex * 8 + itemIndex)})`,
-                                  }}
-                                  onClick={() =>
-                                    openPrayerPlayer(
-                                      createPrayerPlayerSession({
-                                        item,
-                                        segment,
-                                        sourceType: 'live',
-                                        pageContext: 'today_live_card',
-                                        partnerStatusOverrides,
-                                      }),
-                                    )
-                                  }
-                                >
-                                  <div className="option-meta">{item.meta}</div>
-                                  <OptionPartnerBadge
-                                    item={item}
-                                    partnerStatusOverrides={
-                                      partnerStatusOverrides
+                              <div className="format-options prayer-resource-media-grid">
+                                {videoOptions.map((item, index) => (
+                                  <button
+                                    key={
+                                      item.videoId ??
+                                      item.sourceUrl ??
+                                      item.title
                                     }
-                                  />
-                                  <div className="option-title">{item.title}</div>
-                                  <p className="option-desc">
-                                    {item.description}
-                                  </p>
-                                  <div className="option-card-footer">
-                                    {item.time ? (
-                                      <span className="stream-time">
-                                        {item.time}
+                                    type="button"
+                                    className="format-option format-option-media format-option-video"
+                                    style={{
+                                      backgroundImage: `linear-gradient(165deg, rgba(14, 12, 9, 0.18), rgba(14, 12, 9, 0.8)), url(${item.imageUrl ?? optionImageFor('video', index)})`,
+                                    }}
+                                    onClick={() =>
+                                      openPrayerPlayer(
+                                        createPrayerPlayerSession({
+                                          item,
+                                          segment,
+                                          sourceType: 'recorded',
+                                          pageContext: 'today_watch_card',
+                                          partnerStatusOverrides,
+                                        }),
+                                      )
+                                    }
+                                  >
+                                    <div className="option-meta">{item.meta}</div>
+                                    <OptionPartnerBadge
+                                      item={item}
+                                      partnerStatusOverrides={
+                                        partnerStatusOverrides
+                                      }
+                                    />
+                                    <div className="option-title">
+                                      {item.title}
+                                    </div>
+                                    <p className="option-desc">
+                                      {item.description}
+                                    </p>
+                                    <div className="option-card-footer">
+                                      <span className="option-prayer-action">
+                                        Watch &amp; pray
                                       </span>
-                                    ) : (
-                                      <span />
-                                    )}
-                                    <span className="option-prayer-action">
-                                      {group.title === 'Upcoming'
-                                        ? 'Join Live'
-                                        : 'Pray Now'}
-                                    </span>
-                                  </div>
-                                </button>
-                              ))}
+                                    </div>
+                                  </button>
+                                ))}
+                              </div>
                             </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : null}
+                          ) : null}
 
-                    {!hasMediaOptions ? (
-                      <div
-                        className={`format-output media-empty${selectedFormat === 'media' ? '' : ' hidden'}`}
-                      >
-                        No partner media is available for this prayer yet.
-                      </div>
-                    ) : null}
+                          {audioOptions.length > 0 ? (
+                            <div className="prayer-media-lane prayer-media-lane-audio">
+                              <div className="prayer-media-lane-heading">
+                                <span
+                                  className="prayer-media-lane-icon prayer-media-lane-icon-audio"
+                                  aria-hidden="true"
+                                >
+                                  <i />
+                                  <i />
+                                  <i />
+                                  <i />
+                                  <i />
+                                </span>
+                                <div className="prayer-media-lane-copy">
+                                  <h5>Listen</h5>
+                                  <p>Pray with an audio-only recording.</p>
+                                </div>
+                                <span className="prayer-media-lane-kind">
+                                  Audio
+                                </span>
+                              </div>
+                              <div className="format-options prayer-resource-audio-grid">
+                                {audioOptions.map((item, index) => (
+                                  <button
+                                    key={
+                                      item.videoId ??
+                                      item.sourceUrl ??
+                                      item.title
+                                    }
+                                    type="button"
+                                    className="format-option format-option-media format-option-audio"
+                                    style={{
+                                      backgroundImage: `linear-gradient(90deg, rgba(20, 18, 15, 0.9), rgba(20, 18, 15, 0.6)), url(${item.imageUrl ?? optionImageFor('audio', index)})`,
+                                    }}
+                                    onClick={() =>
+                                      openPrayerPlayer(
+                                        createPrayerPlayerSession({
+                                          item,
+                                          segment,
+                                          sourceType: 'recorded',
+                                          pageContext: 'today_listen_card',
+                                          partnerStatusOverrides,
+                                        }),
+                                      )
+                                    }
+                                  >
+                                    <div className="option-meta">{item.meta}</div>
+                                    <OptionPartnerBadge
+                                      item={item}
+                                      partnerStatusOverrides={
+                                        partnerStatusOverrides
+                                      }
+                                    />
+                                    <div className="option-title">
+                                      {item.title}
+                                    </div>
+                                    <p className="option-desc">
+                                      {item.description}
+                                    </p>
+                                    <div className="option-card-footer">
+                                      <span className="option-prayer-action">
+                                        Listen now
+                                      </span>
+                                    </div>
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          ) : null}
+
+                          {liveGroups.length > 0 ? (
+                            <div className="prayer-media-lane prayer-media-lane-live">
+                              <div className="prayer-media-lane-heading">
+                                <span
+                                  className="prayer-media-lane-icon prayer-media-lane-icon-live"
+                                  aria-hidden="true"
+                                >
+                                  <span />
+                                </span>
+                                <div className="prayer-media-lane-copy">
+                                  <h5>Live &amp; recent</h5>
+                                  <p>Join now or pray with a recent stream.</p>
+                                </div>
+                                <span className="prayer-media-lane-kind">
+                                  Live
+                                </span>
+                              </div>
+                              <div className="format-options prayer-resource-live-grid">
+                                {liveGroups.flatMap((group, groupIndex) =>
+                                  group.items.map((item, itemIndex) => (
+                                    <button
+                                      key={`${group.title}-${item.title}`}
+                                      type="button"
+                                      className="format-option format-option-media format-option-live"
+                                      style={{
+                                        backgroundImage: `linear-gradient(165deg, rgba(16, 13, 12, 0.26), rgba(16, 13, 12, 0.82)), url(${item.imageUrl ?? optionImageFor('live', groupIndex * 8 + itemIndex)})`,
+                                      }}
+                                      onClick={() =>
+                                        openPrayerPlayer(
+                                          createPrayerPlayerSession({
+                                            item,
+                                            segment,
+                                            sourceType: 'live',
+                                            pageContext: 'today_live_card',
+                                            partnerStatusOverrides,
+                                          }),
+                                        )
+                                      }
+                                    >
+                                      <div className="option-meta">
+                                        {item.meta}
+                                      </div>
+                                      <OptionPartnerBadge
+                                        item={item}
+                                        partnerStatusOverrides={
+                                          partnerStatusOverrides
+                                        }
+                                      />
+                                      <div className="option-title">
+                                        {item.title}
+                                      </div>
+                                      <p className="option-desc">
+                                        {item.description}
+                                      </p>
+                                      <div className="option-card-footer">
+                                        {item.time ? (
+                                          <span className="stream-time">
+                                            {item.time}
+                                          </span>
+                                        ) : (
+                                          <span />
+                                        )}
+                                        <span className="option-prayer-action">
+                                          {group.title === 'Upcoming'
+                                            ? 'Join Live'
+                                            : 'Pray Now'}
+                                        </span>
+                                      </div>
+                                    </button>
+                                  )),
+                                )}
+                              </div>
+                            </div>
+                          ) : null}
+                        </div>
+                      ) : (
+                        <div className="media-empty">
+                          No partner media is available for this prayer yet.
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </section>
               );
