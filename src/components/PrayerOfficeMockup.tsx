@@ -2913,7 +2913,7 @@ export function PrayerOfficeMockup() {
     });
   }, [activeView, selectedCommunitySlug, selectedDate]);
 
-  const navigateTo = (view: ViewKey, options?: { segmentId?: string }) => {
+  const navigateTo = (view: ViewKey, options?: { segmentId?: string; anchorId?: string }) => {
     const targetPath = pathForView(view);
 
     trackAnalyticsEvent('navigation_clicked', {
@@ -2924,18 +2924,22 @@ export function PrayerOfficeMockup() {
         fromView: activeView,
         toView: view,
         segmentId: options?.segmentId,
+        anchorId: options?.anchorId,
       },
     });
 
-    if (options?.segmentId) {
-      selectTodaySegment(options.segmentId);
+    const anchorId = options?.segmentId ?? options?.anchorId;
+    if (anchorId) {
+      if (options?.segmentId) {
+        selectTodaySegment(options.segmentId);
+      }
       routerNavigate({
         pathname: targetPath,
-        hash: options.segmentId,
+        hash: anchorId,
       });
       window.setTimeout(() => {
         document
-          .getElementById(options.segmentId!)
+          .getElementById(anchorId)
           ?.scrollIntoView({ block: 'start', behavior: 'smooth' });
       }, 80);
       return;

@@ -39,7 +39,7 @@ export const PRIMARY_NAV: NavItem[] = [
 
 export type ViewNavigator = (
     view: ViewKey,
-    options?: { segmentId?: string },
+    options?: { segmentId?: string; anchorId?: string },
 ) => void;
 
 export const VIEW_PATHS: Record<ViewKey, string> = {

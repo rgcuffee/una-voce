@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { PartnerBadge } from '../components/PartnerBadge';
 import {
   PARTNER_COMMUNITIES,
@@ -99,40 +100,61 @@ export function HomePage({
   partnerStatusOverrides?: PartnerCommunityStatusOverrides;
 }) {
   const featuredResources = featuredResourcesFor(partnerStatusOverrides);
+  const [activeHeroSlide, setActiveHeroSlide] = useState<'prayer' | 'print'>('prayer');
 
   return (
     <article className="home-page">
-      <section className="home-hero" aria-labelledby="home-hero-title">
-        <div>
-          <div className="page-eyebrow">Una Voce</div>
-          <h1 id="home-hero-title">
-            Begin praying the Liturgy of the Hours today.
-          </h1>
-          <p>
-            Choose one Hour, pray along, and discover faithful communities
-            already praying.
-          </p>
-          <div className="home-hero-actions">
-            <button
-              type="button"
-              className="page-cta-button"
-              onClick={() => onNavigate('today', { segmentId: 'segment-night' })}
-            >
-              Pray Night Prayer
-            </button>
-            <button
-              type="button"
-              className="page-cta-link"
-              onClick={() => onNavigate('getting-started')}
-            >
-              I'm new to the Hours
-            </button>
-          </div>
-          <p className="home-reassurance">
-            Start with one Hour. You do not need to pray all seven.
-          </p>
+      <div className="home-hero-carousel" aria-roledescription="carousel" aria-label="Featured ways to pray">
+        <section
+          className={`home-hero home-hero--${activeHeroSlide}`}
+          aria-labelledby="home-hero-title"
+          aria-roledescription="slide"
+          aria-label={activeHeroSlide === 'prayer' ? '1 of 2' : '2 of 2'}
+        >
+          {activeHeroSlide === 'prayer' ? (
+            <div className="home-hero-copy">
+              <div className="page-eyebrow">Una Voce</div>
+              <h1 id="home-hero-title">Begin praying the Liturgy of the Hours today.</h1>
+              <p>Choose one Hour, pray along, and discover faithful communities already praying.</p>
+              <div className="home-hero-actions">
+                <button type="button" className="page-cta-button" onClick={() => onNavigate('today', { segmentId: 'segment-night' })}>
+                  Pray Night Prayer
+                </button>
+                <button type="button" className="page-cta-link" onClick={() => onNavigate('getting-started')}>
+                  I'm new to the Hours
+                </button>
+              </div>
+              <p className="home-reassurance">Start with one Hour. You do not need to pray all seven.</p>
+            </div>
+          ) : (
+            <>
+              <div className="home-hero-copy">
+                <div className="page-eyebrow">Prayer in print</div>
+                <h1 id="home-hero-title">Make room for prayer on the page.</h1>
+                <p>Meet Alto, Magnificat, and Give Us This Day—three monthly companions for daily prayer, Mass, and reflection.</p>
+                <div className="home-hero-actions">
+                  <button type="button" className="page-cta-button" onClick={() => onNavigate('discover', { anchorId: 'print-prayer-resources' })}>
+                    Explore monthly companions
+                  </button>
+                </div>
+              </div>
+              <div className="home-hero-products" aria-hidden="true">
+                <span className="home-hero-product home-hero-product--alto"><img src="/images/print-resources/alto.jpg" alt="" /></span>
+                <span className="home-hero-product home-hero-product--magnificat"><img src="/images/print-resources/magnificat.png" alt="" /></span>
+                <span className="home-hero-product home-hero-product--give-us-this-day"><img src="/images/print-resources/give-us-this-day.jpg" alt="" /></span>
+              </div>
+            </>
+          )}
+        </section>
+        <div className="home-hero-slide-controls" role="group" aria-label="Choose a featured slide">
+          <button type="button" className={activeHeroSlide === 'prayer' ? 'is-active' : ''} aria-pressed={activeHeroSlide === 'prayer'} onClick={() => setActiveHeroSlide('prayer')}>
+            <span>01</span> Begin praying
+          </button>
+          <button type="button" className={activeHeroSlide === 'print' ? 'is-active' : ''} aria-pressed={activeHeroSlide === 'print'} onClick={() => setActiveHeroSlide('print')}>
+            <span>02</span> Prayer in print
+          </button>
         </div>
-      </section>
+      </div>
 
       <section className="home-section">
         <div className="home-section-header">

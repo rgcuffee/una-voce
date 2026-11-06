@@ -2873,6 +2873,136 @@ body {
     color: var(--white);
 }
 
+.home-hero-carousel {
+    margin-bottom: 28px;
+}
+
+.home-hero-carousel .home-hero {
+    position: relative;
+    margin-bottom: 0;
+}
+
+.home-hero--print {
+    min-height: 380px;
+    align-items: center;
+    border-color: #d9c9aa;
+    background:
+        radial-gradient(circle at 86% 28%, rgba(255, 255, 255, 0.78), transparent 37%),
+        linear-gradient(115deg, #f8f2e8 0%, #f0e4ce 54%, #d9c39d 100%);
+    color: var(--charcoal);
+}
+
+.home-hero--print .home-hero-copy {
+    position: relative;
+    z-index: 2;
+    width: 53%;
+}
+
+.home-hero.home-hero--print .page-eyebrow {
+    color: #816323;
+}
+
+.home-hero.home-hero--print h1 {
+    max-width: 12ch;
+    color: var(--charcoal);
+    font-size: clamp(38px, 5vw, 53px);
+}
+
+.home-hero.home-hero--print p {
+    max-width: 42ch;
+    color: var(--charcoal-mid);
+}
+
+.home-hero-products {
+    position: absolute;
+    inset: 0 0 0 auto;
+    width: 45%;
+    pointer-events: none;
+}
+
+.home-hero-product {
+    position: absolute;
+    display: block;
+    overflow: hidden;
+    border: 3px solid rgba(255, 255, 255, 0.78);
+    border-radius: 9px;
+    background: #f5f1e9;
+    box-shadow: 0 15px 28px rgba(51, 36, 20, 0.24);
+}
+
+.home-hero-product img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.home-hero-product--alto {
+    z-index: 1;
+    top: 14%;
+    left: 3%;
+    width: 39%;
+    height: 59%;
+    transform: rotate(-8deg);
+}
+
+.home-hero-product--magnificat {
+    z-index: 2;
+    top: 9%;
+    left: 39%;
+    width: 38%;
+    height: 68%;
+    background: #181716;
+    transform: rotate(5deg);
+}
+
+.home-hero-product--magnificat img {
+    object-fit: contain;
+}
+
+.home-hero-product--give-us-this-day {
+    z-index: 3;
+    right: 2%;
+    bottom: 8%;
+    width: 48%;
+    height: 42%;
+    transform: rotate(-5deg);
+}
+
+.home-hero-slide-controls {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    padding-top: 10px;
+}
+
+.home-hero-slide-controls button {
+    border: 1px solid transparent;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--charcoal-soft);
+    cursor: pointer;
+    font: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 7px 12px;
+}
+
+.home-hero-slide-controls button span {
+    margin-right: 5px;
+    color: #8a6d2a;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.home-hero-slide-controls button:hover,
+.home-hero-slide-controls button:focus-visible,
+.home-hero-slide-controls button.is-active {
+    border-color: rgba(184, 151, 58, 0.24);
+    background: var(--gold-dim);
+    color: var(--charcoal);
+}
+
 .home-hero h1 {
     max-width: 680px;
     color: var(--white);
@@ -3197,6 +3327,62 @@ body {
 
     .home-featured-card {
         grid-template-columns: 76px minmax(0, 1fr);
+    }
+
+    .home-hero-carousel {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .home-hero-slide-controls {
+        order: -1;
+        justify-content: flex-start;
+        padding: 0 0 10px;
+    }
+
+    .home-hero.home-hero--print {
+        min-height: 520px;
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 24px;
+    }
+
+    .home-hero--print .home-hero-copy {
+        width: 100%;
+    }
+
+    .home-hero.home-hero--print h1 {
+        max-width: 14ch;
+        font-size: 37px;
+    }
+
+    .home-hero-products {
+        position: relative;
+        inset: auto;
+        flex: 0 0 170px;
+        width: 100%;
+        margin-top: 18px;
+    }
+
+    .home-hero-product--alto {
+        top: 9%;
+        left: 3%;
+        width: 36%;
+        height: 74%;
+    }
+
+    .home-hero-product--magnificat {
+        top: 0;
+        left: 34%;
+        width: 33%;
+        height: 87%;
+    }
+
+    .home-hero-product--give-us-this-day {
+        right: 1%;
+        bottom: 0;
+        width: 45%;
+        height: 59%;
     }
 }
 

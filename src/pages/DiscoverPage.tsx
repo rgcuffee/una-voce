@@ -1,4 +1,5 @@
-import { type ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
   getPartnerCommunity,
   listPartnerCommunities,
@@ -474,6 +475,19 @@ export function DiscoverPage({
   partnerAudio?: DiscoverPartnerPrayerAudio[];
   worthAbbeyVideos?: DiscoverWorthAbbeyVideo[];
 }) {
+  const { hash } = useLocation();
+
+  useEffect(() => {
+    if (hash !== '#print-prayer-resources') {
+      return;
+    }
+
+    const frame = window.requestAnimationFrame(() => {
+      document.getElementById('print-prayer-resources')?.scrollIntoView({ block: 'start' });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [hash]);
+
   const upcomingStreams = worthAbbeyStreamCards(worthAbbeyVideos, 'upcoming');
   const previousStreams = worthAbbeyStreamCards(worthAbbeyVideos, 'previous');
   const discoverCommunities = listPartnerCommunities(
