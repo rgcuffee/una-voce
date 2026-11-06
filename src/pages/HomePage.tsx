@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { PartnerBadge } from '../components/PartnerBadge';
 import {
   PARTNER_COMMUNITIES,
@@ -21,6 +21,8 @@ const PREFERRED_FEATURED_RESOURCE_SLUGS = [
   'sing-the-hours',
   'divine-office',
 ];
+
+const HERO_ROTATION_INTERVAL_MS = 6500;
 
 const CURATED_FEATURED_RESOURCE_FALLBACKS: FeaturedResource[] = [
   {
@@ -101,15 +103,59 @@ export function HomePage({
 }) {
   const featuredResources = featuredResourcesFor(partnerStatusOverrides);
   const [activeHeroSlide, setActiveHeroSlide] = useState<'prayer' | 'print'>('prayer');
+  const [isAutoPlaying, setIsAutoPlaying] = useState(
+    () => !window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+  );
+  const [isHovered, setIsHovered] = useState(false);
+  const [isFocusWithin, setIsFocusWithin] = useState(false);
+  const [isPageVisible, setIsPageVisible] = useState(!document.hidden);
+
+  useEffect(() => {
+    const onVisibilityChange = () => setIsPageVisible(!document.hidden);
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', onVisibilityChange);
+  }, []);
+
+  useEffect(() => {
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const onMotionPreferenceChange = (event: MediaQueryListEvent) => {
+      if (event.matches) setIsAutoPlaying(false);
+    };
+    reducedMotion.addEventListener('change', onMotionPreferenceChange);
+    return () => reducedMotion.removeEventListener('change', onMotionPreferenceChange);
+  }, []);
+
+  useEffect(() => {
+    if (!isAutoPlaying || isHovered || isFocusWithin || !isPageVisible) return;
+
+    const timer = window.setTimeout(() => {
+      setActiveHeroSlide((slide) => slide === 'prayer' ? 'print' : 'prayer');
+    }, HERO_ROTATION_INTERVAL_MS);
+    return () => window.clearTimeout(timer);
+  }, [activeHeroSlide, isAutoPlaying, isHovered, isFocusWithin, isPageVisible]);
 
   return (
     <article className="home-page">
-      <div className="home-hero-carousel" aria-roledescription="carousel" aria-label="Featured ways to pray">
+      <div
+        className="home-hero-carousel"
+        aria-roledescription="carousel"
+        aria-label="Featured ways to pray"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        onFocusCapture={() => setIsFocusWithin(true)}
+        onBlurCapture={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+            setIsFocusWithin(false);
+          }
+        }}
+      >
         <section
+          key={activeHeroSlide}
           className={`home-hero home-hero--${activeHeroSlide}`}
           aria-labelledby="home-hero-title"
           aria-roledescription="slide"
           aria-label={activeHeroSlide === 'prayer' ? '1 of 2' : '2 of 2'}
+          aria-live={isAutoPlaying && !isHovered && !isFocusWithin ? 'off' : 'polite'}
         >
           {activeHeroSlide === 'prayer' ? (
             <div className="home-hero-copy">
@@ -152,6 +198,9 @@ export function HomePage({
           </button>
           <button type="button" className={activeHeroSlide === 'print' ? 'is-active' : ''} aria-pressed={activeHeroSlide === 'print'} onClick={() => setActiveHeroSlide('print')}>
             <span>02</span> Prayer in print
+          </button>
+          <button type="button" className="home-hero-rotation-control" onClick={() => setIsAutoPlaying((playing) => !playing)} aria-label={isAutoPlaying ? 'Pause automatic slides' : 'Play automatic slides'}>
+            {isAutoPlaying ? 'Pause' : 'Play'}
           </button>
         </div>
       </div>

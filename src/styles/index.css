@@ -2880,6 +2880,25 @@ body {
 .home-hero-carousel .home-hero {
     position: relative;
     margin-bottom: 0;
+    animation: home-hero-enter 420ms ease-out both;
+}
+
+@keyframes home-hero-enter {
+    from {
+        opacity: 0.5;
+        transform: translateY(5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .home-hero-carousel .home-hero {
+        animation: none;
+    }
 }
 
 .home-hero--print {
@@ -2972,6 +2991,7 @@ body {
 .home-hero-slide-controls {
     display: flex;
     justify-content: center;
+    flex-wrap: wrap;
     gap: 6px;
     padding-top: 10px;
 }
@@ -2993,6 +3013,12 @@ body {
     color: #8a6d2a;
     font-size: 10px;
     font-weight: 800;
+}
+
+.home-hero-slide-controls .home-hero-rotation-control {
+    margin-left: 8px;
+    border-color: rgba(184, 151, 58, 0.24);
+    color: #816323;
 }
 
 .home-hero-slide-controls button:hover,
