@@ -9,6 +9,7 @@ import {
 } from '../data/partnerCommunities';
 import type { ViewNavigator } from '../navigation';
 import { PartnerBadge } from '../components/PartnerBadge';
+import { PrintResourcesSection } from '../components/PrintResourcesSection';
 import { trackAnalyticsEvent } from '../lib/prayerAnalytics';
 
 type MediaCard = {
@@ -90,49 +91,6 @@ const PRAYER_TYPE_LABELS: Record<
 };
 
 const WORTH_ABBEY_PREVIOUS_STREAM_BUFFER_MINUTES = 45;
-
-const TEXT_SOURCES: StreamCard[] = [
-  {
-    meta: 'Text resource',
-    title: 'Magnificat',
-    description:
-      'Compact monthly booklet with daily Mass, Morning Prayer, Evening Prayer, and meditations.',
-    time: 'Monthly',
-    image:
-      'https://images.unsplash.com/photo-1504052434569-70ad5836ab65?auto=format&fit=crop&w=1400&q=80', // open devotional on a wooden pew
-    source: 'mock',
-  },
-  {
-    meta: 'Text resource',
-    title: 'Liturgy of the Hours · Four-Volume Set',
-    description:
-      'Official English edition organized according to the liturgical calendar.',
-    time: 'Official Text',
-    image:
-      'https://images.unsplash.com/photo-1509021436665-8f07dbf5bf1d?auto=format&fit=crop&w=1400&q=80', // richly bound old books
-    source: 'mock',
-  },
-  {
-    meta: 'Text resource',
-    title: 'Christian Prayer',
-    description:
-      'One-volume edition with Morning Prayer, Evening Prayer, Night Prayer, and seasonal selections.',
-    time: 'Popular Edition',
-    image:
-      'https://images.unsplash.com/photo-1491841550275-ad7854e35ca6?auto=format&fit=crop&w=1400&q=80', // person reading beside a window
-    source: 'mock',
-  },
-  {
-    meta: 'Text resource',
-    title: 'Shorter Christian Prayer',
-    description:
-      'Accessible introduction with core daily Hours for a beginning prayer routine.',
-    time: 'Beginner',
-    image:
-      'https://images.unsplash.com/photo-1510936111840-65e151ad71bb?auto=format&fit=crop&w=1400&q=80', // small book with coffee and morning light
-    source: 'mock',
-  },
-];
 
 function worthAbbeyStreamCards(
   videos: DiscoverWorthAbbeyVideo[],
@@ -534,9 +492,10 @@ export function DiscoverPage({
         <div className='page-eyebrow'>Discover</div>
         <h1 className='page-hero-title'>Discover ways to pray the Hours</h1>
         <p className='page-lead'>
-          Find audio, apps, live prayer, communities, and ministries helping
+          Find books, audio, live prayer, communities, and ministries helping
           Catholics pray the Liturgy of the Hours.
         </p>
+        <a className='discover-print-jump' href='#print-prayer-resources'>Explore printed prayer companions <span aria-hidden='true'>↓</span></a>
       </header>
 
       <section className='page-section'>
@@ -583,20 +542,7 @@ export function DiscoverPage({
         </section>
       ) : null}
 
-      <section className='page-section'>
-        <h2 className='page-section-title'>Apps and text resources</h2>
-        <p className='page-section-intro'>
-          Commonly used books and reading resources for people who want to
-          follow along outside Una Voce.
-        </p>
-        <p className='page-section-intro'>
-          Una Voce is being developed with the intention of using the official
-          approved liturgical texts for each region, subject to the proper
-          permissions and licensing. As new editions are promulgated, Una Voce
-          will follow the Church's approved texts and timelines.
-        </p>
-        <StreamGrid items={TEXT_SOURCES} />
-      </section>
+      <PrintResourcesSection />
 
       <div className='page-cta'>
         <button
