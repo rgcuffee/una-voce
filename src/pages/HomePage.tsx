@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { MonthlyCompanionsHeroContent } from '../components/MonthlyCompanionsHeroContent';
 import { PartnerBadge } from '../components/PartnerBadge';
 import {
   PARTNER_COMMUNITIES,
@@ -173,23 +174,14 @@ export function HomePage({
               <p className="home-reassurance">Start with one Hour. You do not need to pray all seven.</p>
             </div>
           ) : (
-            <>
-              <div className="home-hero-copy">
-                <div className="page-eyebrow">Prayer in print</div>
-                <h1 id="home-hero-title">Make room for prayer on the page.</h1>
-                <p>Meet Alto, Magnificat, and Give Us This Day—three monthly companions for daily prayer, Mass, and reflection.</p>
-                <div className="home-hero-actions">
-                  <button type="button" className="page-cta-button" onClick={() => onNavigate('discover', { anchorId: 'print-prayer-resources' })}>
-                    Explore monthly companions
-                  </button>
-                </div>
-              </div>
-              <div className="home-hero-products" aria-hidden="true">
-                <span className="home-hero-product home-hero-product--alto"><img src="/images/print-resources/alto.jpg" alt="" /></span>
-                <span className="home-hero-product home-hero-product--magnificat"><img src="/images/print-resources/magnificat.png" alt="" /></span>
-                <span className="home-hero-product home-hero-product--give-us-this-day"><img src="/images/print-resources/give-us-this-day.jpg" alt="" /></span>
-              </div>
-            </>
+            <MonthlyCompanionsHeroContent
+              titleId="home-hero-title"
+              action={
+                <button type="button" className="page-cta-button" onClick={() => onNavigate('discover', { anchorId: 'print-prayer-resources' })}>
+                  Explore monthly companions
+                </button>
+              }
+            />
           )}
         </section>
         <div className="home-hero-slide-controls" role="group" aria-label="Choose a featured slide">

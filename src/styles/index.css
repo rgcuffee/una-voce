@@ -3418,6 +3418,34 @@ body {
     margin: 0 auto;
 }
 
+.page.discover-page {
+    max-width: 1040px;
+}
+
+.discover-page > .page-section,
+.discover-page > .page-cta {
+    width: min(100%, 720px);
+    margin-right: auto;
+    margin-left: auto;
+}
+
+.discover-page > .discover-hero {
+    position: relative;
+    margin-bottom: 28px;
+}
+
+.discover-hero .page-cta-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+
+.discover-hero .page-cta-button:focus-visible {
+    outline: 2px solid var(--charcoal);
+    outline-offset: 3px;
+}
+
 .page-back {
     border: 0;
     background: transparent;
@@ -5344,23 +5372,6 @@ body {
     font-size: 12px;
     font-weight: 700;
     line-height: 1.2;
-}
-
-.discover-print-jump {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 17px;
-    color: var(--gold);
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    text-decoration-color: rgba(184, 151, 58, 0.4);
-    text-underline-offset: 4px;
-}
-
-.discover-print-jump:hover {
-    color: var(--charcoal);
 }
 
 .print-resources-section {

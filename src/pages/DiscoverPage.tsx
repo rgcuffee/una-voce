@@ -10,6 +10,7 @@ import {
 } from '../data/partnerCommunities';
 import type { ViewNavigator } from '../navigation';
 import { PartnerBadge } from '../components/PartnerBadge';
+import { MonthlyCompanionsHeroContent } from '../components/MonthlyCompanionsHeroContent';
 import { PrintResourcesSection } from '../components/PrintResourcesSection';
 import { trackAnalyticsEvent } from '../lib/prayerAnalytics';
 
@@ -501,15 +502,16 @@ export function DiscoverPage({
     .map((community) => discoverCardFromCommunity(community));
 
   return (
-    <article className='page'>
-      <header className='page-hero'>
-        <div className='page-eyebrow'>Discover</div>
-        <h1 className='page-hero-title'>Discover ways to pray the Hours</h1>
-        <p className='page-lead'>
-          Find books, audio, live prayer, communities, and ministries helping
-          Catholics pray the Liturgy of the Hours.
-        </p>
-        <a className='discover-print-jump' href='#print-prayer-resources'>Explore printed prayer companions <span aria-hidden='true'>↓</span></a>
+    <article className='page discover-page'>
+      <header className='home-hero home-hero--print discover-hero' aria-labelledby='discover-hero-title'>
+        <MonthlyCompanionsHeroContent
+          titleId='discover-hero-title'
+          action={
+            <a className='page-cta-button' href='#print-prayer-resources'>
+              Explore monthly companions
+            </a>
+          }
+        />
       </header>
 
       <section className='page-section'>
